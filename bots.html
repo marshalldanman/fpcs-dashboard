@@ -275,7 +275,7 @@
       </div>
     </div>
     <div style="font-size:13px;color:var(--muted)">
-      <strong style="color:var(--accent)">Curriculum:</strong> Botizenship &bull; James's Wishes &bull; Core Skills &bull; Specialization &bull; Security &bull; Teamwork
+      <strong style="color:var(--accent)">Curriculum:</strong> Botizenship &bull; Commander's Directives &bull; Core Skills &bull; Specialization &bull; Security &bull; Teamwork
     </div>
   </div>
 
@@ -720,7 +720,9 @@ updateVillageTime();
 // === FIREBASE GOOGLE AUTH GATE ===
 (function(){
   var firebaseConfig={apiKey:"AIzaSyBgYAPO_0cEvhPzfU6GZykJVUnF55LEzXQ",authDomain:"fpcs-dashboard-63b25.firebaseapp.com",projectId:"fpcs-dashboard-63b25",storageBucket:"fpcs-dashboard-63b25.firebasestorage.app",messagingSenderId:"377879797743",appId:"1:377879797743:web:61a56f9bf69f2df9eba01a"};
-  var ALLOWED_EMAILS=['marshalldanman@gmail.com'];
+  var _AH=['2cf3a7d6f68c22e431d35aec11129074f9bb677598de0fe85df3ba3c0f513365'];
+  function _h(s){return crypto.subtle?crypto.subtle.digest('SHA-256',new TextEncoder().encode(s)).then(function(b){return Array.from(new Uint8Array(b)).map(function(x){return x.toString(16).padStart(2,'0')}).join('')}):Promise.resolve('')}
+  function _checkEmail(email){return _h(email.toLowerCase()).then(function(h){return _AH.indexOf(h)!==-1})}
   function loadScript(src,cb){var s=document.createElement('script');s.src=src;s.onload=cb;document.head.appendChild(s)}
   function initAuth(){
     firebase.initializeApp(firebaseConfig);
@@ -731,14 +733,16 @@ updateVillageTime();
     var loadEl=document.getElementById('authLoading');
     auth.onAuthStateChanged(function(user){
       if(user){
-        if(ALLOWED_EMAILS.indexOf(user.email.toLowerCase())===-1){
-          errEl.textContent='Access denied: '+user.email+' is not authorized';
-          auth.signOut();
-          return;
-        }
-        gate.style.display='none';
-        dash.style.display='block';
-        console.log('[FPCS Auth] Signed in:',user.email);
+        _checkEmail(user.email).then(function(ok){
+          if(!ok){
+            errEl.textContent='Access denied: not authorized';
+            auth.signOut();
+            return;
+          }
+          gate.style.display='none';
+          dash.style.display='block';
+          console.log('[FPCS Auth] Authorized user signed in');
+        });
       }else{
         gate.style.display='flex';
         dash.style.display='none';

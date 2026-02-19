@@ -273,7 +273,7 @@
 <div id="top"></div>
 <div class="header">
   <h1>&#128202; FPCS Tax Command Center <span class="plan-badge">MAX Plan</span></h1>
-  <div class="subtitle">Friendly PC Support, LLC &mdash; Daniel Marshall &mdash; 2022 Tax Year (Federal + Oregon)</div>
+  <div class="subtitle" id="hdr-sub">FPCS &mdash; 2022 Tax Year (Federal + Oregon)</div>
 </div>
 
 <div class="deadline-bar">
@@ -1033,12 +1033,12 @@
     <p style="color:var(--muted);font-size:13px;margin-bottom:12px">What we have, what we still need, and exactly where to find it.</p>
 
     <h3 style="color:var(--green);font-size:14px;margin:16px 0 8px">COLLECTED (ready to use)</h3>
-    <div class="check-item"><span class="check-mark" style="color:var(--green)">&#9745;</span><div class="check-info"><div class="c-title">QBO General Ledger (2,155 transactions)</div><div class="c-loc">C:\Users\James\__Taxes\2022\qbo_export\QBO_GeneralLedger_2022.csv</div></div></div>
-    <div class="check-item"><span class="check-mark" style="color:var(--green)">&#9745;</span><div class="check-info"><div class="c-title">QBO Full Export (P&amp;L, Balance Sheet, Vendors, Journal)</div><div class="c-loc">C:\Users\James\__Taxes\2022\qbo_export\QBO_Export_20260218\</div></div></div>
-    <div class="check-item"><span class="check-mark" style="color:var(--green)">&#9745;</span><div class="check-info"><div class="c-title">FPCS Work Ledger (22 entries, merged from Trello)</div><div class="c-loc">C:\Users\James\__Taxes\2022\income\FPCS Work (revised).xlsx</div></div></div>
-    <div class="check-item"><span class="check-mark" style="color:var(--green)">&#9745;</span><div class="check-info"><div class="c-title">Proton Email Archive (63,587 emails, 6,315 tax-relevant 2022)</div><div class="c-loc">C:\Users\James\Downloads\proton-mail-export-cli-windows_x86_64 (1)\marshalldanman@proton.me\</div></div></div>
-    <div class="check-item"><span class="check-mark" style="color:var(--green)">&#9745;</span><div class="check-info"><div class="c-title">QBO Vendor List (143 vendors)</div><div class="c-loc">2022\reports\2022_profit_and_loss.txt</div></div></div>
-    <div class="check-item"><span class="check-mark" style="color:var(--green)">&#9745;</span><div class="check-info"><div class="c-title">Expense Summary (corrected, 925 dupes removed)</div><div class="c-loc">C:\Users\James\__Taxes\2022\reports\2022_qbo_expense_summary.txt</div></div></div>
+    <div class="check-item"><span class="check-mark" style="color:var(--green)">&#9745;</span><div class="check-info"><div class="c-title">QBO General Ledger (2,155 transactions)</div><div class="c-loc">[local] qbo_export/QBO_GeneralLedger_2022.csv</div></div></div>
+    <div class="check-item"><span class="check-mark" style="color:var(--green)">&#9745;</span><div class="check-info"><div class="c-title">QBO Full Export (P&amp;L, Balance Sheet, Vendors, Journal)</div><div class="c-loc">[local] qbo_export/QBO_Export_20260218/</div></div></div>
+    <div class="check-item"><span class="check-mark" style="color:var(--green)">&#9745;</span><div class="check-info"><div class="c-title">FPCS Work Ledger (22 entries, merged from Trello)</div><div class="c-loc">[local] income/FPCS_Work_revised.xlsx</div></div></div>
+    <div class="check-item"><span class="check-mark" style="color:var(--green)">&#9745;</span><div class="check-info"><div class="c-title">Proton Email Archive (63,587 emails, 6,315 tax-relevant 2022)</div><div class="c-loc">[local] email-archive/</div></div></div>
+    <div class="check-item"><span class="check-mark" style="color:var(--green)">&#9745;</span><div class="check-info"><div class="c-title">QBO Vendor List (143 vendors)</div><div class="c-loc">[local] reports/2022_profit_and_loss.txt</div></div></div>
+    <div class="check-item"><span class="check-mark" style="color:var(--green)">&#9745;</span><div class="check-info"><div class="c-title">Expense Summary (corrected, 925 dupes removed)</div><div class="c-loc">[local] reports/2022_qbo_expense_summary.txt</div></div></div>
 
     <h3 style="color:var(--yellow);font-size:14px;margin:16px 0 8px">PARTIALLY COLLECTED (need action)</h3>
     <div class="check-item"><span class="check-mark" style="color:var(--yellow)">&#9634;</span><div class="check-info"><div class="c-title">Google Sheets Ledger (Tech Work + Ledger 2022 tabs)</div><div class="c-loc">WHERE: <a href="https://docs.google.com/spreadsheets/d/1IF-YeGRQGCuIk6-yUOTN_sNPD0Mb85WOTad7u2m_N28/edit" style="color:var(--accent)">Google Sheet</a> | ACTION: Merge into unified ledger with QBO data</div></div></div>
@@ -1312,7 +1312,7 @@
 
 <div class="footer">
   FPCS Tax Command Center &mdash; Last updated: <span id="lastUpdated"></span><br>
-  Built with AI assistance &mdash; Friendly PC Support, LLC &mdash; Salem, Oregon
+  Built with AI assistance &mdash; FPCS Tax HQ &copy; 2026
 </div>
 </div><!-- /dashContent -->
 
@@ -2191,8 +2191,10 @@
   (function(){
     var firebaseConfig={apiKey:"AIzaSyBgYAPO_0cEvhPzfU6GZykJVUnF55LEzXQ",authDomain:"fpcs-dashboard-63b25.firebaseapp.com",projectId:"fpcs-dashboard-63b25",storageBucket:"fpcs-dashboard-63b25.firebasestorage.app",messagingSenderId:"377879797743",appId:"1:377879797743:web:61a56f9bf69f2df9eba01a"};
 
-    /* Whitelist — ONLY these Google accounts can access the dashboard */
-    var ALLOWED_EMAILS=['marshalldanman@gmail.com'];
+    /* Whitelist — hash-verified, no cleartext emails in source */
+    var _AH=['2cf3a7d6f68c22e431d35aec11129074f9bb677598de0fe85df3ba3c0f513365'];
+    function _h(s){return crypto.subtle?crypto.subtle.digest('SHA-256',new TextEncoder().encode(s)).then(function(b){return Array.from(new Uint8Array(b)).map(function(x){return x.toString(16).padStart(2,'0')}).join('')}):Promise.resolve('')}
+    function _checkEmail(email){return _h(email.toLowerCase()).then(function(h){return _AH.indexOf(h)!==-1})}
 
     function loadScript(src,cb){var s=document.createElement('script');s.src=src;s.onload=cb;document.head.appendChild(s)}
 
@@ -2206,14 +2208,17 @@
 
       auth.onAuthStateChanged(function(user){
         if(user){
-          if(ALLOWED_EMAILS.indexOf(user.email.toLowerCase())===-1){
-            errEl.textContent='Access denied: '+user.email+' is not authorized';
-            auth.signOut();
-            return;
-          }
-          gate.style.display='none';
-          dash.style.display='block';
-          console.log('[FPCS Auth] Signed in:',user.email);
+          _checkEmail(user.email).then(function(ok){
+            if(!ok){
+              errEl.textContent='Access denied: not authorized';
+              auth.signOut();
+              return;
+            }
+            gate.style.display='none';
+            dash.style.display='block';
+            document.getElementById('hdr-sub').innerHTML='Friendly PC Support, LLC &mdash; '+user.displayName+' &mdash; 2022 Tax Year (Federal + Oregon)';
+            console.log('[FPCS Auth] Authorized user signed in');
+          });
         }else{
           gate.style.display='flex';
           dash.style.display='none';
