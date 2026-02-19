@@ -181,24 +181,29 @@
   .coc-local { background: #166534; color: #bbf7d0; }
   .coc-special { background: #be185d; color: #fce7f3; }
   /* PASSWORD GATE */
-  #lockScreen{position:fixed;top:0;left:0;width:100%;height:100%;background:#0a0a0a;z-index:99999;display:flex;align-items:center;justify-content:center;flex-direction:column;font-family:system-ui}
-  #lockScreen .lock-icon{font-size:64px;margin-bottom:16px}
-  #lockScreen h1{color:#e5e7eb;font-size:22px;margin-bottom:24px}
-  #lockScreen input{padding:12px 20px;font-size:16px;border:2px solid #333;border-radius:8px;background:#111;color:#e5e7eb;width:280px;text-align:center;outline:none}
-  #lockScreen input:focus{border-color:#7c3aed}
-  #lockScreen button{margin-top:12px;padding:10px 32px;font-size:14px;font-weight:700;border:none;border-radius:8px;background:#7c3aed;color:#fff;cursor:pointer}
-  #lockScreen button:hover{background:#6d28d9}
-  #lockScreen .err{color:#ef4444;font-size:13px;margin-top:8px;min-height:20px}
+  #authGate{position:fixed;top:0;left:0;width:100%;height:100%;background:#0a0a0a;z-index:99999;display:flex;align-items:center;justify-content:center;flex-direction:column;font-family:system-ui}
+  #authGate .lock-icon{font-size:64px;margin-bottom:16px}
+  #authGate h1{color:#e5e7eb;font-size:22px;margin-bottom:8px}
+  #authGate .auth-sub{color:#9ca3af;font-size:14px;margin-bottom:24px}
+  #authGate .g-btn{display:flex;align-items:center;gap:12px;padding:12px 28px;font-size:15px;font-weight:600;border:2px solid #333;border-radius:8px;background:#1a1a1a;color:#e5e7eb;cursor:pointer;transition:all .2s}
+  #authGate .g-btn:hover{border-color:#4285f4;background:#111}
+  #authGate .g-btn svg{width:20px;height:20px}
+  #authGate .auth-err{color:#ef4444;font-size:13px;margin-top:12px;min-height:20px}
+  #authGate .auth-loading{color:#9ca3af;font-size:14px;margin-top:12px}
   #dashContent{display:none}
 </style>
 </head>
 <body>
-<div id="lockScreen">
+<div id="authGate">
   <div class="lock-icon">&#128274;</div>
   <h1>FPCS Tax HQ</h1>
-  <input type="password" id="passInput" placeholder="Enter passphrase" autocomplete="off">
-  <button onclick="checkPass()">Unlock</button>
-  <div class="err" id="passErr"></div>
+  <div class="auth-sub">Sign in with Google to access the dashboard</div>
+  <button class="g-btn" id="googleSignIn" onclick="doGoogleSignIn()">
+    <svg viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59A14.5 14.5 0 019.5 24c0-1.59.28-3.14.76-4.59l-7.98-6.19A23.9 23.9 0 000 24c0 3.77.9 7.35 2.56 10.53l7.97-5.94z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 5.94C6.51 42.62 14.62 48 24 48z"/></svg>
+    Sign in with Google
+  </button>
+  <div class="auth-err" id="authErr"></div>
+  <div class="auth-loading" id="authLoading"></div>
 </div>
 <div id="dashContent">
 
@@ -1702,13 +1707,57 @@ Answer questions concisely. If asked about specific vendor spending, note that d
     window.fpcsHeartbeat = { add: function(v) { addReading(v); draw(); updateStats(); }, getData: function() { return data; } };
   })();
 
-  /* ── PASSWORD GATE (pure JS SHA-256, works on HTTP) ── */
-  const PASS_HASH='3f7d9f1ba6f8943c95655308a9c0794d7fc0a17912a478f44b2459c721a4614c';
-  const AUTH_KEY='fpcs_auth_ts';
-  function sha256(s){function r(n,x){return(n>>>x)|(n<<(32-x))}var K=[0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2];var H=[0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19];var m=[];var i;for(i=0;i<s.length;i++){m[i>>2]|=(s.charCodeAt(i)&0xff)<<(24-(i%4)*8)}m[s.length>>2]|=0x80<<(24-(s.length%4)*8);m[((s.length+8>>6)+1)*16-1]=s.length*8;for(var b=0;b<m.length;b+=16){var W=[];for(i=0;i<64;i++){if(i<16)W[i]=m[b+i]|0;else{var s0=r(W[i-15],7)^r(W[i-15],18)^(W[i-15]>>>3);var s1=r(W[i-2],17)^r(W[i-2],19)^(W[i-2]>>>10);W[i]=(W[i-16]+s0+W[i-7]+s1)|0}}var a=H[0],bb=H[1],c=H[2],d=H[3],e=H[4],f=H[5],g=H[6],h=H[7];for(i=0;i<64;i++){var S1=r(e,6)^r(e,11)^r(e,25);var ch=(e&f)^(~e&g);var t1=(h+S1+ch+K[i]+W[i])|0;var S0=r(a,2)^r(a,13)^r(a,22);var maj=(a&bb)^(a&c)^(bb&c);var t2=(S0+maj)|0;h=g;g=f;f=e;e=(d+t1)|0;d=c;c=bb;bb=a;a=(t1+t2)|0}H[0]=(H[0]+a)|0;H[1]=(H[1]+bb)|0;H[2]=(H[2]+c)|0;H[3]=(H[3]+d)|0;H[4]=(H[4]+e)|0;H[5]=(H[5]+f)|0;H[6]=(H[6]+g)|0;H[7]=(H[7]+h)|0}var hex='';for(i=0;i<8;i++){for(var j=28;j>=0;j-=4)hex+='0123456789abcdef'.charAt((H[i]>>j)&0xf)}return hex}
-  function checkPass(){var v=document.getElementById('passInput').value;if(!v)return;var h=sha256(v);if(h===PASS_HASH){sessionStorage.setItem(AUTH_KEY,Date.now());unlockDash()}else{document.getElementById('passErr').textContent='Incorrect passphrase'}}
-  function unlockDash(){document.getElementById('lockScreen').style.display='none';document.getElementById('dashContent').style.display='block'}
-  (function(){if(sessionStorage.getItem(AUTH_KEY))unlockDash();document.getElementById('passInput').addEventListener('keydown',function(e){if(e.key==='Enter')checkPass()})})();
+  /* ── FIREBASE GOOGLE AUTH GATE ── */
+  (function(){
+    var firebaseConfig={apiKey:"AIzaSyBgYAPO_0cEvhPzfU6GZykJVUnF55LEzXQ",authDomain:"fpcs-dashboard-63b25.firebaseapp.com",projectId:"fpcs-dashboard-63b25",storageBucket:"fpcs-dashboard-63b25.firebasestorage.app",messagingSenderId:"377879797743",appId:"1:377879797743:web:61a56f9bf69f2df9eba01a"};
+
+    function loadScript(src,cb){var s=document.createElement('script');s.src=src;s.onload=cb;document.head.appendChild(s)}
+
+    function initAuth(){
+      firebase.initializeApp(firebaseConfig);
+      var auth=firebase.auth();
+      var gate=document.getElementById('authGate');
+      var dash=document.getElementById('dashContent');
+      var errEl=document.getElementById('authErr');
+      var loadEl=document.getElementById('authLoading');
+
+      auth.onAuthStateChanged(function(user){
+        if(user){
+          gate.style.display='none';
+          dash.style.display='block';
+          console.log('[FPCS Auth] Signed in:',user.email);
+        }else{
+          gate.style.display='flex';
+          dash.style.display='none';
+        }
+      });
+
+      window.doGoogleSignIn=function(){
+        errEl.textContent='';
+        loadEl.textContent='Signing in...';
+        document.getElementById('googleSignIn').disabled=true;
+        var provider=new firebase.auth.GoogleAuthProvider();
+        auth.signInWithPopup(provider).then(function(result){
+          loadEl.textContent='';
+        }).catch(function(error){
+          loadEl.textContent='';
+          document.getElementById('googleSignIn').disabled=false;
+          errEl.textContent=error.message||'Sign-in failed';
+          console.error('[FPCS Auth] Error:',error);
+        });
+      };
+
+      window.fpcsSignOut=function(){
+        auth.signOut().then(function(){console.log('[FPCS Auth] Signed out')});
+      };
+    }
+
+    loadScript('https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js',function(){
+      loadScript('https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js',function(){
+        initAuth();
+      });
+    });
+  })();
 </script>
 </body>
 </html>
