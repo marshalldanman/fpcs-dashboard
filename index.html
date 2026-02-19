@@ -1711,6 +1711,9 @@ Answer questions concisely. If asked about specific vendor spending, note that d
   (function(){
     var firebaseConfig={apiKey:"AIzaSyBgYAPO_0cEvhPzfU6GZykJVUnF55LEzXQ",authDomain:"fpcs-dashboard-63b25.firebaseapp.com",projectId:"fpcs-dashboard-63b25",storageBucket:"fpcs-dashboard-63b25.firebasestorage.app",messagingSenderId:"377879797743",appId:"1:377879797743:web:61a56f9bf69f2df9eba01a"};
 
+    /* Whitelist — ONLY these Google accounts can access the dashboard */
+    var ALLOWED_EMAILS=['marshalldanman@gmail.com'];
+
     function loadScript(src,cb){var s=document.createElement('script');s.src=src;s.onload=cb;document.head.appendChild(s)}
 
     function initAuth(){
@@ -1723,6 +1726,11 @@ Answer questions concisely. If asked about specific vendor spending, note that d
 
       auth.onAuthStateChanged(function(user){
         if(user){
+          if(ALLOWED_EMAILS.indexOf(user.email.toLowerCase())===-1){
+            errEl.textContent='Access denied: '+user.email+' is not authorized';
+            auth.signOut();
+            return;
+          }
           gate.style.display='none';
           dash.style.display='block';
           console.log('[FPCS Auth] Signed in:',user.email);
