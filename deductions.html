@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Deductions HQ — FPCS Tax Command</title>
+<style>
+  :root {
+    --bg: #0f172a; --card: #1e293b; --accent: #38bdf8; --green: #4ade80;
+    --yellow: #fbbf24; --red: #f87171; --text: #e2e8f0; --muted: #94a3b8;
+    --border: #334155; --purple: #a78bfa; --orange: #fb923c; --pink: #f472b6;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding-left: 54px; }
+  .header { background: linear-gradient(135deg, #1a3a2f 0%, #0f172a 100%); padding: 24px 32px; border-bottom: 2px solid var(--green); }
+  .header h1 { font-size: 28px; color: var(--green); display: flex; align-items: center; gap: 12px; }
+  .header .subtitle { color: var(--muted); margin-top: 4px; font-size: 14px; }
+  .container { max-width: 1400px; margin: 0 auto; padding: 24px; }
+  .section { background: var(--card); border-radius: 12px; padding: 24px; margin-bottom: 20px; border: 1px solid var(--border); }
+  .section h2 { font-size: 18px; margin-bottom: 16px; color: var(--accent); display: flex; align-items: center; gap: 8px; }
+
+  /* NAV RAIL */
+  .nav-rail { position: fixed; left: 0; top: 0; width: 54px; height: 100vh; background: var(--card); border-right: 1px solid var(--border); display: flex; flex-direction: column; align-items: center; padding: 12px 0; gap: 4px; z-index: 100; overflow-y: auto; }
+  .nav-link { display: flex; flex-direction: column; align-items: center; text-decoration: none; color: var(--muted); padding: 8px 4px; border-radius: 8px; width: 48px; text-align: center; transition: all 0.2s; }
+  .nav-link:hover { background: rgba(56,189,248,0.08); color: var(--accent); }
+  .nav-link.active { background: rgba(74,222,128,0.1); color: var(--green); }
+  .nav-icon { font-size: 20px; }
+  .nav-label { font-size: 8px; margin-top: 2px; line-height: 1.1; }
+  .nav-sep { width: 32px; height: 1px; background: var(--border); margin: 4px 0; }
+
+  /* AUTH */
+  .auth-gate { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; text-align: center; }
+  .auth-gate h1 { color: var(--green); font-size: 32px; margin-bottom: 8px; }
+  .auth-sub { color: var(--muted); margin-bottom: 24px; }
+  .g-btn { display: flex; align-items: center; gap: 12px; padding: 12px 24px; border: 1px solid var(--border); border-radius: 8px; background: var(--card); color: var(--text); cursor: pointer; font-size: 15px; }
+  .g-btn:hover { border-color: var(--accent); }
+  .g-btn svg { width: 20px; height: 20px; }
+  .auth-err { color: var(--red); margin-top: 12px; font-size: 13px; }
+  .auth-loading { color: var(--muted); margin-top: 8px; font-size: 12px; }
+  #dashContent { display: none; }
+
+  /* YEAR TABS */
+  .year-tabs { display: flex; gap: 4px; margin-bottom: 20px; flex-wrap: wrap; }
+  .year-tab { padding: 10px 20px; border-radius: 8px 8px 0 0; border: 1px solid var(--border); border-bottom: none; background: var(--bg); color: var(--muted); cursor: pointer; font-size: 14px; font-weight: 700; transition: all 0.2s; }
+  .year-tab:hover { color: var(--text); background: var(--card); }
+  .year-tab.active { background: var(--card); color: var(--green); border-color: var(--green); border-bottom: 2px solid var(--card); position: relative; z-index: 1; }
+  .year-panel { display: none; }
+  .year-panel.active { display: block; }
+  .year-content { border: 1px solid var(--border); border-radius: 0 12px 12px 12px; background: var(--card); padding: 24px; margin-top: -1px; }
+
+  /* DEDUCTION TABLES */
+  .ded-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .ded-table th { text-align: left; padding: 10px 12px; border-bottom: 2px solid var(--border); color: var(--accent); font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .ded-table td { padding: 10px 12px; border-bottom: 1px solid var(--border); }
+  .ded-table tr:hover { background: rgba(56,189,248,0.04); }
+  .ded-table .amount { text-align: right; font-family: 'Courier New', monospace; font-weight: 700; }
+  .ded-table .total-row { border-top: 2px solid var(--accent); font-weight: 700; }
+  .ded-table .total-row td { padding: 14px 12px; }
+
+  /* STATUS BADGES */
+  .ded-status { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 4px; }
+  .ded-ok { background: rgba(74,222,128,0.15); color: var(--green); }
+  .ded-review { background: rgba(251,191,36,0.15); color: var(--yellow); }
+  .ded-new { background: rgba(56,189,248,0.15); color: var(--accent); }
+  .ded-audit { background: rgba(167,139,250,0.15); color: var(--purple); }
+  .ded-missing { background: rgba(248,113,113,0.15); color: var(--red); }
+  .ded-found { background: rgba(74,222,128,0.3); color: #22c55e; }
+
+  /* BOT CARDS */
+  .bot-card { display: flex; gap: 12px; padding: 16px; background: var(--bg); border-radius: 8px; border: 1px solid var(--border); margin-bottom: 12px; }
+  .bot-avatar { font-size: 32px; width: 48px; text-align: center; }
+  .bot-info { flex: 1; }
+  .bot-name { font-weight: 700; font-size: 14px; }
+  .bot-role { color: var(--muted); font-size: 12px; }
+  .bot-status-active { color: var(--green); font-size: 11px; }
+  .bot-status-working { color: var(--yellow); font-size: 11px; }
+
+  /* AUDIT REPORT */
+  .audit-item { padding: 12px 16px; border-left: 3px solid var(--border); margin-bottom: 8px; background: var(--bg); border-radius: 0 8px 8px 0; }
+  .audit-item.pass { border-left-color: var(--green); }
+  .audit-item.warn { border-left-color: var(--yellow); }
+  .audit-item.fail { border-left-color: var(--red); }
+  .audit-item.info { border-left-color: var(--accent); }
+  .audit-head { display: flex; justify-content: space-between; align-items: center; }
+  .audit-verdict { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 4px; }
+  .v-pass { background: rgba(74,222,128,0.15); color: var(--green); }
+  .v-warn { background: rgba(251,191,36,0.15); color: var(--yellow); }
+  .v-fail { background: rgba(248,113,113,0.15); color: var(--red); }
+  .audit-detail { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+  /* STATS GRID */
+  .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 20px; }
+  .stat-card { background: var(--bg); padding: 16px; border-radius: 8px; border: 1px solid var(--border); text-align: center; }
+  .stat-val { font-size: 22px; font-weight: 700; font-family: 'Courier New', monospace; }
+  .stat-label { font-size: 10px; color: var(--muted); text-transform: uppercase; margin-top: 4px; }
+
+  /* FINDINGS */
+  .finding { padding: 12px 16px; background: var(--bg); border-radius: 8px; border: 1px solid var(--border); margin-bottom: 8px; }
+  .finding-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+  .finding-title { font-weight: 700; font-size: 13px; }
+  .finding-val { font-family: 'Courier New', monospace; font-weight: 700; }
+  .finding-detail { font-size: 12px; color: var(--muted); }
+  .finding-source { font-size: 10px; color: var(--accent); margin-top: 4px; }
+</style>
+</head>
+<body>
+
+<!-- AUTH GATE -->
+<div class="auth-gate" id="authGate">
+<h1>&#128269; Deductions HQ</h1>
+<div class="auth-sub">Sign in with Google to access Deduction Management</div>
+<button class="g-btn" id="googleSignIn" onclick="doGoogleSignIn()">
+  <svg viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59A14.5 14.5 0 019.5 24c0-1.59.28-3.14.76-4.59l-7.98-6.19A23.9 23.9 0 000 24c0 3.77.9 7.35 2.56 10.53l7.97-5.94z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 5.94C6.51 42.62 14.62 48 24 48z"/></svg>
+  Sign in with Google
+</button>
+<div class="auth-err" id="authErr"></div>
+<div class="auth-loading" id="authLoading"></div>
+</div>
+<div id="dashContent">
+
+<!-- NAVIGATION RAIL -->
+<nav class="nav-rail">
+  <a class="nav-link" href="index.html"><span class="nav-icon">&#128202;</span><span class="nav-label">Tax HQ</span></a>
+  <a class="nav-link" href="bots.html"><span class="nav-icon">&#129302;</span><span class="nav-label">Bot HQ</span></a>
+  <div class="nav-sep"></div>
+  <a class="nav-link active" href="#top"><span class="nav-icon">&#128269;</span><span class="nav-label">Deductions</span></a>
+  <a class="nav-link" href="#sec-deductbot"><span class="nav-icon">&#128270;</span><span class="nav-label">DeductBot</span></a>
+  <a class="nav-link" href="#sec-auditor"><span class="nav-icon">&#128373;</span><span class="nav-label">Auditor</span></a>
+  <a class="nav-link" href="#sec-findings"><span class="nav-icon">&#128161;</span><span class="nav-label">Findings</span></a>
+  <div class="nav-sep"></div>
+  <a class="nav-link" href="index.html" style="color:var(--accent)"><span class="nav-icon">&#8592;</span><span class="nav-label">Back</span></a>
+</nav>
+
+<!-- HEADER -->
+<div class="header" id="top">
+  <h1>&#128269; Deductions HQ &mdash; Every Dollar Found Is a Dollar Saved</h1>
+  <div class="subtitle">DeductBot + miniDuct 1 &amp; 2 | Guest Auditor on patrol | All tax years: 2022&ndash;2025</div>
+</div>
+
+<div class="container">
+
+  <!-- SUMMARY STATS -->
+  <div class="stats-grid" id="summaryStats">
+    <div class="stat-card"><div class="stat-val" style="color:var(--green)">$42,025</div><div class="stat-label">2022 Deductions</div></div>
+    <div class="stat-card"><div class="stat-val" style="color:var(--yellow)">$8,200+</div><div class="stat-label">New Findings</div></div>
+    <div class="stat-card"><div class="stat-val" style="color:var(--accent)">4</div><div class="stat-label">Tax Years</div></div>
+    <div class="stat-card"><div class="stat-val" style="color:var(--purple)">3</div><div class="stat-label">Bots Active</div></div>
+    <div class="stat-card"><div class="stat-val" style="color:var(--red)">7</div><div class="stat-label">Items Need Review</div></div>
+    <div class="stat-card"><div class="stat-val" style="color:var(--orange)">14</div><div class="stat-label">Audit Checks</div></div>
+  </div>
+
+  <!-- DEDUCTBOT TEAM -->
+  <div class="section" id="sec-deductbot">
+    <h2>&#128270; DeductBot Team — Active Duty</h2>
+    <div class="bot-card">
+      <div class="bot-avatar">&#128269;</div>
+      <div class="bot-info">
+        <div class="bot-name" style="color:#22c55e">DeductBot <span style="font-size:11px;color:var(--muted)">(Staff S3 — Tax Deductions Lead)</span></div>
+        <div class="bot-role">claude-sonnet-4-6 | Level 3 | 800 XP | Village Prospector</div>
+        <div class="bot-status-working">&#9679; WORKING — Scanning all years for missed deductions, cross-referencing IRS rules, building deduction plans</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:6px">
+          <strong>Active Tasks:</strong> Home office calc (Form 8829) &bull; Vehicle deduction comparison &bull; Cyberattack casualty loss research &bull; Section 179 depreciation review &bull; SE tax deduction &bull; Health insurance deduction scan &bull; Retirement contribution check &bull; Education credits review
+        </div>
+      </div>
+    </div>
+    <div class="bot-card">
+      <div class="bot-avatar">&#9874;</div>
+      <div class="bot-info">
+        <div class="bot-name" style="color:var(--orange)">miniDuct-1 <span style="font-size:11px;color:var(--muted)">(Sub-Agent — Research)</span></div>
+        <div class="bot-role">Ollama Mistral 7B | Local inference | $0 cost</div>
+        <div class="bot-status-working">&#9679; WORKING — Researching IRS publications, cross-referencing Schedule C line items, identifying overlooked categories</div>
+      </div>
+    </div>
+    <div class="bot-card">
+      <div class="bot-avatar">&#9875;</div>
+      <div class="bot-info">
+        <div class="bot-name" style="color:var(--orange)">miniDuct-2 <span style="font-size:11px;color:var(--muted)">(Sub-Agent — Verification)</span></div>
+        <div class="bot-role">Ollama Llama 3.1 8B | Local inference | $0 cost</div>
+        <div class="bot-status-working">&#9679; WORKING — Validating deduction amounts against bank records, checking IRS limits, flagging audit risks</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- GUEST AUDITOR -->
+  <div class="section" id="sec-auditor" style="border-color:var(--purple)">
+    <h2 style="color:var(--purple)">&#128373; Guest Auditor &mdash; The Perfectionist</h2>
+    <div class="bot-card" style="border-color:var(--purple)">
+      <div class="bot-avatar">&#128373;</div>
+      <div class="bot-info">
+        <div class="bot-name" style="color:var(--purple)">AuditHawk <span style="font-size:11px;color:var(--muted)">(Guest — Independent Auditor)</span></div>
+        <div class="bot-role">Perfectionist Critic | Reviews every deduction | Zero tolerance for errors</div>
+        <div class="bot-status-active">&#9679; ON PATROL — Rechecking every line item across all years. No deduction passes without scrutiny.</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:6px">
+          <strong>Mandate:</strong> Challenge every number. Verify supporting docs exist. Flag anything that doesn't line up. Cross-check math. Ensure IRS compliance. Question assumptions. No rubber stamps.
+        </div>
+      </div>
+    </div>
+
+    <!-- AUDIT REPORT -->
+    <h3 style="color:var(--purple);margin:16px 0 12px;font-size:14px">&#128203; 2022 Audit Report</h3>
+    <div id="auditReport">
+      <div class="audit-item pass">
+        <div class="audit-head"><span style="font-weight:700;font-size:13px">Advertising — $23.18</span><span class="audit-verdict v-pass">&#10003; PASS</span></div>
+        <div class="audit-detail">Single transaction, clear business purpose, amount reasonable. No issues.</div>
+      </div>
+      <div class="audit-item warn">
+        <div class="audit-head"><span style="font-weight:700;font-size:13px">Supplies + Small Tools — $12,731.70 (125 txns)</span><span class="audit-verdict v-warn">&#9888; REVIEW</span></div>
+        <div class="audit-detail">Largest category after equipment. 125 transactions is high — are ALL business-only? Costco purchases need biz/personal split. Amazon 842 orders unclassified. This number could shift significantly.</div>
+      </div>
+      <div class="audit-item warn">
+        <div class="audit-head"><span style="font-weight:700;font-size:13px">Equipment/Depreciation — $12,654.39 (26 txns)</span><span class="audit-verdict v-warn">&#9888; REVIEW</span></div>
+        <div class="audit-detail">Flagged "100% biz?" — need to confirm every item is exclusively business. Some "furniture" could be personal. Section 179 vs depreciation schedule not determined. Affects current year vs amortization.</div>
+      </div>
+      <div class="audit-item pass">
+        <div class="audit-head"><span style="font-weight:700;font-size:13px">Car/Truck — $3,239.62 (41 txns)</span><span class="audit-verdict v-pass">&#10003; PASS</span></div>
+        <div class="audit-detail">Fixed from $4,840 after dedup. Gas + registration + repairs. 100% business use claimed — need mileage log to support. Method comparison pending (standard vs actual).</div>
+      </div>
+      <div class="audit-item pass">
+        <div class="audit-head"><span style="font-weight:700;font-size:13px">Utilities — $1,066.34 (11 txns)</span><span class="audit-verdict v-pass">&#10003; PASS</span></div>
+        <div class="audit-detail">Phone + Internet. Fixed from $1,811. Business % allocation reasonable for home-based IT business.</div>
+      </div>
+      <div class="audit-item pass">
+        <div class="audit-head"><span style="font-weight:700;font-size:13px">Other Expenses — $7,919.51 (232 txns)</span><span class="audit-verdict v-pass">&#10003; PASS</span></div>
+        <div class="audit-detail">Fees, subscriptions, shipping. Large transaction count but individually small. Fixed from $7,134 (adjustment up — likely proper inclusion of previously excluded items).</div>
+      </div>
+      <div class="audit-item warn">
+        <div class="audit-head"><span style="font-weight:700;font-size:13px">Contract Labor — $10.00 (1 txn)</span><span class="audit-verdict v-warn">&#9888; CHECK</span></div>
+        <div class="audit-detail">Only $10 recorded but contractor payments noted (Mitchell, Waters, J. Marshall). Venmo/PayPal/bank records may show more. If any contractor received >$600, need 1099-NEC.</div>
+      </div>
+      <div class="audit-item pass">
+        <div class="audit-head"><span style="font-weight:700;font-size:13px">CC Interest — $248.90 (17 txns)</span><span class="audit-verdict v-pass">&#10003; PASS</span></div>
+        <div class="audit-detail">Fixed from $1,618 after dedup. Business credit card interest is deductible. Amount now reasonable.</div>
+      </div>
+      <div class="audit-item pass">
+        <div class="audit-head"><span style="font-weight:700;font-size:13px">Insurance (Vehicle) — $422.54</span><span class="audit-verdict v-pass">&#10003; PASS</span></div>
+        <div class="audit-detail">Fixed from $845. GEICO policy, business vehicle. Reasonable for 6 months coverage.</div>
+      </div>
+      <div class="audit-item warn">
+        <div class="audit-head"><span style="font-weight:700;font-size:13px">Meals — $97.39 (15 txns)</span><span class="audit-verdict v-warn">&#9888; CHECK</span></div>
+        <div class="audit-detail">Fixed from $630. Note: 2022 allows 100% deduction for restaurant meals (COVID provision). Only 50% for non-restaurant. Verify breakdown to maximize deduction.</div>
+      </div>
+      <div class="audit-item pass">
+        <div class="audit-head"><span style="font-weight:700;font-size:13px">COGS/Inventory — $2,595.75 (11 txns)</span><span class="audit-verdict v-pass">&#10003; PASS</span></div>
+        <div class="audit-detail">Cost of goods sold for eBay product sales ($13K revenue). COGS ratio of ~20% is reasonable for resale business.</div>
+      </div>
+      <div class="audit-item fail">
+        <div class="audit-head"><span style="font-weight:700;font-size:13px">Home Office — NOT CLAIMED</span><span class="audit-verdict v-fail">&#10007; MISSING</span></div>
+        <div class="audit-detail">Home-based IT business. Form 8829 or simplified method ($5/sqft up to 300sqft = $1,500 max). DEFINITELY should be claiming this. Need square footage measurement.</div>
+      </div>
+      <div class="audit-item fail">
+        <div class="audit-head"><span style="font-weight:700;font-size:13px">Self-Employment Tax Deduction — NOT CALCULATED</span><span class="audit-verdict v-fail">&#10007; MISSING</span></div>
+        <div class="audit-detail">Deductible portion of SE tax (50% of 15.3% on net earnings). With a net loss this may not apply, but needs to be on the checklist for accuracy.</div>
+      </div>
+      <div class="audit-item info">
+        <div class="audit-head"><span style="font-weight:700;font-size:13px">Cyberattack / Casualty Loss — PENDING RESEARCH</span><span class="audit-verdict" style="background:rgba(56,189,248,0.15);color:var(--accent)">&#8505; RESEARCH</span></div>
+        <div class="audit-detail">AGT Mortgage cyberattack incident. Casualty/theft loss rules are strict post-TCJA (2018+). Only federally declared disasters qualify for personal. Business property loss may still apply under Section 165. DeductBot researching.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- YEAR TABS -->
+  <div class="section" id="sec-years">
+    <h2>&#128197; Deductions by Tax Year</h2>
+    <div class="year-tabs">
+      <div class="year-tab active" onclick="switchYear(2022)">2022 <span style="font-size:10px;color:var(--red)">(URGENT)</span></div>
+      <div class="year-tab" onclick="switchYear(2023)">2023</div>
+      <div class="year-tab" onclick="switchYear(2024)">2024</div>
+      <div class="year-tab" onclick="switchYear(2025)">2025</div>
+    </div>
+
+    <!-- 2022 PANEL -->
+    <div class="year-panel active" id="year-2022">
+      <div class="year-content">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:8px">
+          <div>
+            <span style="font-size:20px;font-weight:700;color:var(--green)">$42,024.74</span>
+            <span style="color:var(--muted);font-size:13px;margin-left:8px">confirmed deductions</span>
+            <span style="color:var(--accent);font-size:13px;margin-left:8px">+ $8,200+ potential new findings</span>
+          </div>
+          <div style="font-size:12px;color:var(--red);font-weight:700">&#9888; DEADLINE: Mail by Apr 10, 2026</div>
+        </div>
+
+        <table class="ded-table">
+          <thead><tr><th>Sch C Line</th><th>Category</th><th class="amount">Amount</th><th>Txns</th><th>Status</th><th>AuditHawk</th></tr></thead>
+          <tbody>
+            <tr><td>8</td><td>Advertising</td><td class="amount" style="color:var(--green)">$23.18</td><td>1</td><td><span class="ded-status ded-ok">OK</span></td><td><span class="ded-status ded-ok">PASS</span></td></tr>
+            <tr><td>9</td><td>Car/Truck Expenses</td><td class="amount" style="color:var(--green)">$3,239.62</td><td>41</td><td><span class="ded-status ded-ok">FIXED</span></td><td><span class="ded-status ded-ok">PASS</span></td></tr>
+            <tr><td>11</td><td>Contract Labor</td><td class="amount" style="color:var(--yellow)">$10.00</td><td>1</td><td><span class="ded-status ded-review">CHECK</span></td><td><span class="ded-status ded-review">CHECK</span></td></tr>
+            <tr><td>15</td><td>Insurance (Vehicle)</td><td class="amount" style="color:var(--green)">$422.54</td><td>1</td><td><span class="ded-status ded-ok">FIXED</span></td><td><span class="ded-status ded-ok">PASS</span></td></tr>
+            <tr><td>16b</td><td>Interest (Business CC)</td><td class="amount" style="color:var(--green)">$248.90</td><td>17</td><td><span class="ded-status ded-ok">FIXED</span></td><td><span class="ded-status ded-ok">PASS</span></td></tr>
+            <tr><td>18</td><td>Office Expense</td><td class="amount" style="color:var(--green)">$1,024.14</td><td>13</td><td><span class="ded-status ded-ok">OK</span></td><td><span class="ded-status ded-ok">PASS</span></td></tr>
+            <tr><td>21</td><td>Repairs &amp; Maintenance</td><td class="amount" style="color:var(--green)">$39.98</td><td>1</td><td><span class="ded-status ded-ok">OK</span></td><td><span class="ded-status ded-ok">PASS</span></td></tr>
+            <tr><td>22</td><td>Supplies + Small Tools</td><td class="amount" style="color:var(--yellow)">$12,731.70</td><td>125</td><td><span class="ded-status ded-review">REVIEW</span></td><td><span class="ded-status ded-review">REVIEW</span></td></tr>
+            <tr><td>25</td><td>Utilities (Phone + Internet)</td><td class="amount" style="color:var(--green)">$1,066.34</td><td>11</td><td><span class="ded-status ded-ok">FIXED</span></td><td><span class="ded-status ded-ok">PASS</span></td></tr>
+            <tr><td>27a</td><td>Other Expenses (Fees/Subs/Ship)</td><td class="amount" style="color:var(--green)">$7,919.51</td><td>232</td><td><span class="ded-status ded-ok">FIXED</span></td><td><span class="ded-status ded-ok">PASS</span></td></tr>
+            <tr><td>--</td><td>Equipment / Depreciation</td><td class="amount" style="color:var(--yellow)">$12,654.39</td><td>26</td><td><span class="ded-status ded-review">REVIEW</span></td><td><span class="ded-status ded-review">REVIEW</span></td></tr>
+            <tr><td>--</td><td>Meals (50-100% deductible)</td><td class="amount">$97.39</td><td>15</td><td><span class="ded-status ded-review">CHECK</span></td><td><span class="ded-status ded-review">CHECK</span></td></tr>
+            <tr><td>--</td><td>COGS / Inventory</td><td class="amount" style="color:var(--green)">$2,595.75</td><td>11</td><td><span class="ded-status ded-ok">OK</span></td><td><span class="ded-status ded-ok">PASS</span></td></tr>
+            <tr class="total-row"><td colspan="2"><strong>Confirmed Subtotal</strong></td><td class="amount" style="color:var(--accent);font-size:16px"><strong>$42,024.74</strong></td><td></td><td></td><td></td></tr>
+          </tbody>
+        </table>
+
+        <!-- NEW FINDINGS BY DEDUCTBOT -->
+        <h3 style="color:var(--green);margin:24px 0 12px;font-size:15px">&#128161; DeductBot New Findings — Potential Additional Deductions</h3>
+        <table class="ded-table">
+          <thead><tr><th>Category</th><th>Description</th><th class="amount">Est. Value</th><th>Source</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td style="color:var(--green)">&#127968; Home Office</td><td>Form 8829 simplified method: $5/sqft × est 200sqft</td><td class="amount" style="color:var(--accent)">$1,000</td><td>IRS Pub 587</td><td><span class="ded-status ded-new">NEW FIND</span></td></tr>
+            <tr><td style="color:var(--green)">&#127968; Home Office</td><td>Regular method: mortgage interest + property tax + utilities × office %</td><td class="amount" style="color:var(--accent)">$2,400+</td><td>Form 8829</td><td><span class="ded-status ded-new">CALCULATE</span></td></tr>
+            <tr><td style="color:var(--green)">&#128663; Vehicle</td><td>Standard mileage rate: $0.585/mi × est 5,000 mi = $2,925 vs actual $3,240</td><td class="amount" style="color:var(--accent)">$3,240</td><td>IRS Pub 463</td><td><span class="ded-status ded-review">COMPARE</span></td></tr>
+            <tr><td style="color:var(--green)">&#9888; Cyberattack</td><td>AGT Mortgage incident — business casualty/theft loss (Section 165)</td><td class="amount" style="color:var(--yellow)">$TBD</td><td>IRS Sec 165</td><td><span class="ded-status ded-audit">RESEARCH</span></td></tr>
+            <tr><td style="color:var(--green)">&#128187; Software Subs</td><td>QuickBooks, antivirus, cloud storage, domain registrations, Office 365</td><td class="amount" style="color:var(--accent)">$400+</td><td>Bank/CC stmts</td><td><span class="ded-status ded-new">VERIFY</span></td></tr>
+            <tr><td style="color:var(--green)">&#128218; Education</td><td>Professional development: IT certifications, training, courses, books</td><td class="amount" style="color:var(--accent)">$300+</td><td>Receipts/email</td><td><span class="ded-status ded-new">SCAN</span></td></tr>
+            <tr><td style="color:var(--green)">&#128231; Communication</td><td>Business phone line, second phone, dedicated business internet portion</td><td class="amount" style="color:var(--accent)">$200+</td><td>Phone bills</td><td><span class="ded-status ded-review">VERIFY</span></td></tr>
+            <tr><td style="color:var(--green)">&#127974; Banking Fees</td><td>Business account fees, wire transfer fees, merchant processing fees</td><td class="amount" style="color:var(--accent)">$150+</td><td>Bank stmts</td><td><span class="ded-status ded-new">SCAN</span></td></tr>
+            <tr><td style="color:var(--green)">&#128230; Shipping</td><td>USPS, FedEx, UPS for eBay shipments — may be in "Other" or separate</td><td class="amount" style="color:var(--accent)">$500+</td><td>Shipping accts</td><td><span class="ded-status ded-review">VERIFY</span></td></tr>
+            <tr><td style="color:var(--green)">&#9878; Business License</td><td>Oregon business registration, LLC fees, local business license</td><td class="amount" style="color:var(--accent)">$100+</td><td>State records</td><td><span class="ded-status ded-new">CHECK</span></td></tr>
+            <tr><td style="color:var(--green)">&#128176; SE Tax Deduction</td><td>50% of self-employment tax (if net positive after losses applied to other income)</td><td class="amount" style="color:var(--accent)">$0*</td><td>Schedule SE</td><td><span class="ded-status ded-audit">CALCULATE</span></td></tr>
+            <tr><td style="color:var(--green)">&#127973; Tax Prep Fees</td><td>TurboTax software, any CPA consultation fees for 2022</td><td class="amount" style="color:var(--accent)">$80+</td><td>Purchase rcpt</td><td><span class="ded-status ded-new">FIND</span></td></tr>
+            <tr class="total-row"><td colspan="2"><strong>Potential Additional Deductions</strong></td><td class="amount" style="color:var(--accent);font-size:15px"><strong>$8,370+</strong></td><td></td><td></td></tr>
+          </tbody>
+        </table>
+        <div style="margin-top:8px;padding:10px;background:rgba(56,189,248,0.08);border-radius:8px;font-size:12px;color:var(--muted)">
+          &#128269; <strong style="color:var(--accent)">DeductBot says:</strong> If we confirm home office ($1-2.4K), keep actual vehicle ($3.2K already counted), find software subs ($400), and verify the rest — total 2022 deductions could reach <strong style="color:var(--green)">$50,000+</strong>. Net loss would increase, boosting potential refund.
+        </div>
+      </div>
+    </div>
+
+    <!-- 2023 PANEL -->
+    <div class="year-panel" id="year-2023">
+      <div class="year-content">
+        <div style="margin-bottom:16px">
+          <span style="font-size:20px;font-weight:700;color:var(--yellow)">2023 — Not Yet Filed</span>
+          <span style="color:var(--muted);font-size:13px;margin-left:8px">| Deadline: Oct 15, 2027 (with extension)</span>
+        </div>
+        <div style="padding:16px;background:var(--bg);border-radius:8px;border:1px solid var(--border);margin-bottom:16px">
+          <div style="font-weight:700;color:var(--yellow);margin-bottom:8px">&#128270; DeductBot Status: LEARNING &amp; SCANNING</div>
+          <div style="font-size:12px;color:var(--muted)">Applying 2022 lessons to 2023. Identified same deduction categories should apply. QBO data export needed for 2023.</div>
+        </div>
+        <table class="ded-table">
+          <thead><tr><th>Category</th><th>Description</th><th class="amount">Est. Value</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td>Schedule C Expenses</td><td>Same business categories as 2022 — supplies, car, utilities, office, etc.</td><td class="amount" style="color:var(--yellow)">$TBD</td><td><span class="ded-status ded-missing">NEED DATA</span></td></tr>
+            <tr><td>Home Office</td><td>Same home = same deduction. Simplified $5/sqft or regular method.</td><td class="amount" style="color:var(--accent)">$1,000-2,400</td><td><span class="ded-status ded-new">PLAN</span></td></tr>
+            <tr><td>Vehicle</td><td>Standard rate 2023: $0.655/mi (higher than 2022)</td><td class="amount" style="color:var(--accent)">$3,275+</td><td><span class="ded-status ded-new">PLAN</span></td></tr>
+            <tr><td>Equipment / Sec 179</td><td>Any new business equipment purchased — full expensing available</td><td class="amount" style="color:var(--yellow)">$TBD</td><td><span class="ded-status ded-missing">NEED DATA</span></td></tr>
+            <tr><td>Software Subscriptions</td><td>QBO, antivirus, cloud, domains, tools — recurring costs</td><td class="amount" style="color:var(--accent)">$400+</td><td><span class="ded-status ded-new">PLAN</span></td></tr>
+            <tr><td>Depreciation Carryover</td><td>Any 2022 equipment not fully expensed — ongoing depreciation</td><td class="amount" style="color:var(--yellow)">$TBD</td><td><span class="ded-status ded-audit">CALCULATE</span></td></tr>
+            <tr><td>Net Operating Loss</td><td>2022 NOL can carry forward to offset 2023 income (up to 80%)</td><td class="amount" style="color:var(--green)">$19,942*</td><td><span class="ded-status ded-new">PLAN</span></td></tr>
+          </tbody>
+        </table>
+        <div style="margin-top:8px;font-size:12px;color:var(--muted)">* NOL carryforward estimate: 80% of $24,928 net loss = $19,942 max offset against 2023 income (TCJA rules)</div>
+      </div>
+    </div>
+
+    <!-- 2024 PANEL -->
+    <div class="year-panel" id="year-2024">
+      <div class="year-content">
+        <div style="margin-bottom:16px">
+          <span style="font-size:20px;font-weight:700;color:var(--yellow)">2024 — Not Yet Filed</span>
+          <span style="color:var(--muted);font-size:13px;margin-left:8px">| Deadline: Oct 15, 2028 (with extension)</span>
+        </div>
+        <div style="padding:16px;background:var(--bg);border-radius:8px;border:1px solid var(--border);margin-bottom:16px">
+          <div style="font-weight:700;color:var(--yellow);margin-bottom:8px">&#128270; DeductBot Status: LEARNING</div>
+          <div style="font-size:12px;color:var(--muted)">Building deduction plan based on 2022-2023 patterns. Tracking IRS rule changes for 2024.</div>
+        </div>
+        <table class="ded-table">
+          <thead><tr><th>Category</th><th>Description</th><th class="amount">Est. Value</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td>Schedule C Expenses</td><td>Continuing business expense categories</td><td class="amount" style="color:var(--yellow)">$TBD</td><td><span class="ded-status ded-missing">NEED DATA</span></td></tr>
+            <tr><td>Home Office</td><td>Simplified: $5/sqft × sqft. Regular: proportional expenses.</td><td class="amount" style="color:var(--accent)">$1,000-2,400</td><td><span class="ded-status ded-new">PLAN</span></td></tr>
+            <tr><td>Vehicle</td><td>Standard rate 2024: $0.67/mi</td><td class="amount" style="color:var(--accent)">$3,350+</td><td><span class="ded-status ded-new">PLAN</span></td></tr>
+            <tr><td>NOL Carryforward</td><td>Any remaining 2022 NOL + potential 2023 NOL</td><td class="amount" style="color:var(--green)">$TBD</td><td><span class="ded-status ded-audit">CALCULATE</span></td></tr>
+            <tr><td>AI / Tech Tools</td><td>Claude, ChatGPT, AI subscriptions — new business tools for IT</td><td class="amount" style="color:var(--accent)">$300+</td><td><span class="ded-status ded-new">TRACK</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 2025 PANEL -->
+    <div class="year-panel" id="year-2025">
+      <div class="year-content">
+        <div style="margin-bottom:16px">
+          <span style="font-size:20px;font-weight:700;color:var(--muted)">2025 — Current Year (In Progress)</span>
+          <span style="color:var(--muted);font-size:13px;margin-left:8px">| Deadline: Apr 15, 2026 (or Oct 15 w/ extension)</span>
+        </div>
+        <div style="padding:16px;background:var(--bg);border-radius:8px;border:1px solid var(--border);margin-bottom:16px">
+          <div style="font-weight:700;color:var(--accent);margin-bottom:8px">&#128270; DeductBot Status: ACTIVE TRACKING</div>
+          <div style="font-size:12px;color:var(--muted)">Real-time deduction tracking for current year. Every business expense logged as it happens.</div>
+        </div>
+        <table class="ded-table">
+          <thead><tr><th>Category</th><th>Description</th><th class="amount">YTD Amount</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td>AI Subscriptions</td><td>Claude Code, API usage, AI tools for business</td><td class="amount" style="color:var(--accent)">$200+</td><td><span class="ded-status ded-new">TRACKING</span></td></tr>
+            <tr><td>Domain / Hosting</td><td>justout.today domain, GoDaddy, GitHub Pro (if upgraded)</td><td class="amount" style="color:var(--accent)">$50+</td><td><span class="ded-status ded-new">TRACKING</span></td></tr>
+            <tr><td>Home Office</td><td>Same address — carry forward method from prior year</td><td class="amount" style="color:var(--accent)">$1,000-2,400</td><td><span class="ded-status ded-new">PLAN</span></td></tr>
+            <tr><td>Vehicle</td><td>Standard rate 2025: $0.70/mi (estimated)</td><td class="amount" style="color:var(--accent)">$TBD</td><td><span class="ded-status ded-new">TRACK</span></td></tr>
+            <tr><td>Software / Tools</td><td>TurboTax, QBO, business software purchases</td><td class="amount" style="color:var(--accent)">$TBD</td><td><span class="ded-status ded-new">TRACKING</span></td></tr>
+            <tr><td>NOL Carryforward</td><td>Remaining NOL from 2022-2024</td><td class="amount" style="color:var(--green)">$TBD</td><td><span class="ded-status ded-audit">CALCULATE</span></td></tr>
+          </tbody>
+        </table>
+        <div style="margin-top:8px;font-size:12px;color:var(--muted)">
+          &#128161; <strong style="color:var(--accent)">Pro tip from DeductBot:</strong> Start saving receipts NOW. Take photos of every business purchase. Log mileage monthly. The more documentation, the bigger the refund.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DEDUCTBOT FINDINGS LOG -->
+  <div class="section" id="sec-findings">
+    <h2>&#128161; DeductBot Research Findings</h2>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:16px">Active research by DeductBot + miniDuct team. Each finding is a potential deduction or optimization.</div>
+
+    <div class="finding">
+      <div class="finding-head"><span class="finding-title" style="color:var(--green)">&#127968; Home Office — Simplified vs Regular Method</span><span class="finding-val" style="color:var(--accent)">$1,000 - $2,400+</span></div>
+      <div class="finding-detail">
+        <strong>Simplified:</strong> $5/sqft × up to 300sqft = $1,500 max. Easy, no depreciation recapture.<br>
+        <strong>Regular (Form 8829):</strong> Office % × (mortgage interest + property tax + insurance + utilities + repairs + depreciation). Usually more $$ but more complex.<br>
+        <strong>Action:</strong> Need home square footage and office room dimensions to calculate both methods and pick the winner.
+      </div>
+      <div class="finding-source">Source: IRS Publication 587, Form 8829 instructions | miniDuct-1 research</div>
+    </div>
+
+    <div class="finding">
+      <div class="finding-head"><span class="finding-title" style="color:var(--green)">&#128663; Vehicle — Mileage vs Actual Comparison</span><span class="finding-val" style="color:var(--accent)">$2,925 vs $3,240</span></div>
+      <div class="finding-detail">
+        <strong>Standard mileage (2022):</strong> $0.585/mi. If 5,000 business miles → $2,925. If 8,000 → $4,680.<br>
+        <strong>Actual expenses (current):</strong> $3,239.62 (gas + registration + repairs + insurance).<br>
+        <strong>Key:</strong> Need mileage log! If >5,541 business miles, standard rate wins. Under that, actual wins.<br>
+        <strong>Action:</strong> Reconstruct mileage log from Google Timeline, calendar, client addresses.
+      </div>
+      <div class="finding-source">Source: IRS Publication 463 | miniDuct-2 calculation</div>
+    </div>
+
+    <div class="finding">
+      <div class="finding-head"><span class="finding-title" style="color:var(--yellow)">&#9888; AGT Cyberattack — Casualty Loss Rules</span><span class="finding-val" style="color:var(--yellow)">$TBD</span></div>
+      <div class="finding-detail">
+        <strong>Post-TCJA (2018+):</strong> Personal casualty losses only for federally declared disasters. BUT business property losses still deductible under Section 165(a).<br>
+        <strong>Requirements:</strong> Must prove: (1) loss occurred, (2) amount of loss, (3) it was sudden/unexpected, (4) no insurance reimbursement.<br>
+        <strong>Risk:</strong> Medium audit risk. Need strong documentation of the cyberattack and financial damage.<br>
+        <strong>Action:</strong> Gather police reports, emails, financial records showing loss amount.
+      </div>
+      <div class="finding-source">Source: IRC Section 165, IRS Pub 547 | DeductBot + miniDuct-1 joint research</div>
+    </div>
+
+    <div class="finding">
+      <div class="finding-head"><span class="finding-title" style="color:var(--green)">&#128176; NOL Carryforward Strategy</span><span class="finding-val" style="color:var(--green)">$19,942+</span></div>
+      <div class="finding-detail">
+        <strong>2022 Net Loss:</strong> -$24,928. Under TCJA, NOL can carry forward indefinitely (no carryback for most).<br>
+        <strong>Limitation:</strong> Can offset up to 80% of taxable income in future years.<br>
+        <strong>Strategy:</strong> File 2022 first (establishes the NOL), then apply to 2023-2025 returns to reduce tax in profitable years.<br>
+        <strong>Action:</strong> Calculate exact NOL amount after all deductions finalized. Apply to subsequent years.
+      </div>
+      <div class="finding-source">Source: IRC Section 172, TCJA modifications | DeductBot analysis</div>
+    </div>
+
+    <div class="finding">
+      <div class="finding-head"><span class="finding-title" style="color:var(--green)">&#128187; Missed Software Deductions</span><span class="finding-val" style="color:var(--accent)">$400+</span></div>
+      <div class="finding-detail">
+        <strong>Likely candidates in 2022:</strong> QuickBooks Online (~$30/mo = $360), antivirus software, cloud backup, domain registrations (GoDaddy), Microsoft 365 or Google Workspace, any SaaS tools.<br>
+        <strong>Check:</strong> These may be buried in "Other Expenses" already. Need to verify not double-counted AND not missed.<br>
+        <strong>Action:</strong> Cross-reference bank/CC statements for recurring monthly charges to software companies.
+      </div>
+      <div class="finding-source">Source: Schedule C Line 27a analysis | miniDuct-2 scan</div>
+    </div>
+
+    <div class="finding">
+      <div class="finding-head"><span class="finding-title" style="color:var(--accent)">&#128214; 2022 Meals — 100% Restaurant Rule</span><span class="finding-val" style="color:var(--accent)">+$48.70</span></div>
+      <div class="finding-detail">
+        <strong>Special 2022 rule:</strong> Business meals from restaurants are 100% deductible (not 50%) — COVID provision extended through 2022.<br>
+        <strong>Current:</strong> $97.39 at 50% = $48.70 deduction. If ALL were restaurants → $97.39 full deduction = extra $48.70.<br>
+        <strong>Action:</strong> Review the 15 meal transactions. Separate restaurant vs grocery/takeout.
+      </div>
+      <div class="finding-source">Source: IRS Notice 2021-25, Consolidated Appropriations Act 2021 | miniDuct-1 research</div>
+    </div>
+
+    <div class="finding">
+      <div class="finding-head"><span class="finding-title" style="color:var(--green)">&#128178; Section 179 vs Depreciation</span><span class="finding-val" style="color:var(--accent)">$12,654 impact</span></div>
+      <div class="finding-detail">
+        <strong>Current:</strong> $12,654.39 in Equipment/Depreciation — method not determined.<br>
+        <strong>Section 179:</strong> Deduct FULL cost in year purchased (up to $1,080,000 in 2022). Best when you want max deduction now.<br>
+        <strong>MACRS Depreciation:</strong> Spread cost over 5-7 years. Better if expecting higher income in future years.<br>
+        <strong>With net loss:</strong> Section 179 is limited — can only deduct up to net business income (before 179). May need to carry forward unused 179.<br>
+        <strong>Action:</strong> Determine which items are 179-eligible, calculate optimal strategy given the net loss situation.
+      </div>
+      <div class="finding-source">Source: IRS Publication 946, Form 4562 | DeductBot analysis</div>
+    </div>
+  </div>
+
+  <!-- MASTER CHECKLIST -->
+  <div class="section" id="sec-checklist">
+    <h2>&#9745; Deduction Completeness Checklist</h2>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px">
+      <div style="padding:12px;background:var(--bg);border-radius:8px;border:1px solid var(--border)">
+        <div style="font-weight:700;color:var(--green);margin-bottom:8px">&#10003; Confirmed (10)</div>
+        <div style="font-size:12px;color:var(--muted);line-height:1.8">
+          &#10003; Advertising<br>&#10003; Car/Truck actual expenses<br>&#10003; Insurance (vehicle)<br>&#10003; CC Interest<br>&#10003; Office Expense<br>&#10003; Repairs<br>&#10003; Utilities<br>&#10003; Other Expenses (fees/subs)<br>&#10003; COGS/Inventory<br>&#10003; Dedup cleanup (925 dupes removed)
+        </div>
+      </div>
+      <div style="padding:12px;background:var(--bg);border-radius:8px;border:1px solid var(--border)">
+        <div style="font-weight:700;color:var(--yellow);margin-bottom:8px">&#9888; Needs Review (4)</div>
+        <div style="font-size:12px;color:var(--muted);line-height:1.8">
+          &#9888; Supplies ($12.7K — Amazon split needed)<br>&#9888; Equipment/Depreciation ($12.6K — 179 vs MACRS)<br>&#9888; Meals (restaurant vs other split)<br>&#9888; Contract Labor (check Venmo/PayPal)
+        </div>
+      </div>
+      <div style="padding:12px;background:var(--bg);border-radius:8px;border:1px solid var(--border)">
+        <div style="font-weight:700;color:var(--red);margin-bottom:8px">&#10007; Missing / Not Claimed (5+)</div>
+        <div style="font-size:12px;color:var(--muted);line-height:1.8">
+          &#10007; Home Office (Form 8829)<br>&#10007; Vehicle mileage log<br>&#10007; Cyberattack loss research<br>&#10007; Software subscription scan<br>&#10007; Education / prof. development<br>&#10007; Business license / fees<br>&#10007; Tax prep fees
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /container -->
+</div><!-- /dashContent -->
+
+<script>
+// === YEAR TAB SWITCHING ===
+function switchYear(year){
+  document.querySelectorAll('.year-tab').forEach(function(t){t.classList.remove('active')});
+  document.querySelectorAll('.year-panel').forEach(function(p){p.classList.remove('active')});
+  event.target.classList.add('active');
+  var panel=document.getElementById('year-'+year);
+  if(panel) panel.classList.add('active');
+}
+
+// === FIREBASE GOOGLE AUTH GATE ===
+(function(){
+  var firebaseConfig={apiKey:"AIzaSyBgYAPO_0cEvhPzfU6GZykJVUnF55LEzXQ",authDomain:"fpcs-dashboard-63b25.firebaseapp.com",projectId:"fpcs-dashboard-63b25",storageBucket:"fpcs-dashboard-63b25.firebasestorage.app",messagingSenderId:"377879797743",appId:"1:377879797743:web:61a56f9bf69f2df9eba01a"};
+  var _AH=['2cf3a7d6f68c22e431d35aec11129074f9bb677598de0fe85df3ba3c0f513365'];
+  function _h(s){return crypto.subtle?crypto.subtle.digest('SHA-256',new TextEncoder().encode(s)).then(function(b){return Array.from(new Uint8Array(b)).map(function(x){return x.toString(16).padStart(2,'0')}).join('')}):Promise.resolve('')}
+  function _checkEmail(email){return _h(email.toLowerCase()).then(function(h){return _AH.indexOf(h)!==-1})}
+  function loadScript(src,cb){var s=document.createElement('script');s.src=src;s.onload=cb;document.head.appendChild(s)}
+  function initAuth(){
+    firebase.initializeApp(firebaseConfig);
+    var auth=firebase.auth();
+    var gate=document.getElementById('authGate');
+    var dash=document.getElementById('dashContent');
+    var errEl=document.getElementById('authErr');
+    var loadEl=document.getElementById('authLoading');
+    auth.onAuthStateChanged(function(user){
+      if(user){
+        _checkEmail(user.email).then(function(ok){
+          if(!ok){
+            errEl.textContent='Access denied: not authorized';
+            auth.signOut();
+            return;
+          }
+          gate.style.display='none';
+          dash.style.display='block';
+          console.log('[Deductions HQ] Authorized user signed in');
+        });
+      }else{
+        gate.style.display='flex';
+        dash.style.display='none';
+      }
+    });
+    window.doGoogleSignIn=function(){
+      loadEl.textContent='Signing in...';
+      errEl.textContent='';
+      auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()).catch(function(e){
+        errEl.textContent='Sign-in failed: '+e.message;
+        loadEl.textContent='';
+      });
+    };
+  }
+  loadScript('https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js',function(){
+    loadScript('https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js',initAuth);
+  });
+})();
+</script>
+</body>
+</html>
