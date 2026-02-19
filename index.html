@@ -180,33 +180,28 @@
   .coc-staff { background: #1d4ed8; color: #dbeafe; }
   .coc-local { background: #166534; color: #bbf7d0; }
   .coc-special { background: #be185d; color: #fce7f3; }
-  /* === PASSWORD GATE === */
-  #lockScreen { position:fixed; inset:0; z-index:99999; background:var(--bg); display:flex; align-items:center; justify-content:center; }
-  #lockScreen .lock-box { background:var(--card); border:1px solid var(--accent); border-radius:16px; padding:40px; max-width:400px; width:90%; text-align:center; }
-  #lockScreen h2 { color:var(--accent); margin-bottom:8px; font-size:22px; }
-  #lockScreen p { color:var(--muted); font-size:13px; margin-bottom:20px; }
-  #lockScreen input { width:100%; padding:12px 16px; border-radius:8px; border:1px solid var(--border); background:var(--bg); color:var(--text); font-size:16px; margin-bottom:12px; outline:none; }
-  #lockScreen input:focus { border-color:var(--accent); }
-  #lockScreen button { width:100%; padding:12px; border-radius:8px; border:none; background:var(--accent); color:#0f172a; font-weight:700; font-size:15px; cursor:pointer; }
-  #lockScreen button:hover { opacity:0.9; }
-  #lockScreen .lock-err { color:var(--red); font-size:13px; margin-top:8px; min-height:20px; }
-  #dashContent { display:none; }
+  /* PASSWORD GATE */
+  #lockScreen{position:fixed;top:0;left:0;width:100%;height:100%;background:#0a0a0a;z-index:99999;display:flex;align-items:center;justify-content:center;flex-direction:column;font-family:system-ui}
+  #lockScreen .lock-icon{font-size:64px;margin-bottom:16px}
+  #lockScreen h1{color:#e5e7eb;font-size:22px;margin-bottom:24px}
+  #lockScreen input{padding:12px 20px;font-size:16px;border:2px solid #333;border-radius:8px;background:#111;color:#e5e7eb;width:280px;text-align:center;outline:none}
+  #lockScreen input:focus{border-color:#7c3aed}
+  #lockScreen button{margin-top:12px;padding:10px 32px;font-size:14px;font-weight:700;border:none;border-radius:8px;background:#7c3aed;color:#fff;cursor:pointer}
+  #lockScreen button:hover{background:#6d28d9}
+  #lockScreen .err{color:#ef4444;font-size:13px;margin-top:8px;min-height:20px}
+  #dashContent{display:none}
 </style>
 </head>
 <body>
-
-<!-- PASSWORD GATE -->
 <div id="lockScreen">
-  <div class="lock-box">
-    <h2>&#128274; FPCS Tax HQ</h2>
-    <p>This dashboard is private. Enter the passphrase to continue.</p>
-    <input type="password" id="lockPass" placeholder="Enter passphrase..." autofocus autocomplete="off">
-    <button onclick="checkPass()">Unlock</button>
-    <div class="lock-err" id="lockErr"></div>
-  </div>
+  <div class="lock-icon">&#128274;</div>
+  <h1>FPCS Tax HQ</h1>
+  <input type="password" id="passInput" placeholder="Enter passphrase" autocomplete="off">
+  <button onclick="checkPass()">Unlock</button>
+  <div class="err" id="passErr"></div>
 </div>
-
 <div id="dashContent">
+
 <!-- NAVIGATION RAIL -->
 <nav class="nav-rail" id="navRail">
   <a class="nav-link" href="#top"><span class="nav-icon">&#128202;</span><span class="nav-label">Dashboard</span></a>
@@ -471,7 +466,7 @@
         <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:18px;font-weight:700;color:var(--accent);">55%</div>
       </div>
       <div>
-        <div style="font-size:16px;font-weight:600;">Data Collection: 80% | Tax Prep: 35% | Filing: 0%</div>
+        <div style="font-size:16px;font-weight:600;">Data Collection: 80% | Tax Prep: 45% | Filing: 0%</div>
         <div style="font-size:13px;color:var(--muted);margin-top:4px;">Target: Print &amp; mail by April 10, 2026</div>
       </div>
     </div>
@@ -1010,6 +1005,43 @@
     <div class="tt-step"><div class="tt-num tt-pending">7</div><div><strong>Self-Employment Tax: Schedule SE</strong><div style="font-size:12px;color:var(--muted)">Auto-calculated by TurboTax from Schedule C net. <span style="color:var(--muted)">AUTO</span></div></div></div>
     <div class="tt-step"><div class="tt-num tt-pending">8</div><div><strong>Oregon Return: Form OR-40</strong><div style="font-size:12px;color:var(--muted)">Federal data flows through. Oregon additions/subtractions. <span style="color:var(--muted)">AFTER FEDERAL</span></div></div></div>
     <div class="tt-step"><div class="tt-num tt-pending">9</div><div><strong>Print, Review, Sign, Mail</strong><div style="font-size:12px;color:var(--muted)">USPS Certified Mail to IRS + OR DOR. Keep tracking numbers. <span style="color:var(--muted)">FINAL STEP</span></div></div></div>
+
+    <h3 style="color:var(--green);font-size:14px;margin:20px 0 12px">&#9989; TurboTax Input Sheet &mdash; CREATED</h3>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:12px">File: <code>2022/reports/TURBOTAX_INPUT_SHEET.txt</code> &mdash; Every Schedule C line mapped with amounts, sources, and action items.</p>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px;margin-bottom:12px">
+      <div style="background:var(--bg);padding:10px;border-radius:8px;border-left:3px solid var(--green)">
+        <div style="font-size:11px;color:var(--green);font-weight:700">READY TO ENTER</div>
+        <div style="font-size:20px;font-weight:800;color:var(--text)">11 lines</div>
+        <div style="font-size:11px;color:var(--muted)">Lines 1,2,4,6,8,16b,18,21,22,24b,27a</div>
+      </div>
+      <div style="background:var(--bg);padding:10px;border-radius:8px;border-left:3px solid var(--yellow)">
+        <div style="font-size:11px;color:var(--yellow);font-weight:700">NEEDS DECISION</div>
+        <div style="font-size:20px;font-weight:800;color:var(--text)">4 lines</div>
+        <div style="font-size:11px;color:var(--muted)">Vehicle method, Depreciation, Insurance, Utilities split</div>
+      </div>
+      <div style="background:var(--bg);padding:10px;border-radius:8px;border-left:3px solid var(--red)">
+        <div style="font-size:11px;color:var(--red);font-weight:700">NEEDS JAMES INFO</div>
+        <div style="font-size:20px;font-weight:800;color:var(--text)">7 items</div>
+        <div style="font-size:11px;color:var(--muted)">Contractors, licenses, home office, mileage, 1099s, EIN, start date</div>
+      </div>
+    </div>
+    <div style="background:var(--bg);padding:12px;border-radius:8px;margin-bottom:8px">
+      <div style="font-size:12px;font-weight:700;color:var(--accent);margin-bottom:6px">Vehicle Deduction Comparison</div>
+      <div style="display:flex;gap:16px;flex-wrap:wrap">
+        <div style="flex:1;min-width:180px;padding:8px;border:1px solid var(--border);border-radius:6px">
+          <div style="font-size:11px;color:var(--muted)">Option A: Actual Expenses</div>
+          <div style="font-size:18px;font-weight:800;color:var(--green)">$3,662</div>
+          <div style="font-size:10px;color:var(--muted)">Gas $2,616 + Reg $368 + Repair $256 + Ins $423</div>
+          <div style="font-size:10px;color:var(--yellow)">+$7,616 if vehicle Sec 179 = $11,278 total</div>
+        </div>
+        <div style="flex:1;min-width:180px;padding:8px;border:1px solid var(--border);border-radius:6px">
+          <div style="font-size:11px;color:var(--muted)">Option B: Standard Mileage</div>
+          <div style="font-size:18px;font-weight:800;color:var(--accent)">$0.585/mi</div>
+          <div style="font-size:10px;color:var(--muted)">10K mi = $5,850 | 15K mi = $8,775 | 20K mi = $11,700</div>
+          <div style="font-size:10px;color:var(--red)">&#9888; James must provide mileage log</div>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- ============================================================ -->
@@ -1032,8 +1064,8 @@
       <div class="s-detail">Create tax_session_handoff.json with: progress state, completed forms, remaining work, key metrics, and explicit "files to load next session" list. Load this + SESSION_LOG.md first thing each session.</div>
     </div>
     <div class="scout-rec">
-      <div class="s-title">TurboTax: Pre-fill a "TurboTax Input Sheet" before data entry</div>
-      <div class="s-detail">Create a single-page summary with every number TurboTax will ask for, organized by screen. Makes the ~60min entry session fast and error-free. We have 90% of the data already.</div>
+      <div class="s-title">&#9989; TurboTax: Pre-fill a "TurboTax Input Sheet" before data entry</div>
+      <div class="s-detail"><span style="color:var(--green);font-weight:700">DONE (Session 8)</span> &mdash; Created TURBOTAX_INPUT_SHEET.txt with all Schedule C lines, amounts, sources, vehicle comparison, home office guide, and entry checklist. 11 of 15 lines ready to enter.</div>
     </div>
     <div class="scout-rec">
       <div class="s-title">QBO API: Free Builder tier (500K calls/mo) for live data access</div>
@@ -1669,40 +1701,13 @@ Answer questions concisely. If asked about specific vendor spending, note that d
     window.fpcsHeartbeat = { add: function(v) { addReading(v); draw(); updateStats(); }, getData: function() { return data; } };
   })();
 
-  // === PASSWORD GATE (SHA-256, no cleartext) ===
-  const PASS_HASH = '3f7d9f1ba6f8943c95655308a9c0794d7fc0a17912a478f44b2459c721a4614c';
-  const AUTH_KEY = 'fpcs_auth_ts';
-
-  async function sha256(str) {
-    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
-    return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
-  }
-
-  async function checkPass() {
-    const input = document.getElementById('lockPass').value;
-    const hash = await sha256(input);
-    if (hash === PASS_HASH) {
-      sessionStorage.setItem(AUTH_KEY, Date.now().toString());
-      unlockDash();
-    } else {
-      document.getElementById('lockErr').textContent = 'Wrong passphrase. Try again.';
-      document.getElementById('lockPass').value = '';
-      document.getElementById('lockPass').focus();
-    }
-  }
-
-  function unlockDash() {
-    document.getElementById('lockScreen').style.display = 'none';
-    document.getElementById('dashContent').style.display = 'block';
-  }
-
-  // Auto-unlock if already authenticated this session
-  (function(){
-    if (sessionStorage.getItem(AUTH_KEY)) unlockDash();
-    document.getElementById('lockPass').addEventListener('keydown', function(e){
-      if (e.key === 'Enter') checkPass();
-    });
-  })();
+  /* ── PASSWORD GATE ── */
+  const PASS_HASH='3f7d9f1ba6f8943c95655308a9c0794d7fc0a17912a478f44b2459c721a4614c';
+  const AUTH_KEY='fpcs_auth_ts';
+  async function sha256(s){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));return Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,'0')).join('')}
+  async function checkPass(){const v=document.getElementById('passInput').value;if(!v)return;const h=await sha256(v);if(h===PASS_HASH){sessionStorage.setItem(AUTH_KEY,Date.now());unlockDash()}else{document.getElementById('passErr').textContent='Incorrect passphrase'}}
+  function unlockDash(){document.getElementById('lockScreen').style.display='none';document.getElementById('dashContent').style.display='block'}
+  (function(){if(sessionStorage.getItem(AUTH_KEY))unlockDash();document.getElementById('passInput').addEventListener('keydown',function(e){if(e.key==='Enter')checkPass()})})();
 </script>
 </div><!-- /dashContent -->
 </body>
