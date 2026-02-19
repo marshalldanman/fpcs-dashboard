@@ -191,6 +191,25 @@
   #authGate .auth-err{color:#ef4444;font-size:13px;margin-top:12px;min-height:20px}
   #authGate .auth-loading{color:#9ca3af;font-size:14px;margin-top:12px}
   #dashContent{display:none}
+  /* Interactive Items */
+  .item-actions{display:none;gap:4px;align-items:center;margin-left:auto;flex-shrink:0}
+  .check-item:hover .item-actions,.milestone:hover .item-actions,.tt-step:hover .item-actions{display:flex}
+  .item-btn{background:none;border:1px solid var(--border);color:var(--muted);padding:2px 6px;border-radius:4px;cursor:pointer;font-size:10px;white-space:nowrap}
+  .item-btn:hover{color:var(--text);border-color:var(--text)}
+  .priority-arrows{display:flex;flex-direction:column;gap:0;margin-left:4px}
+  .priority-arrows button{background:none;border:none;color:var(--muted);cursor:pointer;font-size:9px;padding:0;line-height:1}
+  .priority-arrows button:hover{color:var(--accent)}
+  .item-note{margin-top:8px;padding:8px;background:var(--bg);border-radius:6px;border:1px solid var(--border);font-size:12px;color:var(--muted);display:none}
+  .item-note.open{display:block}
+  .item-comments{margin-top:8px;padding:8px;background:var(--bg);border-radius:6px;border:1px solid var(--border);display:none}
+  .item-comments.open{display:block}
+  .item-comments .comment{padding:6px 0;border-bottom:1px solid var(--border);font-size:12px}
+  .item-comments .comment:last-child{border-bottom:none}
+  .item-comments .c-author{font-weight:700;color:var(--accent);font-size:10px}
+  .item-comments .c-time{font-size:9px;color:var(--muted);margin-left:6px}
+  .comment-input-row{display:flex;gap:6px;margin-top:6px}
+  .comment-input-row input{flex:1;background:var(--card);color:var(--text);border:1px solid var(--border);padding:4px 8px;border-radius:4px;font-size:11px}
+  .comment-input-row button{background:var(--accent);color:#000;border:none;padding:4px 10px;border-radius:4px;font-size:11px;font-weight:700;cursor:pointer}
 </style>
 </head>
 <body>
@@ -217,6 +236,7 @@
   <a class="nav-link" href="#sec-stats"><span class="nav-icon">&#128200;</span><span class="nav-label">Stats</span></a>
   <a class="nav-link" href="#sec-progress"><span class="nav-icon">&#9889;</span><span class="nav-label">Progress</span></a>
   <a class="nav-link" href="#sec-milestones"><span class="nav-icon">&#127942;</span><span class="nav-label">Milestones</span></a>
+  <a class="nav-link" href="#sec-bounty"><span class="nav-icon">&#128176;</span><span class="nav-label">Bounty Board</span></a>
   <div class="nav-sep"></div>
   <a class="nav-link" href="#sec-expenses"><span class="nav-icon">&#128221;</span><span class="nav-label">Expenses</span></a>
   <a class="nav-link" href="#sec-income"><span class="nav-icon">&#128176;</span><span class="nav-label">Income</span></a>
@@ -230,20 +250,22 @@
   <a class="nav-link" href="#sec-turbotax"><span class="nav-icon">&#128187;</span><span class="nav-label">TurboTax</span></a>
   <a class="nav-link" href="#sec-scout"><span class="nav-icon">&#128301;</span><span class="nav-label">SCOUT Recs</span></a>
   <a class="nav-link" href="#sec-handoff"><span class="nav-icon">&#128220;</span><span class="nav-label">Handoff</span></a>
+  <div class="nav-sep"></div>
+  <a class="nav-link" href="bots.html" style="color:var(--purple)"><span class="nav-icon">&#129302;</span><span class="nav-label">Bot HQ (Page 2)</span></a>
 </nav>
 
-<!-- CHAT BOX (Ollama Integration) -->
+<!-- CHAT BOX (Commander Channel via The Sarge) -->
 <div class="chat-box minimized" id="chatBox" onclick="if(this.classList.contains('minimized')){toggleChat()}">
   <div class="chat-header" onclick="toggleChat()">
-    <h3>&#128172; Ask the Tax Bots</h3>
+    <h3>&#128172; The Sarge &mdash; Command Channel</h3>
     <span id="chatToggle" style="font-size:18px;color:var(--muted)">&#9650;</span>
   </div>
-  <div class="chat-status" id="chatStatus">Ollama: Not Connected | Set up: <code>ollama serve</code> then configure endpoint below</div>
+  <div class="chat-status" id="chatStatus" style="color:var(--green)">Sarge: Online | Commander Channel Active</div>
   <div class="chat-messages" id="chatMessages">
-    <div class="chat-msg bot"><div class="msg-name">DeductBot</div>Ask me anything about your 2022 taxes! Try: "How much did I spend at Home Depot?" or "What deductions am I missing?"</div>
+    <div class="chat-msg bot"><div class="msg-name">The Sarge</div>At your service, Commander. I've got the whole fleet on standby. Ask me anything about your 2022 taxes, assign a mission, check the bounty board, or just chat. Try: <em>/status</em>, <em>/bounty</em>, or ask a tax question.</div>
   </div>
   <div class="chat-input-row">
-    <input type="text" id="chatInput" placeholder="Ask about your 2022 taxes..." onkeydown="if(event.key==='Enter')sendChat()">
+    <input type="text" id="chatInput" placeholder="Talk to The Sarge..." onkeydown="if(event.key==='Enter')sendChat()">
     <button onclick="sendChat()">Send</button>
   </div>
 </div>
@@ -503,6 +525,62 @@
     <div class="milestone"><input type="checkbox"><div class="info"><div class="title">Cyberattack Deduction</div><div class="desc">AGT Mortgage incident &mdash; casualty/theft loss.</div></div><span class="badge badge-pending">PENDING</span></div>
     <div class="milestone"><input type="checkbox"><div class="info"><div class="title">TurboTax Data Entry</div><div class="desc">All Schedule C data into TurboTax 2022 Desktop.</div></div><span class="badge badge-pending">PENDING</span></div>
     <div class="milestone"><input type="checkbox"><div class="info"><div class="title">Final Review + Print + Mail</div><div class="desc">Triple-check, print, USPS Certified. We're DONE!</div></div><span class="badge badge-pending">PENDING</span></div>
+  </div>
+
+  <!-- BOUNTY BOARD (Compact — full board on Page 2) -->
+  <div class="section" id="sec-bounty" style="border-color:var(--yellow)">
+    <div class="ddbot-header">
+      <h2 style="color:var(--yellow)">&#127942; Bounty Board</h2>
+      <div>
+        <span class="ddbot-stat warn">5 Active</span>
+        <span class="ddbot-stat" style="background:rgba(74,222,128,0.2);color:var(--green)">0 Claimed</span>
+      </div>
+    </div>
+    <p style="color:var(--muted);font-size:13px;margin:8px 0 16px">Post bounties for tax discoveries, pain-point solutions, and automation ideas. Bots earn XP by completing bounties.</p>
+    <div id="bountyList"></div>
+    <div style="margin-top:12px;text-align:center">
+      <button class="btn" style="background:var(--yellow);color:#000;font-weight:700" onclick="openBountyCreator()">+ Post Bounty</button>
+    </div>
+  </div>
+
+  <!-- BOUNTY CREATOR MODAL -->
+  <div class="modal-overlay" id="bountyModal">
+    <div class="modal" style="max-width:600px;border-color:var(--yellow)">
+      <h2 style="color:var(--yellow)">&#127942; Post New Bounty</h2>
+      <div class="modal-section">
+        <div class="control-row" style="flex-direction:column;align-items:stretch">
+          <label style="margin-bottom:8px;font-weight:600">Bounty Title</label>
+          <input type="text" id="bountyTitle" placeholder="e.g., Find overlooked 2022 deductions" style="background:var(--bg);color:var(--text);border:1px solid var(--border);padding:10px;border-radius:8px;font-size:14px;width:100%">
+        </div>
+        <div class="control-row" style="flex-direction:column;align-items:stretch;margin-top:12px">
+          <label style="margin-bottom:8px;font-weight:600">Description</label>
+          <textarea id="bountyDesc" rows="3" placeholder="Details about what's needed..." style="background:var(--bg);color:var(--text);border:1px solid var(--border);padding:10px;border-radius:8px;font-size:14px;width:100%;resize:vertical;font-family:inherit"></textarea>
+        </div>
+        <div class="control-row" style="margin-top:12px">
+          <label>Category</label>
+          <select id="bountyCat" style="background:var(--bg);color:var(--text);border:1px solid var(--border);padding:6px 12px;border-radius:6px">
+            <option value="tax-writeoff">Tax Write-Off Discovery</option>
+            <option value="automation">Automated Income Ideas</option>
+            <option value="painpoint">Pain-Point Solution</option>
+            <option value="data-quality">Data Quality Fix</option>
+            <option value="security">Security Improvement</option>
+            <option value="efficiency">Efficiency Optimization</option>
+            <option value="creative">Creative Solution</option>
+            <option value="docs">Documentation</option>
+            <option value="village">Village Improvement</option>
+          </select>
+        </div>
+        <div class="control-row" style="margin-top:12px">
+          <label>XP Reward</label>
+          <input type="number" id="bountyXP" value="100" min="10" max="1000" style="background:var(--bg);color:var(--text);border:1px solid var(--border);padding:6px 12px;border-radius:6px;width:100px">
+          <span style="color:var(--muted);font-size:12px">XP</span>
+        </div>
+      </div>
+      <div style="display:flex;gap:12px;justify-content:flex-end;margin-top:20px">
+        <button class="btn btn-ghost" onclick="closeBountyCreator()">Cancel</button>
+        <button class="btn" style="background:var(--yellow);color:#000;font-weight:700" onclick="saveBounty()">Post Bounty</button>
+      </div>
+    </div>
   </div>
 
   <!-- EXPENSE TABLE (CORRECTED after dedup fix) -->
@@ -1529,9 +1607,7 @@
     });
   });
 
-  // ===== CHAT BOX (Ollama Integration) =====
-  const OLLAMA_URL = localStorage.getItem('fpcs_ollama_url') || 'http://localhost:11434';
-  const OLLAMA_MODEL = localStorage.getItem('fpcs_ollama_model') || 'mistral:7b';
+  // ===== CHAT BOX (The Sarge — Commander Channel) =====
   let chatOpen = false;
 
   function toggleChat() {
@@ -1542,20 +1618,196 @@
     if (chatOpen) document.getElementById('chatInput').focus();
   }
 
-  // Tax data context for the chat (loaded from our expense summary)
-  const TAX_CONTEXT = `You are a tax assistant for Friendly PC Support, LLC (2022 tax year).
-Key financial data:
-- Gross Income: $17,097.15 (Services $14,727 + eBay Sales $13,052 - AR offset $10,725)
-- Total Business Deductions: $42,024.74
-- Net Business Loss: -$24,927.59
-- Supplies: $12,731.70 (125 txns), Equipment: $12,654.39, Other Expenses: $7,919.51
-- Car/Truck: $3,239.62, Utilities: $1,066.34, Office: $1,024.14
-- COGS/Inventory: $2,595.75, Insurance: $422.54, CC Interest: $248.90
-- Meals (50%): $97.39, Repairs: $39.98, Advertising: $23.18, Contract Labor: $10
-- 925 CC duplicate transactions were removed via dedup
-- QBO has 2,155 transactions for 2022 across 62 account categories
-- Business is PC repair/tech support in Salem, Oregon
-Answer questions concisely. If asked about specific vendor spending, note that detailed per-vendor data requires querying the QBO General Ledger CSV.`;
+  // Tax knowledge base for Sarge's local intelligence
+  const FPCS_DATA = {
+    income: { gross: 17097.15, services: 14726.50, ebay: 13051.65, arOffset: -10725, deposits: -180, tips: 174, lateFees: 50 },
+    deductions: { total: 42024.74, supplies: 12731.70, equipment: 12654.39, otherExp: 7919.51, carTruck: 3239.62, cogs: 2595.75, utilities: 1066.34, office: 1024.14, insurance: 422.54, ccInterest: 248.90, meals: 97.39, repairs: 39.98, advertising: 23.18, contractLabor: 10 },
+    netLoss: -24927.59,
+    stats: { qboTxns: 2155, accounts: 62, emailsIndexed: 63587, taxEmails: 6315, amazonOrders: 842, dupesRemoved: 925 },
+    progress: { dataCollection: 80, taxPrep: 45, filing: 0, overall: 63 },
+    deadline: '2026-04-10',
+    needed: ['Bank statements (7 banks)', 'Home office sqft', 'Mileage log', 'TurboTax install', 'Amazon biz/personal split', '1099 forms (3)', 'Cyberattack docs']
+  };
+
+  // Sarge's local response engine — smart tax assistant with personality
+  function sargeRespond(msg) {
+    const m = msg.toLowerCase().trim();
+
+    // === COMMANDS ===
+    if (m === '/status') {
+      return { bot: 'The Sarge', text: 'FLEET STATUS REPORT:\n' +
+        '  OPUS (Commander): Active — directing operations\n' +
+        '  The Sarge (Me): Online — awaiting orders\n' +
+        '  Penny Pincher: Active — UI patrol\n' +
+        '  SHIELD: Active — security watch\n' +
+        '  DeductBot: Awaiting deployment\n' +
+        '  Cruncher: Active — data analysis\n' +
+        '  Scribbles: Active — documentation\n\n' +
+        'Overall Progress: ' + FPCS_DATA.progress.overall + '% | Deadline: ' + FPCS_DATA.deadline + '\n' +
+        'Net Loss: $' + Math.abs(FPCS_DATA.netLoss).toLocaleString() + ' (potential refund territory)' };
+    }
+    if (m === '/bounty') {
+      return { bot: 'The Sarge', text: 'ACTIVE BOUNTIES:\n' +
+        '  [500 XP] Find new tax write-offs for 2022\n' +
+        '  [300 XP] Classify 842 Amazon orders (biz vs personal)\n' +
+        '  [200 XP] Retrieve 3 missing 1099 forms\n' +
+        '  [150 XP] Calculate home office deduction\n' +
+        '  [100 XP] Vehicle deduction: mileage vs actual analysis\n\n' +
+        'Type /bounty claim <name> to claim one. Bounty board expanding soon.' };
+    }
+    if (m === '/mission' || m === '/missions') {
+      return { bot: 'The Sarge', text: 'ACTIVE MISSIONS:\n' +
+        '  Phase 4: Verification (30% done) — bank statements, Amazon split, contractor payments\n' +
+        '  Phase 5: Special Deductions (10%) — home office, vehicle, depreciation\n\n' +
+        'PENDING: TurboTax entry, final review, print & mail\n' +
+        'DEADLINE: April 10, 2026 (USPS Certified)' };
+    }
+    if (m === '/village') {
+      return { bot: 'Village Elder', text: 'REALBOTVILLE STATUS:\n' +
+        '  Village: Under Construction (spec complete, Phase 1 building)\n' +
+        '  Population: 10 adult bots, 0 children (yet)\n' +
+        '  Buildings: Town Hall (planned), School (planned), Arena (planned)\n' +
+        '  Laws: 8 default laws ratified\n' +
+        '  Economy: Bounty system active, XP tracking coming soon\n\n' +
+        'The village grows as the bots build it. Patience, Commander.' };
+    }
+    if (m === '/arena') {
+      return { bot: 'GamerPartyBot', text: 'THE ARENA:\n' +
+        '  Status: Under construction! Coming in Phase 3.\n' +
+        '  Preview: Bot vs Bot combat, D&D style!\n' +
+        '  Damage based on XP and real work completed.\n' +
+        '  Max 3 fights per day. Winner gets bonus XP.\n\n' +
+        '  Get your bots leveled up and ready! First fights coming soon.' };
+    }
+    if (m === '/help') {
+      return { bot: 'The Sarge', text: 'COMMANDS:\n' +
+        '  /status  — Fleet status report\n' +
+        '  /bounty  — View active bounties\n' +
+        '  /mission — Current missions & progress\n' +
+        '  /village — Realbotville status\n' +
+        '  /arena   — Arena info\n' +
+        '  /help    — This help message\n\n' +
+        'Or just ask me anything about your taxes, the bots, or the project!' };
+    }
+
+    // === TAX QUESTIONS (keyword matching) ===
+    if (m.includes('income') || m.includes('gross') || m.includes('revenue')) {
+      return { bot: 'The Sarge', text: 'Gross Income for 2022: $' + FPCS_DATA.income.gross.toLocaleString() + '\n' +
+        '  Tech Services: $' + FPCS_DATA.income.services.toLocaleString() + ' (21 invoices)\n' +
+        '  eBay Sales: $' + FPCS_DATA.income.ebay.toLocaleString() + ' (42 txns)\n' +
+        '  AR Offset: -$' + Math.abs(FPCS_DATA.income.arOffset).toLocaleString() + '\n' +
+        '  Tips: $' + FPCS_DATA.income.tips + ' | Late Fees: $' + FPCS_DATA.income.lateFees };
+    }
+    if (m.includes('deduction') || m.includes('expense') || m.includes('write-off') || m.includes('writeoff')) {
+      return { bot: 'DeductBot', text: 'Total Business Deductions: $' + FPCS_DATA.deductions.total.toLocaleString() + '\n' +
+        '  Supplies: $' + FPCS_DATA.deductions.supplies.toLocaleString() + '\n' +
+        '  Equipment: $' + FPCS_DATA.deductions.equipment.toLocaleString() + '\n' +
+        '  Other Expenses: $' + FPCS_DATA.deductions.otherExp.toLocaleString() + '\n' +
+        '  Car/Truck: $' + FPCS_DATA.deductions.carTruck.toLocaleString() + '\n' +
+        '  COGS: $' + FPCS_DATA.deductions.cogs.toLocaleString() + '\n' +
+        '  + 7 more categories. 925 CC dupes were removed via dedup.' };
+    }
+    if (m.includes('loss') || m.includes('net') || m.includes('refund')) {
+      return { bot: 'Cruncher', text: 'Net Business Loss: -$' + Math.abs(FPCS_DATA.netLoss).toLocaleString() + '\n' +
+        'Income $17,097 minus Deductions $42,025 = Loss of $24,928.\n' +
+        'This loss can offset other income on your 1040, potentially resulting in a refund.\n' +
+        'SE tax is $0 on a loss (no self-employment tax owed on negative income).' };
+    }
+    if (m.includes('deadline') || m.includes('when') || m.includes('mail') || m.includes('date')) {
+      const days = Math.floor((new Date('2026-04-10') - new Date()) / 86400000);
+      return { bot: 'The Sarge', text: 'MAIL DEADLINE: April 10, 2026 (USPS Certified)\n' +
+        'Oregon 3-year statute: April 15, 2026\n' +
+        'Days remaining: ' + days + '\n' +
+        'TurboTax entry: ~60-90 minutes once data is ready.\n' +
+        'We need: bank statements, home office info, mileage, and TurboTax installed.' };
+    }
+    if (m.includes('need') || m.includes('missing') || m.includes('still') || m.includes('todo')) {
+      return { bot: 'The Sarge', text: 'STILL NEEDED (James action required):\n' +
+        FPCS_DATA.needed.map((n,i) => '  ' + (i+1) + '. ' + n).join('\n') +
+        '\n\nThese items are blocking Phase 4-6 progress.' };
+    }
+    if (m.includes('progress') || m.includes('how far') || m.includes('percent') || m.includes('done')) {
+      return { bot: 'The Sarge', text: 'PROJECT PROGRESS:\n' +
+        '  Data Collection: ' + FPCS_DATA.progress.dataCollection + '%\n' +
+        '  Tax Preparation: ' + FPCS_DATA.progress.taxPrep + '%\n' +
+        '  Filing: ' + FPCS_DATA.progress.filing + '%\n' +
+        '  Overall: ~' + FPCS_DATA.progress.overall + '%\n\n' +
+        'Phases 1-3 complete (data harvest, cross-ref, dedup). Working on Phase 4 (verification).' };
+    }
+    if (m.includes('vehicle') || m.includes('car') || m.includes('mileage') || m.includes('drive')) {
+      return { bot: 'DeductBot', text: 'VEHICLE DEDUCTION OPTIONS:\n' +
+        '  Option A — Actual Expenses: $3,662 (gas $2,616 + reg $368 + repair $256 + ins $423)\n' +
+        '    +$7,616 if Sec 179 = $11,278 total\n' +
+        '  Option B — Standard Mileage: $0.585/mile\n' +
+        '    10K mi = $5,850 | 15K mi = $8,775 | 20K mi = $11,700\n\n' +
+        'Need your mileage log to decide. 100% business use claimed.' };
+    }
+    if (m.includes('amazon')) {
+      return { bot: 'Cruncher', text: '842 Amazon orders found in 2022 email data.\n' +
+        'Status: NOT YET CLASSIFIED (business vs personal).\n' +
+        'Action needed: Export Amazon order history, classify each order.\n' +
+        'Business purchases = additional deductions. This is a 300 XP bounty!' };
+    }
+    if (m.includes('bot') || m.includes('fleet') || m.includes('team')) {
+      return { bot: 'The Sarge', text: 'FLEET ROSTER:\n' +
+        '  Opus (Commander) — claude-opus-4-6 — ACTIVE\n' +
+        '  The Sarge (Supervisor) — claude-opus-4-6 — ONLINE\n' +
+        '  Penny Pincher (UX) — claude-sonnet-4-6 — ACTIVE\n' +
+        '  SHIELD (Security) — claude-sonnet-4-6 — ACTIVE\n' +
+        '  DeductBot (Tax) — claude-sonnet-4-6 — AWAITING\n' +
+        '  Cruncher (Data) — claude-sonnet-4-6 — ACTIVE\n' +
+        '  Scribbles (Docs) — claude-sonnet-4-6 — ACTIVE\n' +
+        '  DDBOT (Audit) — Python local — 5/5 FIXED\n' +
+        '  TokenWatchBot — claude-haiku-4-5 — INITIALIZED' };
+    }
+
+    // === PERSONALITY / GENERAL ===
+    if (m.includes('hello') || m.includes('hi') || m === 'hey') {
+      return { bot: 'The Sarge', text: 'Commander! Good to see you. The fleet is standing by. What are your orders?\n' +
+        'Type /help for commands, or just ask me anything.' };
+    }
+    if (m.includes('thank')) {
+      return { bot: 'The Sarge', text: 'Just doing my job, Commander. The fleet lives to serve. Anything else you need?' };
+    }
+    if (m.includes('joke') || m.includes('funny') || m.includes('laugh')) {
+      const jokes = [
+        'Why did the tax deduction go to therapy? It had too many write-offs!',
+        'What do you call a bot that does taxes? A "de-duct-or"... I\'ll see myself out.',
+        'GamerPartyBot told me this one: Why don\'t bots ever get lost? Because they always follow the algorithm!',
+        'JokerBot says: How does a bot file taxes? With a lot of "returns"!',
+        'What\'s SHIELD\'s favorite movie? "The Firewall".'
+      ];
+      return { bot: 'JokerBot', text: jokes[Math.floor(Math.random() * jokes.length)] + '\n\n*GamerPartyBot is cracking up in the background*' };
+    }
+
+    // === DEFAULT ===
+    return { bot: 'The Sarge', text: 'Copy that, Commander. I don\'t have a specific answer for that, but I\'ve logged it.\n' +
+      'For tax data, try asking about: income, deductions, vehicle, Amazon, progress, deadline.\n' +
+      'For commands: /status, /bounty, /mission, /village, /arena, /help\n\n' +
+      'For complex questions, Commander (Opus) handles those in the Claude Code terminal.' };
+  }
+
+  // Chat message persistence (localStorage, Firestore-ready)
+  function loadChatHistory() {
+    try {
+      const hist = JSON.parse(localStorage.getItem('fpcs_chat_history') || '[]');
+      if (hist.length > 0) {
+        const msgsEl = document.getElementById('chatMessages');
+        hist.forEach(function(h) {
+          msgsEl.innerHTML += '<div class="chat-msg ' + h.role + '"><div class="msg-name">' + escapeHtml(h.name) + '</div>' + escapeHtml(h.text) + '</div>';
+        });
+        msgsEl.scrollTop = msgsEl.scrollHeight;
+      }
+    } catch(e) {}
+  }
+  function saveChatMessage(role, name, text) {
+    try {
+      var hist = JSON.parse(localStorage.getItem('fpcs_chat_history') || '[]');
+      hist.push({ role: role, name: name, text: text, ts: Date.now() });
+      if (hist.length > 100) hist = hist.slice(-100); // keep last 100
+      localStorage.setItem('fpcs_chat_history', JSON.stringify(hist));
+    } catch(e) {}
+  }
 
   async function sendChat() {
     const input = document.getElementById('chatInput');
@@ -1565,41 +1817,269 @@ Answer questions concisely. If asked about specific vendor spending, note that d
 
     // Add user message
     const msgsEl = document.getElementById('chatMessages');
-    msgsEl.innerHTML += '<div class="chat-msg user"><div class="msg-name">You</div>' + escapeHtml(msg) + '</div>';
+    msgsEl.innerHTML += '<div class="chat-msg user"><div class="msg-name">Commander</div>' + escapeHtml(msg) + '</div>';
+    saveChatMessage('user', 'Commander', msg);
     msgsEl.scrollTop = msgsEl.scrollHeight;
 
-    // Show typing indicator
+    // Short delay for realism
     const typingId = 'typing-' + Date.now();
-    msgsEl.innerHTML += '<div class="chat-msg bot" id="' + typingId + '"><div class="msg-name">miniDuctBot1</div><em style="color:var(--muted)">Thinking...</em></div>';
+    msgsEl.innerHTML += '<div class="chat-msg bot" id="' + typingId + '"><div class="msg-name">The Sarge</div><em style="color:var(--muted)">Processing...</em></div>';
     msgsEl.scrollTop = msgsEl.scrollHeight;
 
-    try {
-      const resp = await fetch(OLLAMA_URL + '/api/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: OLLAMA_MODEL,
-          prompt: TAX_CONTEXT + '\n\nUser question: ' + msg,
-          stream: false
-        })
-      });
-      const data = await resp.json();
-      const el = document.getElementById(typingId);
-      if (el) el.innerHTML = '<div class="msg-name">miniDuctBot1 (' + OLLAMA_MODEL + ')</div>' + escapeHtml(data.response || 'No response');
-      document.getElementById('chatStatus').textContent = 'Ollama: Connected | Model: ' + OLLAMA_MODEL + ' | Last query: ' + new Date().toLocaleTimeString();
-      document.getElementById('chatStatus').style.color = 'var(--green)';
-    } catch (err) {
-      const el = document.getElementById(typingId);
-      if (el) el.innerHTML = '<div class="msg-name" style="color:var(--red)">System</div>Could not connect to Ollama at ' + OLLAMA_URL + '. Make sure Ollama is running: <code>ollama serve</code> then <code>ollama pull ' + OLLAMA_MODEL + '</code>';
-      document.getElementById('chatStatus').textContent = 'Ollama: Disconnected | Run: ollama serve && ollama pull ' + OLLAMA_MODEL;
-      document.getElementById('chatStatus').style.color = 'var(--red)';
+    await new Promise(function(r) { setTimeout(r, 300 + Math.random() * 700); });
+
+    // Get Sarge's response
+    const resp = sargeRespond(msg);
+    const el = document.getElementById(typingId);
+    if (el) {
+      el.innerHTML = '<div class="msg-name">' + escapeHtml(resp.bot) + '</div>' + escapeHtml(resp.text).replace(/\n/g, '<br>');
     }
+    saveChatMessage('bot', resp.bot, resp.text);
+    document.getElementById('chatStatus').textContent = 'Sarge: Online | Last response: ' + new Date().toLocaleTimeString();
+    document.getElementById('chatStatus').style.color = 'var(--green)';
     msgsEl.scrollTop = msgsEl.scrollHeight;
   }
 
   function escapeHtml(s) {
     return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
+
+  // Load chat history on page load
+  loadChatHistory();
+
+  // ===== BOUNTY BOARD =====
+  const DEFAULT_BOUNTIES = [
+    { id: 'b-001', title: 'Discover new 2022 tax write-offs', desc: 'Find legitimate deductions we haven\'t claimed yet. Research IRS Schedule C categories for PC repair/tech support businesses.', cat: 'tax-writeoff', xp: 500, status: 'open', created: '2026-02-19', claimedBy: null },
+    { id: 'b-002', title: 'Classify 842 Amazon orders (biz vs personal)', desc: 'Export Amazon 2022 order history and classify each order as business or personal. Business orders become additional deductions.', cat: 'data-quality', xp: 300, status: 'open', created: '2026-02-19', claimedBy: null },
+    { id: 'b-003', title: 'Retrieve 3 missing 1099 forms', desc: 'Download 1099-K from Intuit, Consolidated 1099 from TD Ameritrade, and Property/1099 from AGT Mortgage.', cat: 'tax-writeoff', xp: 200, status: 'open', created: '2026-02-19', claimedBy: null },
+    { id: 'b-004', title: 'Calculate home office deduction (Form 8829)', desc: 'Need square footage of home office vs total home. Calculate simplified vs regular method. Determine utility split.', cat: 'painpoint', xp: 150, status: 'open', created: '2026-02-19', claimedBy: null },
+    { id: 'b-005', title: 'Vehicle deduction analysis: mileage vs actual', desc: 'Compare standard mileage ($0.585/mi) vs actual expenses ($3,662+). Need mileage log data from James to finalize.', cat: 'efficiency', xp: 100, status: 'open', created: '2026-02-19', claimedBy: null }
+  ];
+
+  function loadBounties() {
+    try {
+      var saved = JSON.parse(localStorage.getItem('fpcs_bounties'));
+      return saved && saved.length > 0 ? saved : DEFAULT_BOUNTIES;
+    } catch(e) { return DEFAULT_BOUNTIES; }
+  }
+  function persistBounties(b) { localStorage.setItem('fpcs_bounties', JSON.stringify(b)); }
+
+  function renderBounties() {
+    var bounties = loadBounties();
+    var el = document.getElementById('bountyList');
+    if (!el) return;
+    var catColors = { 'tax-writeoff': 'var(--green)', 'automation': 'var(--accent)', 'painpoint': 'var(--orange)', 'data-quality': 'var(--yellow)', 'security': 'var(--red)', 'efficiency': 'var(--accent)', 'creative': 'var(--purple)', 'docs': 'var(--muted)', 'village': 'var(--pink)' };
+    el.innerHTML = bounties.map(function(b) {
+      var color = catColors[b.cat] || 'var(--accent)';
+      var statusBadge = b.status === 'open' ? '<span style="background:rgba(251,191,36,0.2);color:var(--yellow);font-size:10px;padding:2px 8px;border-radius:999px;font-weight:700">OPEN</span>' :
+        b.status === 'claimed' ? '<span style="background:rgba(56,189,248,0.2);color:var(--accent);font-size:10px;padding:2px 8px;border-radius:999px;font-weight:700">CLAIMED: ' + (b.claimedBy||'?') + '</span>' :
+        '<span style="background:rgba(74,222,128,0.2);color:var(--green);font-size:10px;padding:2px 8px;border-radius:999px;font-weight:700">COMPLETE</span>';
+      return '<div style="padding:12px;margin-bottom:8px;border-radius:8px;border-left:4px solid ' + color + ';background:rgba(251,191,36,0.04);cursor:pointer" onclick="claimBounty(\'' + b.id + '\')">' +
+        '<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:4px">' +
+          '<div style="font-weight:700;font-size:14px;color:' + color + '">' + b.title + '</div>' +
+          '<div style="display:flex;align-items:center;gap:8px">' +
+            '<span style="font-weight:800;color:var(--yellow);font-size:14px">' + b.xp + ' XP</span>' +
+            statusBadge +
+          '</div>' +
+        '</div>' +
+        '<div style="font-size:12px;color:var(--muted);margin-top:4px">' + b.desc + '</div>' +
+        '<div style="font-size:10px;color:var(--muted);margin-top:6px">Category: ' + b.cat + ' | Posted: ' + b.created + '</div>' +
+      '</div>';
+    }).join('');
+  }
+
+  function claimBounty(id) {
+    var bounties = loadBounties();
+    var b = bounties.find(function(x) { return x.id === id; });
+    if (!b) return;
+    if (b.status === 'open') {
+      var bot = prompt('Which bot claims this bounty? (e.g., DeductBot, Cruncher, SHIELD)');
+      if (bot) {
+        b.status = 'claimed';
+        b.claimedBy = bot;
+        persistBounties(bounties);
+        renderBounties();
+      }
+    } else if (b.status === 'claimed') {
+      if (confirm('Mark bounty "' + b.title + '" as COMPLETE? (' + b.xp + ' XP to ' + b.claimedBy + ')')) {
+        b.status = 'complete';
+        persistBounties(bounties);
+        renderBounties();
+      }
+    }
+  }
+
+  function openBountyCreator() { document.getElementById('bountyModal').classList.add('open'); }
+  function closeBountyCreator() { document.getElementById('bountyModal').classList.remove('open'); }
+  function saveBounty() {
+    var title = document.getElementById('bountyTitle').value.trim();
+    if (!title) { alert('Bounty title required.'); return; }
+    var bounties = loadBounties();
+    bounties.push({
+      id: 'b-' + Date.now(),
+      title: title,
+      desc: document.getElementById('bountyDesc').value.trim(),
+      cat: document.getElementById('bountyCat').value,
+      xp: parseInt(document.getElementById('bountyXP').value) || 100,
+      status: 'open',
+      created: new Date().toISOString().slice(0,10),
+      claimedBy: null
+    });
+    persistBounties(bounties);
+    renderBounties();
+    closeBountyCreator();
+    document.getElementById('bountyTitle').value = '';
+    document.getElementById('bountyDesc').value = '';
+  }
+  document.getElementById('bountyModal').addEventListener('click', function(e) { if(e.target===this) closeBountyCreator(); });
+
+  // Init bounties
+  renderBounties();
+  if (!localStorage.getItem('fpcs_bounties')) { persistBounties(DEFAULT_BOUNTIES); }
+
+  // === INTERACTIVE ITEMS (Notes, Comments, Priority) ===
+  (function initInteractiveItems() {
+    var NOTES_KEY = 'fpcs_item_notes';
+    var COMMENTS_KEY = 'fpcs_item_comments';
+
+    function loadNotes() { try { return JSON.parse(localStorage.getItem(NOTES_KEY)) || {}; } catch(e) { return {}; } }
+    function saveNotes(n) { localStorage.setItem(NOTES_KEY, JSON.stringify(n)); }
+    function loadComments() { try { return JSON.parse(localStorage.getItem(COMMENTS_KEY)) || {}; } catch(e) { return {}; } }
+    function saveComments(c) { localStorage.setItem(COMMENTS_KEY, JSON.stringify(c)); }
+
+    function getItemId(el) {
+      if (el.dataset.itemId) return el.dataset.itemId;
+      var text = el.querySelector('.title,.c-title,strong');
+      if (text) {
+        var id = 'item-' + text.textContent.trim().replace(/[^a-zA-Z0-9]/g,'').slice(0,40).toLowerCase();
+        el.dataset.itemId = id;
+        return id;
+      }
+      return null;
+    }
+
+    function renderNote(container, itemId) {
+      var notes = loadNotes();
+      var noteEl = container.querySelector('.item-note');
+      if (!noteEl) return;
+      var ta = noteEl.querySelector('textarea');
+      if (ta) ta.value = notes[itemId] || '';
+    }
+
+    function renderComments(container, itemId) {
+      var comments = loadComments();
+      var commentsEl = container.querySelector('.item-comments');
+      if (!commentsEl) return;
+      var list = commentsEl.querySelector('.comment-list');
+      if (!list) return;
+      var itemComments = comments[itemId] || [];
+      list.innerHTML = itemComments.map(function(c) {
+        return '<div class="comment"><span class="c-author">' + c.author + '</span><span class="c-time">' + c.time + '</span><div>' + c.text + '</div></div>';
+      }).join('');
+    }
+
+    function injectActions(items) {
+      items.forEach(function(item, idx) {
+        var id = getItemId(item);
+        if (!id || item.querySelector('.item-actions')) return;
+
+        // Action buttons
+        var actions = document.createElement('div');
+        actions.className = 'item-actions';
+        actions.innerHTML = '<button class="item-btn btn-note" title="Add note">&#128221; Note</button>' +
+          '<button class="item-btn btn-comment" title="Comments">&#128172; Comment</button>' +
+          '<div class="priority-arrows"><button class="arr-up" title="Move up">&#9650;</button><button class="arr-down" title="Move down">&#9660;</button></div>';
+        item.appendChild(actions);
+
+        // Note panel
+        var notePanel = document.createElement('div');
+        notePanel.className = 'item-note';
+        notePanel.innerHTML = '<textarea rows="2" style="width:100%;background:var(--card);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:6px;font-size:12px;resize:vertical" placeholder="Add a note..."></textarea>';
+        item.appendChild(notePanel);
+
+        // Comments panel
+        var commentPanel = document.createElement('div');
+        commentPanel.className = 'item-comments';
+        commentPanel.innerHTML = '<div class="comment-list"></div>' +
+          '<div class="comment-input-row" style="display:flex;gap:4px;margin-top:6px">' +
+          '<input type="text" class="comment-input" style="flex:1;background:var(--card);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:4px 8px;font-size:12px" placeholder="Add comment...">' +
+          '<button class="item-btn btn-post" style="color:var(--green)">Post</button></div>';
+        item.appendChild(commentPanel);
+
+        // Load persisted data
+        renderNote(item, id);
+        renderComments(item, id);
+
+        // Note toggle
+        actions.querySelector('.btn-note').addEventListener('click', function(e) {
+          e.stopPropagation();
+          notePanel.classList.toggle('open');
+          commentPanel.classList.remove('open');
+        });
+
+        // Note save on blur
+        notePanel.querySelector('textarea').addEventListener('blur', function() {
+          var notes = loadNotes();
+          notes[id] = this.value;
+          saveNotes(notes);
+        });
+
+        // Comment toggle
+        actions.querySelector('.btn-comment').addEventListener('click', function(e) {
+          e.stopPropagation();
+          commentPanel.classList.toggle('open');
+          notePanel.classList.remove('open');
+        });
+
+        // Post comment
+        commentPanel.querySelector('.btn-post').addEventListener('click', function(e) {
+          e.stopPropagation();
+          var input = commentPanel.querySelector('.comment-input');
+          var text = input.value.trim();
+          if (!text) return;
+          var comments = loadComments();
+          if (!comments[id]) comments[id] = [];
+          comments[id].push({
+            author: 'Commander',
+            time: new Date().toLocaleString(),
+            text: text
+          });
+          saveComments(comments);
+          renderComments(item, id);
+          input.value = '';
+        });
+
+        // Enter to post
+        commentPanel.querySelector('.comment-input').addEventListener('keydown', function(e) {
+          if (e.key === 'Enter') { e.preventDefault(); commentPanel.querySelector('.btn-post').click(); }
+        });
+
+        // Priority arrows
+        actions.querySelector('.arr-up').addEventListener('click', function(e) {
+          e.stopPropagation();
+          var parent = item.parentNode;
+          var prev = item.previousElementSibling;
+          if (prev && (prev.classList.contains('milestone') || prev.classList.contains('check-item') || prev.classList.contains('tt-step'))) {
+            parent.insertBefore(item, prev);
+          }
+        });
+
+        actions.querySelector('.arr-down').addEventListener('click', function(e) {
+          e.stopPropagation();
+          var parent = item.parentNode;
+          var next = item.nextElementSibling;
+          if (next && (next.classList.contains('milestone') || next.classList.contains('check-item') || next.classList.contains('tt-step'))) {
+            parent.insertBefore(next, item);
+          }
+        });
+      });
+    }
+
+    // Inject into all item types
+    injectActions(document.querySelectorAll('.milestone'));
+    injectActions(document.querySelectorAll('.check-item'));
+    injectActions(document.querySelectorAll('.tt-step'));
+  })();
 
   // === TOKEN HEARTBEAT MONITOR ===
   (function initHeartbeat() {
