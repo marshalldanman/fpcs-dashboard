@@ -115,6 +115,84 @@
   .add-user-form select { background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 8px 12px; color: var(--text); font-size: 13px; outline: none; }
   .add-user-form button { background: var(--admin); color: #fff; border: none; border-radius: 6px; padding: 8px 16px; font-weight: 700; cursor: pointer; }
 
+  /* BUILD MONITOR */
+  .build-view-toggle { display: flex; gap: 4px; margin-bottom: 16px; }
+  .build-view-btn { padding: 6px 14px; border-radius: 6px; border: 1px solid var(--border); background: transparent; color: var(--muted); font-size: 12px; font-weight: 600; cursor: pointer; }
+  .build-view-btn.active { background: rgba(167,139,250,0.1); color: var(--admin); border-color: var(--admin); }
+
+  .build-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 16px; margin-bottom: 12px; transition: all 0.15s; }
+  .build-card:hover { border-color: var(--admin-border); }
+  .build-card.expanded .build-detail { display: block; }
+
+  .build-header { display: flex; align-items: center; gap: 12px; cursor: pointer; flex-wrap: wrap; }
+  .build-status { font-size: 11px; padding: 3px 10px; border-radius: 999px; font-weight: 700; white-space: nowrap; }
+  .status-planned { background: rgba(107,114,128,0.25); color: #9ca3af; }
+  .status-progress { background: rgba(59,130,246,0.2); color: #60a5fa; }
+  .status-hold { background: rgba(245,158,11,0.2); color: #fbbf24; }
+  .status-testing { background: rgba(139,92,246,0.2); color: #a78bfa; }
+  .status-done { background: rgba(16,185,129,0.2); color: #34d399; }
+  .status-failed { background: rgba(239,68,68,0.2); color: #f87171; }
+
+  .build-name { font-size: 15px; font-weight: 700; color: var(--text); flex: 1; }
+  .build-meta { display: flex; gap: 12px; align-items: center; font-size: 11px; color: var(--muted); flex-wrap: wrap; }
+  .build-meta-item { display: flex; align-items: center; gap: 4px; }
+
+  .build-progress-wrap { width: 100%; height: 6px; background: #1e293b; border-radius: 3px; margin: 10px 0 6px; overflow: hidden; }
+  .build-progress-fill { height: 100%; border-radius: 3px; transition: width 0.3s ease; }
+
+  .build-last-action { font-size: 12px; color: var(--muted); font-style: italic; margin-bottom: 6px; }
+
+  .build-actions { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+  .build-action-btn { font-size: 11px; padding: 4px 12px; border-radius: 5px; border: 1px solid var(--border); background: transparent; color: var(--muted); cursor: pointer; transition: all 0.1s; }
+  .build-action-btn:hover { border-color: var(--admin); color: var(--admin); }
+  .build-action-btn.hold { border-color: rgba(245,158,11,0.4); color: #fbbf24; }
+  .build-action-btn.hold:hover { background: rgba(245,158,11,0.1); }
+  .build-action-btn.done-btn { border-color: rgba(16,185,129,0.4); color: #34d399; }
+  .build-action-btn.done-btn:hover { background: rgba(16,185,129,0.1); }
+
+  .build-detail { display: none; margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border); }
+
+  .build-comments { max-height: 200px; overflow-y: auto; margin-bottom: 10px; display: flex; flex-direction: column; gap: 6px; }
+  .build-comment { display: flex; gap: 8px; font-size: 12px; line-height: 1.5; padding: 6px 8px; border-radius: 6px; }
+  .build-comment.bot-comment { background: rgba(34,211,238,0.06); }
+  .build-comment.user-comment { background: rgba(167,139,250,0.06); }
+  .build-comment-avatar { font-size: 14px; flex-shrink: 0; width: 20px; text-align: center; }
+  .build-comment-body { flex: 1; }
+  .build-comment-author { font-weight: 700; color: var(--text); font-size: 11px; }
+  .build-comment-time { font-size: 10px; color: var(--muted); margin-left: 6px; }
+  .build-comment-text { color: var(--muted); }
+
+  .build-comment-input { display: flex; gap: 6px; }
+  .build-comment-input input { flex: 1; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 6px 10px; color: var(--text); font-size: 12px; outline: none; }
+  .build-comment-input input:focus { border-color: var(--admin); }
+  .build-comment-input button { background: var(--admin); color: #fff; border: none; border-radius: 6px; padding: 6px 12px; font-size: 11px; font-weight: 700; cursor: pointer; }
+
+  .build-tokens { display: flex; gap: 16px; margin-top: 10px; flex-wrap: wrap; }
+  .build-token-stat { font-size: 12px; }
+  .build-token-stat .token-label { color: var(--muted); font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .build-token-stat .token-val { color: var(--text); font-weight: 700; font-size: 14px; }
+
+  /* KANBAN VIEW */
+  .build-kanban { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+  .kanban-col { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 10px; min-height: 200px; }
+  .kanban-col-header { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; padding: 6px 8px; margin-bottom: 8px; border-radius: 6px; text-align: center; }
+  .kanban-item { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 10px; margin-bottom: 8px; cursor: pointer; transition: all 0.15s; }
+  .kanban-item:hover { border-color: var(--admin-border); }
+  .kanban-item-name { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+  .kanban-item-meta { font-size: 11px; color: var(--muted); }
+  .kanban-item-progress { height: 3px; background: #1e293b; border-radius: 2px; margin-top: 6px; overflow: hidden; }
+  .kanban-item-progress-fill { height: 100%; border-radius: 2px; }
+
+  /* ACTIVITY FEED */
+  .activity-feed { max-height: 400px; overflow-y: auto; }
+  .activity-item { display: flex; gap: 10px; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.04); font-size: 12px; }
+  .activity-item:last-child { border-bottom: none; }
+  .activity-icon { font-size: 14px; flex-shrink: 0; width: 20px; text-align: center; margin-top: 2px; }
+  .activity-body { flex: 1; }
+  .activity-title { color: var(--text); font-weight: 600; }
+  .activity-desc { color: var(--muted); margin-top: 2px; }
+  .activity-time { font-size: 10px; color: var(--muted); flex-shrink: 0; min-width: 60px; text-align: right; }
+
   @media (max-width: 768px) {
     .admin-tabs { gap: 2px; }
     .admin-tab { padding: 8px 12px; font-size: 12px; }
@@ -151,6 +229,7 @@
     <button class="admin-tab active" data-panel="shaper"><span class="tab-icon">&#128220;</span> Project Shaper</button>
     <button class="admin-tab" data-panel="users"><span class="tab-icon">&#128101;</span> Users</button>
     <button class="admin-tab" data-panel="audit"><span class="tab-icon">&#128203;</span> Audit Log</button>
+    <button class="admin-tab" data-panel="builds"><span class="tab-icon">&#128736;</span> Builds</button>
     <button class="admin-tab" data-panel="system"><span class="tab-icon">&#9881;</span> System</button>
     <button class="admin-tab" data-panel="settings"><span class="tab-icon">&#128295;</span> Settings</button>
   </div>
@@ -577,6 +656,351 @@
     </div>
   </div>
 
+  <!-- ==================== BUILD MONITOR TAB ==================== -->
+  <div class="admin-panel" id="panel-builds">
+    <div class="section" id="sec-builds">
+      <h2 style="color:var(--admin)">&#128736; Build Monitor &mdash; Major Builds &amp; Progress</h2>
+      <p style="color:var(--muted); font-size:13px; margin-bottom:16px;">
+        Track every major build, feature, and system upgrade. Chat, comment, hold, or complete builds. Click any build to expand details.
+      </p>
+
+      <!-- VIEW TOGGLE -->
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:8px;">
+        <div class="build-view-toggle">
+          <button class="build-view-btn active" data-view="list">&#9776; List</button>
+          <button class="build-view-btn" data-view="board">&#9638; Board</button>
+          <button class="build-view-btn" data-view="feed">&#128337; Activity</button>
+        </div>
+        <div style="display:flex; gap:6px; flex-wrap:wrap;">
+          <button class="shaper-filter active" data-bfilter="all">All</button>
+          <button class="shaper-filter" data-bfilter="progress">In Progress</button>
+          <button class="shaper-filter" data-bfilter="hold">On Hold</button>
+          <button class="shaper-filter" data-bfilter="planned">Planned</button>
+          <button class="shaper-filter" data-bfilter="done">Done</button>
+        </div>
+      </div>
+
+      <!-- ===== LIST VIEW ===== -->
+      <div id="buildListView">
+
+        <!-- BUILD 1: Phase 1 Modular Architecture -->
+        <div class="build-card" data-status="done" data-build="phase1">
+          <div class="build-header" onclick="this.parentElement.classList.toggle('expanded')">
+            <span class="build-status status-done">&#10004; Done</span>
+            <span class="build-name">Phase 1: Modular Architecture</span>
+            <div class="build-meta">
+              <span class="build-meta-item">&#128197; Feb 22</span>
+              <span class="build-meta-item">&#128172; 3</span>
+              <span class="build-meta-item">&#128196; 12 files</span>
+            </div>
+          </div>
+          <div class="build-progress-wrap"><div class="build-progress-fill" style="width:100%; background:linear-gradient(90deg,#10b981,#34d399)"></div></div>
+          <div class="build-last-action">Deployed: Thin shell pages + shared CSS/JS modules + 3-tier auth</div>
+          <div class="build-actions">
+            <button class="build-action-btn" onclick="this.closest('.build-card').classList.toggle('expanded')">&#128172; Comments</button>
+            <button class="build-action-btn">&#128203; View Log</button>
+          </div>
+          <div class="build-detail">
+            <div class="build-tokens">
+              <div class="build-token-stat"><div class="token-label">Files Changed</div><div class="token-val">12</div></div>
+              <div class="build-token-stat"><div class="token-label">Lines Added</div><div class="token-val">1,485</div></div>
+              <div class="build-token-stat"><div class="token-label">Lines Removed</div><div class="token-val">909</div></div>
+              <div class="build-token-stat"><div class="token-label">Sessions</div><div class="token-val">4</div></div>
+            </div>
+            <div class="build-comments" style="margin-top:10px">
+              <div class="build-comment bot-comment"><span class="build-comment-avatar">&#129302;</span><div class="build-comment-body"><span class="build-comment-author">JapsterPro<span class="build-comment-time">Feb 22</span></span><div class="build-comment-text">All 7 pages converted to thin shells. 909 lines of duplicated code eliminated.</div></div></div>
+              <div class="build-comment bot-comment"><span class="build-comment-avatar">&#129302;</span><div class="build-comment-body"><span class="build-comment-author">JapsterPro<span class="build-comment-time">Feb 22</span></span><div class="build-comment-text">3-tier auth deployed: admin, member, guest. Judith can log in now.</div></div></div>
+              <div class="build-comment user-comment"><span class="build-comment-avatar">&#128081;</span><div class="build-comment-body"><span class="build-comment-author">Commander<span class="build-comment-time">Feb 22</span></span><div class="build-comment-text">Tell Judith she can try her login. She is waiting.</div></div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- BUILD 2: Admin HQ -->
+        <div class="build-card" data-status="done" data-build="admin">
+          <div class="build-header" onclick="this.parentElement.classList.toggle('expanded')">
+            <span class="build-status status-done">&#10004; Done</span>
+            <span class="build-name">Admin HQ (Page 8) + Project Shaper</span>
+            <div class="build-meta">
+              <span class="build-meta-item">&#128197; Feb 22</span>
+              <span class="build-meta-item">&#128172; 1</span>
+              <span class="build-meta-item">&#128196; 2 files</span>
+            </div>
+          </div>
+          <div class="build-progress-wrap"><div class="build-progress-fill" style="width:100%; background:linear-gradient(90deg,#10b981,#34d399)"></div></div>
+          <div class="build-last-action">Deployed: 5-tab admin dashboard with Project Shaper, users, audit, system, settings</div>
+          <div class="build-actions">
+            <button class="build-action-btn" onclick="this.closest('.build-card').classList.toggle('expanded')">&#128172; Comments</button>
+          </div>
+          <div class="build-detail">
+            <div class="build-tokens">
+              <div class="build-token-stat"><div class="token-label">Lines Added</div><div class="token-val">859</div></div>
+              <div class="build-token-stat"><div class="token-label">Tabs</div><div class="token-val">5</div></div>
+            </div>
+            <div class="build-comments" style="margin-top:10px">
+              <div class="build-comment user-comment"><span class="build-comment-avatar">&#128081;</span><div class="build-comment-body"><span class="build-comment-author">Commander<span class="build-comment-time">Feb 22</span></span><div class="build-comment-text">Create an admin section listing the entire project as a conversation, piece by piece, with editable everything.</div></div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- BUILD 3: Multi-World Architecture -->
+        <div class="build-card" data-status="progress" data-build="worlds">
+          <div class="build-header" onclick="this.parentElement.classList.toggle('expanded')">
+            <span class="build-status status-progress">&#9654; In Progress</span>
+            <span class="build-name">Multi-World Architecture</span>
+            <div class="build-meta">
+              <span class="build-meta-item">&#128197; Target: Mar 15</span>
+              <span class="build-meta-item">&#128172; 2</span>
+            </div>
+          </div>
+          <div class="build-progress-wrap"><div class="build-progress-fill" style="width:15%; background:linear-gradient(90deg,#3b82f6,#60a5fa)"></div></div>
+          <div class="build-last-action">Architecture designed. Per-user worlds, invite system, permissions page. Building...</div>
+          <div class="build-actions">
+            <button class="build-action-btn" onclick="this.closest('.build-card').classList.toggle('expanded')">&#128172; Comments</button>
+            <button class="build-action-btn hold">&#9208; Hold</button>
+            <button class="build-action-btn done-btn">&#10004; Complete</button>
+          </div>
+          <div class="build-detail">
+            <div style="font-size:12px;color:var(--muted);line-height:1.6;">
+              <strong style="color:var(--text)">Scope:</strong>
+              <ul style="margin:4px 0 0 16px;">
+                <li>Each user gets their own "world" (independent workspace)</li>
+                <li>Share button → invite email → allow-list auto-add</li>
+                <li>Quick guest preset (no world, just account page + invites)</li>
+                <li>Per-project permissions (view, contribute, edit, manage, admin)</li>
+                <li>Multi-project dropdown switching with residual memory</li>
+                <li>Onboarding with humor, help tips, question marks, graphics</li>
+              </ul>
+            </div>
+            <div class="build-comments" style="margin-top:10px">
+              <div class="build-comment user-comment"><span class="build-comment-avatar">&#128081;</span><div class="build-comment-body"><span class="build-comment-author">Commander<span class="build-comment-time">Feb 22</span></span><div class="build-comment-text">Each user gets their own world. Share button adds to allow-list and sends invite. Guest preset for quick responders.</div></div></div>
+              <div class="build-comment bot-comment"><span class="build-comment-avatar">&#129302;</span><div class="build-comment-body"><span class="build-comment-author">JapsterPro<span class="build-comment-time">Feb 22</span></span><div class="build-comment-text">Architecture captured in plan file. Multi-world, invite system, permissions, and multi-project switching designed.</div></div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- BUILD 4: Build Monitor -->
+        <div class="build-card" data-status="progress" data-build="buildmon">
+          <div class="build-header" onclick="this.parentElement.classList.toggle('expanded')">
+            <span class="build-status status-progress">&#9654; In Progress</span>
+            <span class="build-name">Build Monitor System</span>
+            <div class="build-meta">
+              <span class="build-meta-item">&#128197; Feb 22</span>
+              <span class="build-meta-item">&#128172; 1</span>
+            </div>
+          </div>
+          <div class="build-progress-wrap"><div class="build-progress-fill" style="width:80%; background:linear-gradient(90deg,#3b82f6,#60a5fa)"></div></div>
+          <div class="build-last-action">List view + board view + activity feed built. Research-backed design (CI/CD + Linear + Carbon).</div>
+          <div class="build-actions">
+            <button class="build-action-btn" onclick="this.closest('.build-card').classList.toggle('expanded')">&#128172; Comments</button>
+            <button class="build-action-btn done-btn">&#10004; Complete</button>
+          </div>
+          <div class="build-detail">
+            <div class="build-comments" style="margin-top:10px">
+              <div class="build-comment user-comment"><span class="build-comment-avatar">&#128081;</span><div class="build-comment-body"><span class="build-comment-author">Commander<span class="build-comment-time">Feb 22</span></span><div class="build-comment-text">I need a build section where I can see any new major builds progress and monitor it with chat, comments, on hold buttons.</div></div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- BUILD 5: Firebase RTDB -->
+        <div class="build-card" data-status="planned" data-build="firebase">
+          <div class="build-header" onclick="this.parentElement.classList.toggle('expanded')">
+            <span class="build-status status-planned">&#9679; Planned</span>
+            <span class="build-name">Phase 2: Firebase RTDB — Reactive Data Store</span>
+            <div class="build-meta">
+              <span class="build-meta-item">&#128197; Target: Mar 1</span>
+            </div>
+          </div>
+          <div class="build-progress-wrap"><div class="build-progress-fill" style="width:0%; background:#6b7280"></div></div>
+          <div class="build-last-action">Architecture designed. Dual-layer store (static JSON baseline + RTDB live edits overlay).</div>
+          <div class="build-actions">
+            <button class="build-action-btn" onclick="this.closest('.build-card').classList.toggle('expanded')">&#128172; Comments</button>
+            <button class="build-action-btn" style="border-color:rgba(59,130,246,0.4);color:#60a5fa;">&#9654; Start</button>
+          </div>
+          <div class="build-detail">
+            <div style="font-size:12px;color:var(--muted);line-height:1.6;">
+              <strong style="color:var(--text)">Scope:</strong>
+              <ul style="margin:4px 0 0 16px;">
+                <li>Enable Firebase RTDB in existing project</li>
+                <li>store.js — reactive pub/sub with merge logic</li>
+                <li>BroadcastChannel for same-browser tab sync</li>
+                <li>Dynamic user management (no more hardcoded AUTH_USERS)</li>
+                <li>User preferences, audit logs, project data in cloud</li>
+                <li>Change one number → everything updates everywhere</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- BUILD 6: Widget Registry -->
+        <div class="build-card" data-status="planned" data-build="widgets">
+          <div class="build-header" onclick="this.parentElement.classList.toggle('expanded')">
+            <span class="build-status status-planned">&#9679; Planned</span>
+            <span class="build-name">Phase 3: Component Widget Registry</span>
+            <div class="build-meta">
+              <span class="build-meta-item">&#128197; Target: Mar 8</span>
+            </div>
+          </div>
+          <div class="build-progress-wrap"><div class="build-progress-fill" style="width:0%; background:#6b7280"></div></div>
+          <div class="build-last-action">Zero hardcoded data in HTML. Every number from reactive store. Auto-rendering widgets.</div>
+          <div class="build-actions">
+            <button class="build-action-btn" onclick="this.closest('.build-card').classList.toggle('expanded')">&#128172; Comments</button>
+          </div>
+        </div>
+
+        <!-- BUILD 7: 5-Bot Personal Team -->
+        <div class="build-card" data-status="planned" data-build="bots5">
+          <div class="build-header" onclick="this.parentElement.classList.toggle('expanded')">
+            <span class="build-status status-planned">&#9679; Planned</span>
+            <span class="build-name">5-Bot Personal Team (Per User)</span>
+            <div class="build-meta">
+              <span class="build-meta-item">&#128197; Post-deadline</span>
+            </div>
+          </div>
+          <div class="build-progress-wrap"><div class="build-progress-fill" style="width:0%; background:#6b7280"></div></div>
+          <div class="build-last-action">Receptionist, Poker, Strength, Weakness, Manager bots. Personality profiling. NLP research.</div>
+          <div class="build-actions">
+            <button class="build-action-btn" onclick="this.closest('.build-card').classList.toggle('expanded')">&#128172; Comments</button>
+          </div>
+        </div>
+
+        <!-- BUILD 8: Onboarding UX Upgrade -->
+        <div class="build-card" data-status="planned" data-build="onboard-ux">
+          <div class="build-header" onclick="this.parentElement.classList.toggle('expanded')">
+            <span class="build-status status-planned">&#9679; Planned</span>
+            <span class="build-name">Onboarding UX — Humor, Help Tips, Graphics</span>
+            <div class="build-meta">
+              <span class="build-meta-item">&#128197; Mar 5</span>
+            </div>
+          </div>
+          <div class="build-progress-wrap"><div class="build-progress-fill" style="width:0%; background:#6b7280"></div></div>
+          <div class="build-last-action">Question marks on things, help area with graphics/symbology/topology, simulation testing.</div>
+          <div class="build-actions">
+            <button class="build-action-btn" onclick="this.closest('.build-card').classList.toggle('expanded')">&#128172; Comments</button>
+          </div>
+        </div>
+
+      </div><!-- /buildListView -->
+
+      <!-- ===== KANBAN VIEW ===== -->
+      <div id="buildBoardView" style="display:none;">
+        <div class="build-kanban">
+          <div class="kanban-col">
+            <div class="kanban-col-header" style="background:rgba(107,114,128,0.15);color:#9ca3af;">&#9679; Planned</div>
+            <div class="kanban-item"><div class="kanban-item-name">Firebase RTDB</div><div class="kanban-item-meta">Phase 2 &bull; Target: Mar 1</div><div class="kanban-item-progress"><div class="kanban-item-progress-fill" style="width:0%;background:#6b7280"></div></div></div>
+            <div class="kanban-item"><div class="kanban-item-name">Widget Registry</div><div class="kanban-item-meta">Phase 3 &bull; Target: Mar 8</div><div class="kanban-item-progress"><div class="kanban-item-progress-fill" style="width:0%;background:#6b7280"></div></div></div>
+            <div class="kanban-item"><div class="kanban-item-name">5-Bot Team</div><div class="kanban-item-meta">Post-deadline</div><div class="kanban-item-progress"><div class="kanban-item-progress-fill" style="width:0%;background:#6b7280"></div></div></div>
+            <div class="kanban-item"><div class="kanban-item-name">Onboarding UX</div><div class="kanban-item-meta">Target: Mar 5</div><div class="kanban-item-progress"><div class="kanban-item-progress-fill" style="width:0%;background:#6b7280"></div></div></div>
+          </div>
+          <div class="kanban-col">
+            <div class="kanban-col-header" style="background:rgba(59,130,246,0.15);color:#60a5fa;">&#9654; In Progress</div>
+            <div class="kanban-item"><div class="kanban-item-name">Multi-World Architecture</div><div class="kanban-item-meta">Target: Mar 15 &bull; 15%</div><div class="kanban-item-progress"><div class="kanban-item-progress-fill" style="width:15%;background:#3b82f6"></div></div></div>
+            <div class="kanban-item"><div class="kanban-item-name">Build Monitor</div><div class="kanban-item-meta">Feb 22 &bull; 80%</div><div class="kanban-item-progress"><div class="kanban-item-progress-fill" style="width:80%;background:#3b82f6"></div></div></div>
+          </div>
+          <div class="kanban-col">
+            <div class="kanban-col-header" style="background:rgba(245,158,11,0.15);color:#fbbf24;">&#9208; On Hold</div>
+            <div style="color:var(--muted);font-size:12px;text-align:center;padding:20px;">No builds on hold</div>
+          </div>
+          <div class="kanban-col">
+            <div class="kanban-col-header" style="background:rgba(16,185,129,0.15);color:#34d399;">&#10004; Done</div>
+            <div class="kanban-item"><div class="kanban-item-name">Phase 1: Modular Arch</div><div class="kanban-item-meta">Feb 22 &bull; 12 files</div><div class="kanban-item-progress"><div class="kanban-item-progress-fill" style="width:100%;background:#10b981"></div></div></div>
+            <div class="kanban-item"><div class="kanban-item-name">Admin HQ + Shaper</div><div class="kanban-item-meta">Feb 22 &bull; 859 lines</div><div class="kanban-item-progress"><div class="kanban-item-progress-fill" style="width:100%;background:#10b981"></div></div></div>
+          </div>
+        </div>
+      </div><!-- /buildBoardView -->
+
+      <!-- ===== ACTIVITY FEED VIEW ===== -->
+      <div id="buildFeedView" style="display:none;">
+        <div class="activity-feed">
+          <div style="font-size:12px;font-weight:700;color:var(--admin);padding:8px 0;text-transform:uppercase;letter-spacing:1px;">Today &mdash; Feb 22, 2026</div>
+
+          <div class="activity-item">
+            <span class="activity-icon">&#128274;</span>
+            <div class="activity-body">
+              <div class="activity-title">Admin HQ deployed</div>
+              <div class="activity-desc">Page 8 with Project Shaper, users, audit log, system health, settings. 859 lines added.</div>
+            </div>
+            <span class="activity-time">Just now</span>
+          </div>
+
+          <div class="activity-item">
+            <span class="activity-icon">&#128172;</span>
+            <div class="activity-body">
+              <div class="activity-title">Commander requested Build Monitor</div>
+              <div class="activity-desc">"I need a build section where I can see any new major builds progress and monitor it with chat, comments, on hold buttons."</div>
+            </div>
+            <span class="activity-time">12 min ago</span>
+          </div>
+
+          <div class="activity-item">
+            <span class="activity-icon">&#127758;</span>
+            <div class="activity-body">
+              <div class="activity-title">Commander defined Multi-World Architecture</div>
+              <div class="activity-desc">Per-user worlds, share/invite system, quick guest preset, multi-project switching, permissions page.</div>
+            </div>
+            <span class="activity-time">25 min ago</span>
+          </div>
+
+          <div class="activity-item">
+            <span class="activity-icon">&#128640;</span>
+            <div class="activity-body">
+              <div class="activity-title">Phase 1 deployed to production</div>
+              <div class="activity-desc">12 files changed, 1,485 lines added, 909 removed. All 7 pages + shared CSS/JS + 3-tier auth.</div>
+            </div>
+            <span class="activity-time">45 min ago</span>
+          </div>
+
+          <div class="activity-item">
+            <span class="activity-icon">&#128100;</span>
+            <div class="activity-body">
+              <div class="activity-title">Judith Marshall access enabled</div>
+              <div class="activity-desc">Member tier. Onboarding flow: data sharing checkboxes + contribution survey + boot sequence.</div>
+            </div>
+            <span class="activity-time">45 min ago</span>
+          </div>
+
+          <div class="activity-item">
+            <span class="activity-icon">&#128202;</span>
+            <div class="activity-body">
+              <div class="activity-title">Project Shaper populated</div>
+              <div class="activity-desc">10 sessions of command history captured in timeline format. Raw quotes + AI bullet summaries.</div>
+            </div>
+            <span class="activity-time">30 min ago</span>
+          </div>
+
+          <div style="font-size:12px;font-weight:700;color:var(--muted);padding:12px 0 8px;text-transform:uppercase;letter-spacing:1px;">Earlier Sessions</div>
+
+          <div class="activity-item">
+            <span class="activity-icon">&#129302;</span>
+            <div class="activity-body">
+              <div class="activity-title">ForensicBot deployed</div>
+              <div class="activity-desc">Fund chain tracing, fee reconstruction, refund matching. 14 transfers, 61 refund pairs found.</div>
+            </div>
+            <span class="activity-time">Session 5</span>
+          </div>
+
+          <div class="activity-item">
+            <span class="activity-icon">&#128202;</span>
+            <div class="activity-body">
+              <div class="activity-title">Data pipeline rebuilt</div>
+              <div class="activity-desc">QBO 2,155 → 1,185 clean rows. 970 double-entry duplicates removed. $32,440 deductible identified.</div>
+            </div>
+            <span class="activity-time">Session 2-3</span>
+          </div>
+
+          <div class="activity-item">
+            <span class="activity-icon">&#127968;</span>
+            <div class="activity-body">
+              <div class="activity-title">Dashboard created — 7 pages</div>
+              <div class="activity-desc">Tax HQ, Bot HQ, Deductions, Income, Memory Bank, Japster Hub, Helpdesk. Deployed to dashboard.justout.today.</div>
+            </div>
+            <span class="activity-time">Session 1</span>
+          </div>
+        </div>
+      </div><!-- /buildFeedView -->
+
+    </div>
+  </div>
+
   <!-- ==================== SETTINGS TAB ==================== -->
   <div class="admin-panel" id="panel-settings">
     <div class="section" id="sec-settings">
@@ -682,6 +1106,34 @@
         } else {
           var tags = entry.dataset.tags || '';
           entry.style.display = tags.includes(filter) ? '' : 'none';
+        }
+      });
+    });
+  });
+
+  // --- Build Monitor: View Toggle ---
+  document.querySelectorAll('.build-view-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      document.querySelectorAll('.build-view-btn').forEach(function(b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      var view = btn.dataset.view;
+      document.getElementById('buildListView').style.display = view === 'list' ? '' : 'none';
+      document.getElementById('buildBoardView').style.display = view === 'board' ? '' : 'none';
+      document.getElementById('buildFeedView').style.display = view === 'feed' ? '' : 'none';
+    });
+  });
+
+  // --- Build Monitor: Status Filter ---
+  document.querySelectorAll('[data-bfilter]').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      document.querySelectorAll('[data-bfilter]').forEach(function(b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      var filter = btn.dataset.bfilter;
+      document.querySelectorAll('.build-card').forEach(function(card) {
+        if (filter === 'all') {
+          card.style.display = '';
+        } else {
+          card.style.display = card.dataset.status === filter ? '' : 'none';
         }
       });
     });
@@ -841,6 +1293,7 @@
     active: 'admin',
     sections: [
       { icon: '&#128220;', label: 'Project Shaper', href: '#sec-shaper' },
+      { icon: '&#128736;', label: 'Builds',         href: '#sec-builds' },
       { icon: '&#128101;', label: 'Users',          href: '#sec-users' },
       { icon: '&#128203;', label: 'Audit Log',      href: '#sec-audit' },
       { icon: '&#9881;',   label: 'System',         href: '#sec-system' },
