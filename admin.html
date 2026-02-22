@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin HQ — FPCS Command Center</title>
+<link rel="stylesheet" href="css/core.css">
+<link rel="stylesheet" href="css/nav.css">
+<link rel="stylesheet" href="css/auth.css">
+<style>
+  :root {
+    --admin: #a78bfa; --admin-glow: rgba(167,139,250,0.15);
+    --admin-dark: #7c3aed; --admin-border: rgba(167,139,250,0.25);
+  }
+
+  /* ADMIN ACCESS GATE */
+  .admin-locked { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 60vh; text-align: center; }
+  .admin-locked .lock-big { font-size: 72px; margin-bottom: 16px; }
+  .admin-locked h2 { color: #ef4444; font-size: 22px; margin-bottom: 8px; }
+  .admin-locked p { color: var(--muted); font-size: 14px; }
+
+  /* TAB SYSTEM */
+  .admin-tabs { display: flex; gap: 4px; margin-bottom: 20px; flex-wrap: wrap; border-bottom: 2px solid var(--border); padding-bottom: 0; }
+  .admin-tab { padding: 10px 20px; border: 1px solid transparent; border-bottom: none; border-radius: 8px 8px 0 0; background: transparent; color: var(--muted); font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.15s; position: relative; bottom: -2px; }
+  .admin-tab.active { background: var(--card); color: var(--admin); border-color: var(--border); border-bottom: 2px solid var(--card); }
+  .admin-tab:hover:not(.active) { color: var(--text); background: rgba(167,139,250,0.05); }
+  .admin-tab .tab-icon { margin-right: 6px; }
+  .admin-panel { display: none; }
+  .admin-panel.active { display: block; }
+
+  /* PROJECT SHAPER */
+  .shaper-controls { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; }
+  .shaper-search { flex: 1; min-width: 200px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 8px 14px; color: var(--text); font-size: 13px; outline: none; }
+  .shaper-search:focus { border-color: var(--admin); }
+  .shaper-filter { padding: 6px 14px; border-radius: 6px; border: 1px solid var(--border); background: transparent; color: var(--muted); font-size: 12px; font-weight: 600; cursor: pointer; }
+  .shaper-filter.active { background: rgba(167,139,250,0.1); color: var(--admin); border-color: var(--admin); }
+
+  .shaper-timeline { position: relative; padding-left: 28px; }
+  .shaper-timeline::before { content: ''; position: absolute; left: 8px; top: 0; bottom: 0; width: 2px; background: var(--border); }
+
+  .shaper-entry { position: relative; margin-bottom: 16px; padding: 14px 16px; background: var(--card); border: 1px solid var(--border); border-radius: 10px; transition: all 0.15s; }
+  .shaper-entry:hover { border-color: var(--admin-border); }
+  .shaper-entry::before { content: ''; position: absolute; left: -24px; top: 20px; width: 12px; height: 12px; border-radius: 50%; background: var(--admin); border: 2px solid var(--card); }
+  .shaper-entry.superseded { opacity: 0.6; }
+  .shaper-entry.superseded .shaper-cmd { text-decoration: line-through; color: var(--muted); }
+
+  .shaper-meta { display: flex; gap: 12px; align-items: center; margin-bottom: 8px; flex-wrap: wrap; }
+  .shaper-session { font-size: 11px; font-weight: 700; color: var(--admin); background: rgba(167,139,250,0.12); padding: 2px 8px; border-radius: 4px; }
+  .shaper-date { font-size: 11px; color: var(--muted); }
+  .shaper-tag { font-size: 10px; padding: 2px 6px; border-radius: 3px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+  .shaper-tag.cmd { background: rgba(56,189,248,0.15); color: #38bdf8; }
+  .shaper-tag.vision { background: rgba(251,146,60,0.15); color: #fb923c; }
+  .shaper-tag.arch { background: rgba(74,222,128,0.15); color: #4ade80; }
+  .shaper-tag.data { background: rgba(251,191,36,0.15); color: #fbbf24; }
+  .shaper-tag.bot { background: rgba(167,139,250,0.15); color: #a78bfa; }
+  .shaper-tag.ux { background: rgba(244,114,182,0.15); color: #f472b6; }
+  .shaper-tag.revised { background: rgba(239,68,68,0.15); color: #ef4444; }
+
+  .shaper-cmd { font-size: 14px; color: var(--text); line-height: 1.6; margin-bottom: 8px; font-style: italic; }
+  .shaper-cmd::before { content: '"'; color: var(--admin); font-size: 18px; font-weight: 700; }
+  .shaper-cmd::after { content: '"'; color: var(--admin); font-size: 18px; font-weight: 700; }
+
+  .shaper-response { font-size: 12px; color: var(--muted); line-height: 1.6; padding-left: 12px; border-left: 2px solid var(--border); }
+  .shaper-response ul { margin: 4px 0; padding-left: 16px; }
+  .shaper-response li { margin-bottom: 2px; }
+
+  .shaper-actions { display: flex; gap: 6px; margin-top: 8px; }
+  .shaper-btn { font-size: 11px; padding: 3px 10px; border-radius: 4px; border: 1px solid var(--border); background: transparent; color: var(--muted); cursor: pointer; transition: all 0.1s; }
+  .shaper-btn:hover { border-color: var(--admin); color: var(--admin); }
+
+  /* USER MANAGEMENT */
+  .user-card { display: flex; align-items: center; gap: 16px; padding: 16px; background: var(--card); border: 1px solid var(--border); border-radius: 10px; margin-bottom: 10px; transition: all 0.15s; }
+  .user-card:hover { border-color: var(--admin-border); }
+  .user-avatar { width: 44px; height: 44px; border-radius: 50%; background: var(--admin-glow); display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; }
+  .user-info { flex: 1; }
+  .user-name { font-size: 15px; font-weight: 700; color: var(--text); }
+  .user-email { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .user-role-badge { font-size: 11px; padding: 3px 10px; border-radius: 999px; font-weight: 700; }
+  .role-admin { background: rgba(167,139,250,0.2); color: #a78bfa; }
+  .role-member { background: rgba(56,189,248,0.2); color: #38bdf8; }
+  .role-guest { background: rgba(107,114,128,0.2); color: #6b7280; }
+  .user-last-login { font-size: 11px; color: var(--muted); text-align: right; min-width: 100px; }
+  .user-actions { display: flex; gap: 6px; }
+
+  /* AUDIT LOG */
+  .audit-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .audit-table th { text-align: left; padding: 8px 12px; color: var(--admin); border-bottom: 2px solid var(--border); font-size: 11px; text-transform: uppercase; letter-spacing: 1px; }
+  .audit-table td { padding: 8px 12px; border-bottom: 1px solid var(--border); }
+  .audit-table tr:hover td { background: rgba(167,139,250,0.03); }
+
+  /* SYSTEM CARDS */
+  .sys-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; margin-bottom: 20px; }
+  .sys-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
+  .sys-card h3 { font-size: 13px; color: var(--admin); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .sys-item { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.04); font-size: 13px; }
+  .sys-item:last-child { border-bottom: none; }
+  .sys-val { color: var(--text); font-weight: 600; }
+  .sys-label { color: var(--muted); }
+
+  /* JAPSTER MINI CHATBOX */
+  .admin-chat { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 16px; margin-top: 16px; }
+  .admin-chat h3 { font-size: 13px; color: #22d3ee; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .admin-chat-messages { height: 180px; overflow-y: auto; padding: 8px; background: var(--bg); border-radius: 8px; margin-bottom: 10px; display: flex; flex-direction: column; gap: 6px; }
+  .admin-chat-msg { font-size: 12px; padding: 6px 10px; border-radius: 8px; max-width: 85%; line-height: 1.5; }
+  .admin-chat-msg.bot { align-self: flex-start; background: rgba(34,211,238,0.1); color: var(--text); }
+  .admin-chat-msg.user { align-self: flex-end; background: rgba(167,139,250,0.12); color: var(--text); }
+  .admin-chat-input { display: flex; gap: 8px; }
+  .admin-chat-input input { flex: 1; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 8px 12px; color: var(--text); font-size: 13px; outline: none; }
+  .admin-chat-input input:focus { border-color: #22d3ee; }
+  .admin-chat-input button { background: #22d3ee; color: #0f172a; border: none; border-radius: 6px; padding: 8px 16px; font-weight: 700; font-size: 13px; cursor: pointer; }
+
+  /* ADD USER FORM */
+  .add-user-form { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; }
+  .add-user-form input { flex: 1; min-width: 200px; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 8px 12px; color: var(--text); font-size: 13px; outline: none; }
+  .add-user-form select { background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 8px 12px; color: var(--text); font-size: 13px; outline: none; }
+  .add-user-form button { background: var(--admin); color: #fff; border: none; border-radius: 6px; padding: 8px 16px; font-weight: 700; cursor: pointer; }
+
+  @media (max-width: 768px) {
+    .admin-tabs { gap: 2px; }
+    .admin-tab { padding: 8px 12px; font-size: 12px; }
+    .shaper-controls { flex-direction: column; }
+    .user-card { flex-wrap: wrap; }
+  }
+</style>
+</head>
+<body class="theme-helpdesk">
+<div id="dashContent">
+
+<!-- HEADER -->
+<div class="header" id="top">
+  <h1>&#128274; Admin HQ &mdash; FPCS Command Center</h1>
+  <div class="subtitle">Project management, user control, system health, and the living Project Shaper &bull; Admin-only access &bull; Page 8 of FPCS Dashboard</div>
+</div>
+
+<!-- ADMIN-ONLY CONTENT (shown/hidden by JS based on role) -->
+<div id="adminContent" style="display:none;">
+<div class="container">
+
+  <!-- STAT CARDS -->
+  <div class="grid" id="sec-overview">
+    <div class="stat-card"><div class="stat-number" style="color:var(--admin)">8</div><div class="stat-label">Dashboard Pages</div></div>
+    <div class="stat-card"><div class="stat-number" style="color:var(--green)">3</div><div class="stat-label">Authorized Users</div></div>
+    <div class="stat-card"><div class="stat-number" style="color:#38bdf8">16</div><div class="stat-label">Active Bots</div></div>
+    <div class="stat-card"><div class="stat-number" style="color:var(--yellow)">80%</div><div class="stat-label">Project Progress</div></div>
+    <div class="stat-card"><div class="stat-number" style="color:var(--orange)">16</div><div class="stat-label">Jira Tickets</div></div>
+    <div class="stat-card"><div class="stat-number" style="color:var(--green)">1,185</div><div class="stat-label">Clean Data Rows</div></div>
+  </div>
+
+  <!-- TAB SYSTEM -->
+  <div class="admin-tabs">
+    <button class="admin-tab active" data-panel="shaper"><span class="tab-icon">&#128220;</span> Project Shaper</button>
+    <button class="admin-tab" data-panel="users"><span class="tab-icon">&#128101;</span> Users</button>
+    <button class="admin-tab" data-panel="audit"><span class="tab-icon">&#128203;</span> Audit Log</button>
+    <button class="admin-tab" data-panel="system"><span class="tab-icon">&#9881;</span> System</button>
+    <button class="admin-tab" data-panel="settings"><span class="tab-icon">&#128295;</span> Settings</button>
+  </div>
+
+  <!-- ==================== PROJECT SHAPER TAB ==================== -->
+  <div class="admin-panel active" id="panel-shaper">
+    <div class="section" id="sec-shaper">
+      <h2 style="color:var(--admin)">&#128220; Project Shaper &mdash; Living Command History</h2>
+      <p style="color:var(--muted); font-size:13px; margin-bottom:16px;">
+        Every instruction given, every decision made &mdash; in raw format. Old revisions shown with <span style="text-decoration:line-through;color:var(--muted)">strikethrough</span>. AI responses condensed to bullet points. Scroll the full evolution of this project.
+      </p>
+
+      <!-- CONTROLS -->
+      <div class="shaper-controls">
+        <input type="text" class="shaper-search" id="shaperSearch" placeholder="Search commands, topics, keywords...">
+        <button class="shaper-filter active" data-filter="all">All</button>
+        <button class="shaper-filter" data-filter="cmd">Commands</button>
+        <button class="shaper-filter" data-filter="vision">Vision</button>
+        <button class="shaper-filter" data-filter="arch">Architecture</button>
+        <button class="shaper-filter" data-filter="data">Data</button>
+        <button class="shaper-filter" data-filter="bot">Bots</button>
+        <button class="shaper-filter" data-filter="revised">Revised</button>
+      </div>
+
+      <!-- TIMELINE -->
+      <div class="shaper-timeline" id="shaperTimeline">
+
+        <!-- SESSION 1 -->
+        <div class="shaper-entry" data-tags="data,cmd">
+          <div class="shaper-meta">
+            <span class="shaper-session">Session 1</span>
+            <span class="shaper-date">Feb 2026</span>
+            <span class="shaper-tag data">DATA</span>
+          </div>
+          <div class="shaper-cmd">Process my Outlook emails — 63,587 of them. Cross-reference against QBO, ledger, and bank records. Find every deduction I missed.</div>
+          <div class="shaper-response">
+            <ul>
+              <li>Processed 63,587 Outlook emails, extracted tax-relevant items</li>
+              <li>Cross-referenced QBO (2,155 raw rows), ledger, and bank statements</li>
+              <li>Identified Amazon purchases (842 orders) for classification</li>
+              <li>Built initial data pipeline: rebuild_master.py</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="shaper-entry" data-tags="arch,cmd">
+          <div class="shaper-meta">
+            <span class="shaper-session">Session 1</span>
+            <span class="shaper-date">Feb 2026</span>
+            <span class="shaper-tag arch">ARCH</span>
+          </div>
+          <div class="shaper-cmd">Build me a dashboard. Seven pages. Tax HQ as the main page. Everything visual, everything tracked. I want to see my whole tax situation at a glance.</div>
+          <div class="shaper-response">
+            <ul>
+              <li>Created 7-page dashboard: Tax HQ, Bot HQ, Deductions, Income, Memory Bank, Japster Hub, Helpdesk</li>
+              <li>Deployed to dashboard.justout.today via GitHub Pages</li>
+              <li>Firebase Google Sign-In authentication</li>
+              <li>Each page: stat cards, data tables, progress indicators, filtering</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- SESSION 2-3 -->
+        <div class="shaper-entry" data-tags="data,cmd">
+          <div class="shaper-meta">
+            <span class="shaper-session">Session 2-3</span>
+            <span class="shaper-date">Feb 2026</span>
+            <span class="shaper-tag data">DATA</span>
+          </div>
+          <div class="shaper-cmd">The QBO data has duplicates from double-entry accounting. Clean it up properly — deduplicate, categorize, cross-reference against the ledger.</div>
+          <div class="shaper-response">
+            <ul>
+              <li>QBO raw 2,155 → 1,185 clean rows (removed 970 double-entry duplicates)</li>
+              <li>Built rebuild_master.py, rebuild_crossref.py, apply_categories.py pipeline</li>
+              <li>Ledger matched: 183 rows; unmatched: 562 (~$16K cash deductions to incorporate)</li>
+              <li>Exported to FPCS_2022_FINAL_MASTER.csv and .xlsx (color-coded)</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="shaper-entry" data-tags="bot,cmd">
+          <div class="shaper-meta">
+            <span class="shaper-session">Session 3-4</span>
+            <span class="shaper-date">Feb 2026</span>
+            <span class="shaper-tag bot">BOTS</span>
+          </div>
+          <div class="shaper-cmd">I want bots. A whole village of them. Realbotville. Opus is the commander, The Sarge supervises. Every bot has a specialty. They never talk to strangers.</div>
+          <div class="shaper-response">
+            <ul>
+              <li>Created Realbotville: 16 specialized bots in hierarchical structure</li>
+              <li>Opus (Commander) → The Sarge (Supervisor) → 5 Staff + village bots</li>
+              <li>Report Protocol: "Report 'name'" — Perfect 10 format, 6 categories</li>
+              <li>Library: Vol 1 (Architecture) + Vol 2 (Tricks) + Vol 3 (ForensicBot Research)</li>
+              <li>ForensicBot deployed: fund chain tracing, fee reconstruction, refund matching</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- SESSION 4-5 -->
+        <div class="shaper-entry" data-tags="data,cmd">
+          <div class="shaper-meta">
+            <span class="shaper-session">Session 5</span>
+            <span class="shaper-date">Feb 2026</span>
+            <span class="shaper-tag data">DATA</span>
+          </div>
+          <div class="shaper-cmd">Run a deep audit. ForensicBot needs to find every transfer, refund pair, fee chain. Triple verify everything. I want deep insights.</div>
+          <div class="shaper-response">
+            <ul>
+              <li>ForensicBot analysis: 14 transfers, 61 refund pairs, 39 fees ($1,742), 113 chains</li>
+              <li>Deep Account Audit: 1,469 lines, 17 corrections applied</li>
+              <li>$4,534 missed deductions reviewed and categorized</li>
+              <li>Processor fees reconstructed: $1,742 total</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- SESSION 6-7 -->
+        <div class="shaper-entry" data-tags="arch,cmd">
+          <div class="shaper-meta">
+            <span class="shaper-session">Session 6-7</span>
+            <span class="shaper-date">Feb 2026</span>
+            <span class="shaper-tag arch">ARCH</span>
+          </div>
+          <div class="shaper-cmd">The dashboard pages are too big — 500 to 2200 lines each with duplicated code everywhere. Make it modular. Thin pages, fat shared modules. Write such good code that it is unfailable every step of the way.</div>
+          <div class="shaper-response">
+            <ul>
+              <li>Designed 6-phase modular architecture plan</li>
+              <li>Phase 1: Extract shared CSS (core, nav, auth) + JS (auth, nav) into external files</li>
+              <li>Phase 2-6: Reactive data store, widget registry, pipeline adapter, multi-project, verification</li>
+              <li>Converted deductions.html as proof of concept</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- SESSION 8-9 -->
+        <div class="shaper-entry" data-tags="arch,cmd">
+          <div class="shaper-meta">
+            <span class="shaper-session">Session 8-9</span>
+            <span class="shaper-date">Feb 2026</span>
+            <span class="shaper-tag arch">ARCH</span>
+          </div>
+          <div class="shaper-cmd">Add Judith to the login. Her email is judithmarshall80@gmail.com. She's a member, not admin. Add friendlysales22@gmail.com too.</div>
+          <div class="shaper-response">
+            <ul>
+              <li>Generated SHA-256 hashes for both emails</li>
+              <li>Added to AUTH_USERS array with 'member' role</li>
+              <li>Started multi-user auth with onboarding concept</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- SESSION 10 — MASSIVE VISION -->
+        <div class="shaper-entry" data-tags="vision,cmd">
+          <div class="shaper-meta">
+            <span class="shaper-session">Session 10</span>
+            <span class="shaper-date">Feb 22, 2026</span>
+            <span class="shaper-tag vision">VISION</span>
+          </div>
+          <div class="shaper-cmd">I want a 3-tier access system. Admin, allowed members, and guests. No one on the allow list can see project data. Guests get their own personal workspace — journal, files, bookmarks, smart labels. Not rejected, just limited. Track every login.</div>
+          <div class="shaper-response">
+            <ul>
+              <li>Built 3-tier access: admin (Commander), member (Judith, FriendlySales), guest (unknown emails)</li>
+              <li>Guests get personal workspace: journal, file storage, bookmarks, custom labels — zero project visibility</li>
+              <li>All login attempts logged with email, timestamp, device info</li>
+              <li>Admin panel for allow-list management, role assignment, blocking</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="shaper-entry" data-tags="vision,bot">
+          <div class="shaper-meta">
+            <span class="shaper-session">Session 10</span>
+            <span class="shaper-date">Feb 22, 2026</span>
+            <span class="shaper-tag vision">VISION</span>
+            <span class="shaper-tag bot">BOTS</span>
+          </div>
+          <div class="shaper-cmd">Each allowed user gets 5 personal bots. Receptionist reads them on first login — quick personality assessment, not boring. Poker bot draws out emotions and memories in a gamified format. Strength bot routes their talents. Weakness bot fills gaps gently. Manager bot orchestrates everything. Research dopamine reward systems, NLP, states of receptivity.</div>
+          <div class="shaper-response">
+            <ul>
+              <li>5-bot personal team spec captured: Receptionist, Poker, Strength, Weakness, Manager</li>
+              <li>Receptionist: personality assessment, communication style detection, first experience curation</li>
+              <li>Poker: gamified emotional profiling, memory activation, engagement strategy</li>
+              <li>Manager: orchestrates team, intercedes on poor decisions, tracks progress</li>
+              <li>Research backlog: gamification psychology, NLP techniques, dopamine reward loops</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="shaper-entry" data-tags="vision,ux">
+          <div class="shaper-meta">
+            <span class="shaper-session">Session 10</span>
+            <span class="shaper-date">Feb 22, 2026</span>
+            <span class="shaper-tag vision">VISION</span>
+            <span class="shaper-tag ux">UX</span>
+          </div>
+          <div class="shaper-cmd">Per-user dashboard theming — each person's dashboard looks completely different. Colors, fonts, layout density, dark/light mode. Feel welcome, feel like it's THEIR place. Gentle intervention on poor decisions — not just what they want to hear, what they NEED to hear. Validate feelings while pointing toward truth.</div>
+          <div class="shaper-response">
+            <ul>
+              <li>Per-user CSS custom properties planned: colors, fonts, layout density, mode</li>
+              <li>Preferences stored per-user in localStorage (→ Firebase RTDB Phase 2)</li>
+              <li>Gentle intervention protocol: validate → expand → hope → truth</li>
+              <li>Coach-style messaging molded to personality type</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="shaper-entry" data-tags="data,cmd">
+          <div class="shaper-meta">
+            <span class="shaper-session">Session 10</span>
+            <span class="shaper-date">Feb 22, 2026</span>
+            <span class="shaper-tag data">DATA</span>
+          </div>
+          <div class="shaper-cmd">Judith Marshall — judithmarshall80@gmail.com. Bookkeeper mentality, detail-oriented. Transaction coordinator for a prestigious real estate company in Salem OR, Willamette Valley. Hourly ~$19/hr (W-2) plus per-deal bonus (possibly 1099 / sole proprietor). May not have a formal business name for the bonus work. Dual income needs proper tax classification.</div>
+          <div class="shaper-response">
+            <ul>
+              <li>Profile captured in plan file with role, income structure, communication style</li>
+              <li>Tax implications noted: dual income (W-2 + possible 1099/sole proprietor)</li>
+              <li>Bot team assignment: TBD after onboarding assessment</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="shaper-entry" data-tags="arch,cmd">
+          <div class="shaper-meta">
+            <span class="shaper-session">Session 10</span>
+            <span class="shaper-date">Feb 22, 2026</span>
+            <span class="shaper-tag arch">ARCH</span>
+          </div>
+          <div class="shaper-cmd">Convert all 7 pages to thin shells now. Phase 1 complete. Then deploy so Judith can try her login — she is waiting so prioritize giving her access.</div>
+          <div class="shaper-response">
+            <ul>
+              <li>All 7 pages converted: 909 lines of duplicated code removed</li>
+              <li>Shared CSS: core.css (205 lines), nav.css (78 lines), auth.css (345 lines)</li>
+              <li>Shared JS: auth.js (538 lines), nav.js (121 lines)</li>
+              <li>Deployed to GitHub Pages — Judith can log in at dashboard.justout.today</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="shaper-entry" data-tags="vision,cmd,ux">
+          <div class="shaper-meta">
+            <span class="shaper-session">Session 10</span>
+            <span class="shaper-date">Feb 22, 2026</span>
+            <span class="shaper-tag vision">VISION</span>
+            <span class="shaper-tag ux">UX</span>
+          </div>
+          <div class="shaper-cmd">Create an admin section. List the entire project as a conversation, piece by piece. Editable everything. Japster chatbox for efficient editing. Old revisions shown with strikethrough — total overview, every instruction, stored residually as conversation happens. Admin user's raw words, AI responses in brief bullet points. A Project Shaper page.</div>
+          <div class="shaper-response">
+            <ul>
+              <li>Admin HQ (Page 8) created with Project Shaper as centerpiece</li>
+              <li>Timeline view: all commands in raw format, AI responses as bullets</li>
+              <li>Superseded entries shown with strikethrough (class: superseded)</li>
+              <li>Filter by category: Commands, Vision, Architecture, Data, Bots, Revised</li>
+              <li>Search, user management, audit log, system health tabs</li>
+            </ul>
+          </div>
+        </div>
+
+      </div><!-- /shaper-timeline -->
+
+      <!-- JAPSTER MINI CHATBOX -->
+      <div class="admin-chat">
+        <h3>&#128172; Japster &mdash; Quick Admin Commands</h3>
+        <div class="admin-chat-messages" id="adminChatMessages">
+          <div class="admin-chat-msg bot">Ready, Commander. What needs doing?</div>
+        </div>
+        <div class="admin-chat-input">
+          <input type="text" id="adminChatInput" placeholder="Type a command or ask Japster...">
+          <button id="adminChatSend">Send</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ==================== USERS TAB ==================== -->
+  <div class="admin-panel" id="panel-users">
+    <div class="section" id="sec-users">
+      <h2 style="color:var(--admin)">&#128101; User Management &mdash; Allow-List</h2>
+      <p style="color:var(--muted); font-size:13px; margin-bottom:16px;">
+        Manage authorized users, roles, and access. Only admins can modify this list.
+      </p>
+
+      <!-- ADD USER -->
+      <div class="add-user-form">
+        <input type="email" id="newUserEmail" placeholder="Email address to add...">
+        <select id="newUserRole">
+          <option value="member">Member</option>
+          <option value="admin">Admin</option>
+        </select>
+        <button id="addUserBtn">&#10010; Add User</button>
+      </div>
+
+      <!-- USER LIST -->
+      <div id="userList">
+        <div class="user-card">
+          <div class="user-avatar">&#128081;</div>
+          <div class="user-info">
+            <div class="user-name">Commander (Daniel Marshall)</div>
+            <div class="user-email">Primary admin &bull; Full access</div>
+          </div>
+          <span class="user-role-badge role-admin">ADMIN</span>
+          <div class="user-last-login">Active now</div>
+        </div>
+
+        <div class="user-card">
+          <div class="user-avatar">&#128214;</div>
+          <div class="user-info">
+            <div class="user-name">Judith Marshall</div>
+            <div class="user-email">Transaction coordinator &bull; Bookkeeper &bull; Salem, OR</div>
+          </div>
+          <span class="user-role-badge role-member">MEMBER</span>
+          <div class="user-last-login">Never logged in</div>
+        </div>
+
+        <div class="user-card">
+          <div class="user-avatar">&#128176;</div>
+          <div class="user-info">
+            <div class="user-name">Friendly Sales</div>
+            <div class="user-email">Sales account</div>
+          </div>
+          <span class="user-role-badge role-member">MEMBER</span>
+          <div class="user-last-login">Never logged in</div>
+        </div>
+      </div>
+
+      <!-- GUEST LOG -->
+      <h3 style="color:var(--admin); margin-top:24px;">&#128100; Guest Login Attempts</h3>
+      <p style="color:var(--muted); font-size:12px; margin-bottom:10px;">Unknown emails that signed in. They received guest access (personal workspace only, zero project data).</p>
+      <div id="guestLog" style="color:var(--muted); font-size:13px; font-style:italic;">No guest logins recorded yet.</div>
+    </div>
+  </div>
+
+  <!-- ==================== AUDIT LOG TAB ==================== -->
+  <div class="admin-panel" id="panel-audit">
+    <div class="section" id="sec-audit">
+      <h2 style="color:var(--admin)">&#128203; Audit Log</h2>
+      <p style="color:var(--muted); font-size:13px; margin-bottom:16px;">
+        Every login, action, and system event tracked. Stored in localStorage (Phase 2: Firebase RTDB).
+      </p>
+
+      <table class="audit-table">
+        <thead>
+          <tr>
+            <th>Timestamp</th>
+            <th>User</th>
+            <th>Action</th>
+            <th>Details</th>
+            <th>Tier</th>
+          </tr>
+        </thead>
+        <tbody id="auditTableBody">
+          <tr><td colspan="5" style="color:var(--muted); text-align:center; padding:24px;">Audit log loads from localStorage. Log in from the main dashboard to generate entries.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ==================== SYSTEM TAB ==================== -->
+  <div class="admin-panel" id="panel-system">
+    <div class="section" id="sec-system">
+      <h2 style="color:var(--admin)">&#9881; System Health</h2>
+
+      <div class="sys-grid">
+        <div class="sys-card">
+          <h3>&#128202; Data Pipeline</h3>
+          <div class="sys-item"><span class="sys-label">QBO Raw Rows</span><span class="sys-val">2,155</span></div>
+          <div class="sys-item"><span class="sys-label">Clean Rows</span><span class="sys-val" style="color:var(--green)">1,185</span></div>
+          <div class="sys-item"><span class="sys-label">Dedup Removed</span><span class="sys-val">970</span></div>
+          <div class="sys-item"><span class="sys-label">Deductible Rows</span><span class="sys-val">309</span></div>
+          <div class="sys-item"><span class="sys-label">Total Deductible</span><span class="sys-val" style="color:var(--green)">$32,440</span></div>
+          <div class="sys-item"><span class="sys-label">Ledger Matched</span><span class="sys-val">183</span></div>
+          <div class="sys-item"><span class="sys-label">Ledger Unmatched</span><span class="sys-val" style="color:var(--yellow)">562</span></div>
+        </div>
+
+        <div class="sys-card">
+          <h3>&#128176; Financials</h3>
+          <div class="sys-item"><span class="sys-label">eBay Sales</span><span class="sys-val">$12,932</span></div>
+          <div class="sys-item"><span class="sys-label">Services Income</span><span class="sys-val">$3,921</span></div>
+          <div class="sys-item"><span class="sys-label">Other Income</span><span class="sys-val">$84</span></div>
+          <div class="sys-item"><span class="sys-label">Gross Income</span><span class="sys-val" style="color:var(--green)">$16,936</span></div>
+          <div class="sys-item"><span class="sys-label">Processor Fees</span><span class="sys-val" style="color:var(--red)">($1,742)</span></div>
+          <div class="sys-item"><span class="sys-label">Net Loss</span><span class="sys-val" style="color:var(--red)">($17,247)</span></div>
+        </div>
+
+        <div class="sys-card">
+          <h3>&#129302; Bot Fleet</h3>
+          <div class="sys-item"><span class="sys-label">Total Bots</span><span class="sys-val">16</span></div>
+          <div class="sys-item"><span class="sys-label">Commander</span><span class="sys-val">Opus</span></div>
+          <div class="sys-item"><span class="sys-label">Supervisor</span><span class="sys-val">The Sarge</span></div>
+          <div class="sys-item"><span class="sys-label">ForensicBot</span><span class="sys-val" style="color:var(--green)">DEPLOYED</span></div>
+          <div class="sys-item"><span class="sys-label">Library Volumes</span><span class="sys-val">3</span></div>
+        </div>
+
+        <div class="sys-card">
+          <h3>&#127919; Infrastructure</h3>
+          <div class="sys-item"><span class="sys-label">Hosting</span><span class="sys-val">GitHub Pages</span></div>
+          <div class="sys-item"><span class="sys-label">Auth</span><span class="sys-val">Firebase</span></div>
+          <div class="sys-item"><span class="sys-label">Domain</span><span class="sys-val">dashboard.justout.today</span></div>
+          <div class="sys-item"><span class="sys-label">Repo</span><span class="sys-val">fpcs-dashboard</span></div>
+          <div class="sys-item"><span class="sys-label">Jira Board</span><span class="sys-val">KAN (16 tickets)</span></div>
+          <div class="sys-item"><span class="sys-label">Cost</span><span class="sys-val" style="color:var(--green)">$0/mo</span></div>
+        </div>
+
+        <div class="sys-card">
+          <h3>&#128197; Deadlines</h3>
+          <div class="sys-item"><span class="sys-label">Mail By</span><span class="sys-val" style="color:var(--red)">Apr 10, 2026</span></div>
+          <div class="sys-item"><span class="sys-label">OR Statute</span><span class="sys-val" style="color:var(--red)">Apr 15, 2026</span></div>
+          <div class="sys-item"><span class="sys-label">QBO Expires</span><span class="sys-val" style="color:var(--yellow)">~Apr 2, 2026</span></div>
+          <div class="sys-item"><span class="sys-label">TurboTax Ready</span><span class="sys-val">Mar 15-22</span></div>
+          <div class="sys-item"><span class="sys-label">Days Remaining</span><span class="sys-val" id="daysRemaining" style="color:var(--yellow)">--</span></div>
+        </div>
+
+        <div class="sys-card">
+          <h3>&#128640; Progress</h3>
+          <div class="sys-item"><span class="sys-label">Data Processing</span><span class="sys-val" style="color:var(--green)">95%</span></div>
+          <div class="sys-item"><span class="sys-label">Tax Prep</span><span class="sys-val" style="color:var(--yellow)">60%</span></div>
+          <div class="sys-item"><span class="sys-label">Dashboard</span><span class="sys-val" style="color:var(--green)">100%</span></div>
+          <div class="sys-item"><span class="sys-label">Realbotville</span><span class="sys-val" style="color:var(--yellow)">60%</span></div>
+          <div class="sys-item"><span class="sys-label">Filing</span><span class="sys-val" style="color:var(--red)">0%</span></div>
+          <div class="sys-item"><span class="sys-label">Overall</span><span class="sys-val" style="color:var(--yellow)">80%</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== SETTINGS TAB ==================== -->
+  <div class="admin-panel" id="panel-settings">
+    <div class="section" id="sec-settings">
+      <h2 style="color:var(--admin)">&#128295; Settings &amp; Configuration</h2>
+
+      <div class="sys-grid">
+        <div class="sys-card">
+          <h3>&#127912; Dashboard Theme</h3>
+          <p style="color:var(--muted); font-size:12px; margin-bottom:12px;">Global theme defaults. Per-user overrides planned for Phase 2.</p>
+          <div class="sys-item"><span class="sys-label">Mode</span><span class="sys-val">Dark</span></div>
+          <div class="sys-item"><span class="sys-label">Accent Color</span><span class="sys-val" style="color:var(--accent)">&#9632; Sky Blue</span></div>
+          <div class="sys-item"><span class="sys-label">Font</span><span class="sys-val">system-ui</span></div>
+          <div class="sys-item"><span class="sys-label">Layout Density</span><span class="sys-val">Comfortable</span></div>
+        </div>
+
+        <div class="sys-card">
+          <h3>&#128274; Security</h3>
+          <div class="sys-item"><span class="sys-label">Auth Method</span><span class="sys-val">Google OAuth</span></div>
+          <div class="sys-item"><span class="sys-label">Hash Algorithm</span><span class="sys-val">SHA-256</span></div>
+          <div class="sys-item"><span class="sys-label">Guest Access</span><span class="sys-val" style="color:var(--green)">Enabled</span></div>
+          <div class="sys-item"><span class="sys-label">Login Logging</span><span class="sys-val" style="color:var(--green)">Active</span></div>
+          <div class="sys-item"><span class="sys-label">Blocked Users</span><span class="sys-val">0</span></div>
+        </div>
+
+        <div class="sys-card">
+          <h3>&#128230; Data Storage</h3>
+          <div class="sys-item"><span class="sys-label">Current</span><span class="sys-val">localStorage</span></div>
+          <div class="sys-item"><span class="sys-label">Phase 2</span><span class="sys-val" style="color:var(--muted)">Firebase RTDB</span></div>
+          <div class="sys-item"><span class="sys-label">Backup</span><span class="sys-val" style="color:var(--muted)">Planned</span></div>
+          <div class="sys-item"><span class="sys-label">Export</span><span class="sys-val" style="color:var(--muted)">Planned</span></div>
+        </div>
+
+        <div class="sys-card">
+          <h3>&#128640; Future Build-Outs</h3>
+          <p style="color:var(--muted); font-size:12px;">Queued for post-deadline development:</p>
+          <div class="sys-item"><span class="sys-label">Firebase RTDB</span><span class="sys-val" style="color:var(--yellow)">Phase 2</span></div>
+          <div class="sys-item"><span class="sys-label">Widget Registry</span><span class="sys-val" style="color:var(--muted)">Phase 3</span></div>
+          <div class="sys-item"><span class="sys-label">Pipeline Adapter</span><span class="sys-val" style="color:var(--muted)">Phase 4</span></div>
+          <div class="sys-item"><span class="sys-label">Multi-Project</span><span class="sys-val" style="color:var(--muted)">Phase 5</span></div>
+          <div class="sys-item"><span class="sys-label">Verification</span><span class="sys-val" style="color:var(--muted)">Phase 6</span></div>
+        </div>
+      </div>
+
+      <button class="btn" style="background:var(--admin); margin-top:12px;" id="updateBtn">&#128260; Check for Updates</button>
+    </div>
+  </div>
+
+</div><!-- /container -->
+
+<div class="footer">
+  FPCS Tax Preparation System &bull; Admin HQ v1.0 &bull; Page 8 &bull; Command Center &amp; Project Shaper &bull; TRAILS
+</div>
+</div><!-- /adminContent -->
+
+<!-- NON-ADMIN BLOCK -->
+<div id="adminLocked" style="display:none;">
+  <div class="admin-locked">
+    <div class="lock-big">&#128274;</div>
+    <h2>Admin Access Required</h2>
+    <p>This page is restricted to administrators only.<br>Contact the Commander for access.</p>
+  </div>
+</div>
+
+</div><!-- /dashContent -->
+
+<!-- PAGE SCRIPTS -->
+<script>
+(function() {
+  'use strict';
+
+  // --- Tab System ---
+  document.querySelectorAll('.admin-tab').forEach(function(tab) {
+    tab.addEventListener('click', function() {
+      document.querySelectorAll('.admin-tab').forEach(function(t) { t.classList.remove('active'); });
+      document.querySelectorAll('.admin-panel').forEach(function(p) { p.classList.remove('active'); });
+      tab.classList.add('active');
+      var panel = document.getElementById('panel-' + tab.dataset.panel);
+      if (panel) panel.classList.add('active');
+    });
+  });
+
+  // --- Shaper Search ---
+  var searchInput = document.getElementById('shaperSearch');
+  if (searchInput) {
+    searchInput.addEventListener('input', function() {
+      var query = this.value.toLowerCase();
+      document.querySelectorAll('.shaper-entry').forEach(function(entry) {
+        var text = entry.textContent.toLowerCase();
+        entry.style.display = text.includes(query) ? '' : 'none';
+      });
+    });
+  }
+
+  // --- Shaper Filters ---
+  document.querySelectorAll('.shaper-filter').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      document.querySelectorAll('.shaper-filter').forEach(function(b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      var filter = btn.dataset.filter;
+      document.querySelectorAll('.shaper-entry').forEach(function(entry) {
+        if (filter === 'all') {
+          entry.style.display = '';
+        } else {
+          var tags = entry.dataset.tags || '';
+          entry.style.display = tags.includes(filter) ? '' : 'none';
+        }
+      });
+    });
+  });
+
+  // --- Days Remaining Calculator ---
+  var daysEl = document.getElementById('daysRemaining');
+  if (daysEl) {
+    var deadline = new Date('2026-04-10');
+    var today = new Date();
+    var diff = Math.ceil((deadline - today) / (1000 * 60 * 60 * 24));
+    daysEl.textContent = diff + ' days';
+    daysEl.style.color = diff < 14 ? 'var(--red)' : diff < 30 ? 'var(--yellow)' : 'var(--green)';
+  }
+
+  // --- Audit Log Loader ---
+  function loadAuditLog() {
+    var tbody = document.getElementById('auditTableBody');
+    if (!tbody) return;
+    try {
+      var logs = JSON.parse(localStorage.getItem('fpcs_login_log') || '[]');
+      if (logs.length === 0) return;
+      var html = '';
+      logs.slice().reverse().forEach(function(entry) {
+        html += '<tr>';
+        html += '<td>' + new Date(entry.timestamp).toLocaleString() + '</td>';
+        html += '<td>' + (entry.label || entry.email || 'Unknown') + '</td>';
+        html += '<td>Login</td>';
+        html += '<td style="font-size:11px;color:var(--muted)">' + (entry.device || '-') + '</td>';
+        html += '<td><span class="user-role-badge role-' + (entry.role || 'guest') + '">' + (entry.role || 'guest').toUpperCase() + '</span></td>';
+        html += '</tr>';
+      });
+      tbody.innerHTML = html;
+    } catch (e) {
+      console.warn('[Admin] Could not load audit log:', e);
+    }
+  }
+
+  // --- Japster Mini Chat ---
+  var chatInput = document.getElementById('adminChatInput');
+  var chatSend = document.getElementById('adminChatSend');
+  var chatMessages = document.getElementById('adminChatMessages');
+
+  function addChatMessage(text, type) {
+    if (!chatMessages) return;
+    var div = document.createElement('div');
+    div.className = 'admin-chat-msg ' + type;
+    div.textContent = text;
+    chatMessages.appendChild(div);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+  }
+
+  function handleAdminChat() {
+    if (!chatInput) return;
+    var msg = chatInput.value.trim();
+    if (!msg) return;
+    addChatMessage(msg, 'user');
+    chatInput.value = '';
+
+    // Simple command responses (expand with real bot integration later)
+    var lower = msg.toLowerCase();
+    setTimeout(function() {
+      if (lower.includes('status') || lower.includes('progress')) {
+        addChatMessage('Project is at 80% overall. Data: 95%, Tax Prep: 60%, Dashboard: 100%, Bots: 60%, Filing: 0%. Deadline: April 10.', 'bot');
+      } else if (lower.includes('users') || lower.includes('who')) {
+        addChatMessage('3 authorized users: Commander (admin), Judith Marshall (member), Friendly Sales (member). 0 guest logins recorded.', 'bot');
+      } else if (lower.includes('deadline') || lower.includes('days')) {
+        var d = new Date('2026-04-10');
+        var diff = Math.ceil((d - new Date()) / 86400000);
+        addChatMessage('Mail-by deadline: April 10, 2026. That\'s ' + diff + ' days from now. Oregon statute expires April 15.', 'bot');
+      } else if (lower.includes('help')) {
+        addChatMessage('Commands I understand: status, users, deadline, jira, data, bots. Full AI integration coming in Phase 2.', 'bot');
+      } else if (lower.includes('jira')) {
+        addChatMessage('Jira board: KAN project, 16 tickets total, 3 done. Board: friendlypc.atlassian.net/browse/KAN-1', 'bot');
+      } else if (lower.includes('data') || lower.includes('numbers')) {
+        addChatMessage('1,185 clean rows. $32,440 deductible. Gross income $16,936. Net loss ($17,247). 562 unmatched ledger entries (~$16K) still to incorporate.', 'bot');
+      } else if (lower.includes('bot')) {
+        addChatMessage('16 bots in Realbotville. Opus commands, Sarge supervises. ForensicBot deployed and active. Library: 3 volumes.', 'bot');
+      } else {
+        addChatMessage('Got it, Commander. I\'ll queue that for processing. Full AI chat integration coming in Phase 2 with Firebase RTDB.', 'bot');
+      }
+    }, 400);
+  }
+
+  if (chatSend) chatSend.addEventListener('click', handleAdminChat);
+  if (chatInput) chatInput.addEventListener('keypress', function(e) { if (e.key === 'Enter') handleAdminChat(); });
+
+  // --- Add User (placeholder) ---
+  var addBtn = document.getElementById('addUserBtn');
+  if (addBtn) {
+    addBtn.addEventListener('click', function() {
+      var email = document.getElementById('newUserEmail').value.trim();
+      if (!email) return;
+      alert('Add user: ' + email + '\n\nThis will generate a SHA-256 hash and add to AUTH_USERS in auth.js.\nFull implementation coming in Phase 2 (Firebase RTDB for dynamic user management).');
+      document.getElementById('newUserEmail').value = '';
+    });
+  }
+
+  // --- Update Button ---
+  var updateBtn = document.getElementById('updateBtn');
+  if (updateBtn) {
+    updateBtn.addEventListener('click', function() {
+      updateBtn.textContent = '&#9989; System up to date';
+      updateBtn.style.background = 'var(--green)';
+      setTimeout(function() {
+        updateBtn.innerHTML = '&#128260; Check for Updates';
+        updateBtn.style.background = 'var(--admin)';
+      }, 2000);
+    });
+  }
+
+  // --- Admin Access Gate ---
+  // Wait for auth to complete, then check role
+  window.addEventListener('fpcs-authed', function() {
+    var user = window.FPCS_USER || {};
+    var adminContent = document.getElementById('adminContent');
+    var adminLocked = document.getElementById('adminLocked');
+    if (user.role === 'admin') {
+      if (adminContent) adminContent.style.display = '';
+      if (adminLocked) adminLocked.style.display = 'none';
+      loadAuditLog();
+    } else {
+      if (adminContent) adminContent.style.display = 'none';
+      if (adminLocked) adminLocked.style.display = '';
+    }
+  });
+
+  // Fallback: check after 3 seconds if event didn't fire
+  setTimeout(function() {
+    var user = window.FPCS_USER || {};
+    var adminContent = document.getElementById('adminContent');
+    var adminLocked = document.getElementById('adminLocked');
+    if (user.role === 'admin') {
+      if (adminContent) adminContent.style.display = '';
+      if (adminLocked) adminLocked.style.display = 'none';
+      loadAuditLog();
+    } else if (user.email) {
+      if (adminContent) adminContent.style.display = 'none';
+      if (adminLocked) adminLocked.style.display = '';
+    }
+  }, 3000);
+
+})();
+</script>
+
+<!-- FPCS CONFIG -->
+<script>
+  window.FPCS_PAGE = {
+    name: 'Admin HQ',
+    theme: 'theme-admin',
+    onAuthed: function(user) {
+      // Dispatch custom event for admin gate
+      window.dispatchEvent(new Event('fpcs-authed'));
+    }
+  };
+  window.FPCS_NAV = {
+    active: 'admin',
+    sections: [
+      { icon: '&#128220;', label: 'Project Shaper', href: '#sec-shaper' },
+      { icon: '&#128101;', label: 'Users',          href: '#sec-users' },
+      { icon: '&#128203;', label: 'Audit Log',      href: '#sec-audit' },
+      { icon: '&#9881;',   label: 'System',         href: '#sec-system' },
+      { icon: '&#128295;', label: 'Settings',       href: '#sec-settings' }
+    ]
+  };
+</script>
+
+<!-- AUTH & NAV -->
+<script src="js/auth.js"></script>
+<script src="js/nav.js"></script>
+<script src="bot-assistant.js"></script>
+</body>
+</html>

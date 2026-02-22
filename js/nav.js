@@ -26,7 +26,8 @@
     { key: 'income',     icon: '&#128176;', label: 'Income (Page 4)',    href: 'income.html',     color: '' },
     { key: 'memory',     icon: '&#128218;', label: 'Memory Bank (Page 5)', href: 'memory.html',   color: '' },
     { key: 'japster',    icon: '&#128172;', label: 'Japster Hub (Page 6)', href: 'japster.html',  color: '#22d3ee' },
-    { key: 'helpdesk',   icon: '&#127915;', label: 'Helpdesk (Page 7)',  href: 'helpdesk.html',   color: 'var(--orange)' }
+    { key: 'helpdesk',   icon: '&#127915;', label: 'Helpdesk (Page 7)',  href: 'helpdesk.html',   color: 'var(--orange)' },
+    { key: 'admin',      icon: '&#128274;', label: 'Admin HQ (Page 8)', href: 'admin.html',      color: 'var(--purple)' }
   ];
 
   // --- Read page config ---
