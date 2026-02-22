@@ -4,42 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Deductions HQ — FPCS Tax Command</title>
+<!-- Shared Modules -->
+<link rel="stylesheet" href="css/core.css">
+<link rel="stylesheet" href="css/nav.css">
+<link rel="stylesheet" href="css/auth.css">
 <style>
-  :root {
-    --bg: #0f172a; --card: #1e293b; --accent: #38bdf8; --green: #4ade80;
-    --yellow: #fbbf24; --red: #f87171; --text: #e2e8f0; --muted: #94a3b8;
-    --border: #334155; --purple: #a78bfa; --orange: #fb923c; --pink: #f472b6;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding-left: 54px; }
-  .header { background: linear-gradient(135deg, #1a3a2f 0%, #0f172a 100%); padding: 24px 32px; border-bottom: 2px solid var(--green); }
-  .header h1 { font-size: 28px; color: var(--green); display: flex; align-items: center; gap: 12px; }
-  .header .subtitle { color: var(--muted); margin-top: 4px; font-size: 14px; }
-  .container { max-width: 1400px; margin: 0 auto; padding: 24px; }
-  .section { background: var(--card); border-radius: 12px; padding: 24px; margin-bottom: 20px; border: 1px solid var(--border); }
-  .section h2 { font-size: 18px; margin-bottom: 16px; color: var(--accent); display: flex; align-items: center; gap: 8px; }
+  /* === PAGE-SPECIFIC: Deductions HQ === */
 
-  /* NAV RAIL */
-  .nav-rail { position: fixed; left: 0; top: 0; width: 54px; height: 100vh; background: var(--card); border-right: 1px solid var(--border); display: flex; flex-direction: column; align-items: center; padding: 12px 0; gap: 4px; z-index: 100; overflow-y: auto; }
-  .nav-link { display: flex; flex-direction: column; align-items: center; text-decoration: none; color: var(--muted); padding: 8px 4px; border-radius: 8px; width: 48px; text-align: center; transition: all 0.2s; }
-  .nav-link:hover { background: rgba(56,189,248,0.08); color: var(--accent); }
-  .nav-link.active { background: rgba(74,222,128,0.1); color: var(--green); }
-  .nav-icon { font-size: 20px; }
-  .nav-label { font-size: 8px; margin-top: 2px; line-height: 1.1; }
-  .nav-sep { width: 32px; height: 1px; background: var(--border); margin: 4px 0; }
-
-  /* AUTH */
-  .auth-gate { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; text-align: center; }
-  .auth-gate h1 { color: var(--green); font-size: 32px; margin-bottom: 8px; }
-  .auth-sub { color: var(--muted); margin-bottom: 24px; }
-  .g-btn { display: flex; align-items: center; gap: 12px; padding: 12px 24px; border: 1px solid var(--border); border-radius: 8px; background: var(--card); color: var(--text); cursor: pointer; font-size: 15px; }
-  .g-btn:hover { border-color: var(--accent); }
-  .g-btn svg { width: 20px; height: 20px; }
-  .auth-err { color: var(--red); margin-top: 12px; font-size: 13px; }
-  .auth-loading { color: var(--muted); margin-top: 8px; font-size: 12px; }
-  #dashContent { display: none; }
-
-  /* YEAR TABS */
+  /* Year Tabs */
   .year-tabs { display: flex; gap: 4px; margin-bottom: 20px; flex-wrap: wrap; }
   .year-tab { padding: 10px 20px; border-radius: 8px 8px 0 0; border: 1px solid var(--border); border-bottom: none; background: var(--bg); color: var(--muted); cursor: pointer; font-size: 14px; font-weight: 700; transition: all 0.2s; }
   .year-tab:hover { color: var(--text); background: var(--card); }
@@ -48,7 +20,7 @@
   .year-panel.active { display: block; }
   .year-content { border: 1px solid var(--border); border-radius: 0 12px 12px 12px; background: var(--card); padding: 24px; margin-top: -1px; }
 
-  /* DEDUCTION TABLES */
+  /* Deduction Tables */
   .ded-table { width: 100%; border-collapse: collapse; font-size: 13px; }
   .ded-table th { text-align: left; padding: 10px 12px; border-bottom: 2px solid var(--border); color: var(--accent); font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
   .ded-table td { padding: 10px 12px; border-bottom: 1px solid var(--border); }
@@ -57,7 +29,7 @@
   .ded-table .total-row { border-top: 2px solid var(--accent); font-weight: 700; }
   .ded-table .total-row td { padding: 14px 12px; }
 
-  /* STATUS BADGES */
+  /* Deduction Status Badges */
   .ded-status { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 4px; }
   .ded-ok { background: rgba(74,222,128,0.15); color: var(--green); }
   .ded-review { background: rgba(251,191,36,0.15); color: var(--yellow); }
@@ -66,7 +38,7 @@
   .ded-missing { background: rgba(248,113,113,0.15); color: var(--red); }
   .ded-found { background: rgba(74,222,128,0.3); color: #22c55e; }
 
-  /* BOT CARDS */
+  /* Bot Cards */
   .bot-card { display: flex; gap: 12px; padding: 16px; background: var(--bg); border-radius: 8px; border: 1px solid var(--border); margin-bottom: 12px; }
   .bot-avatar { font-size: 32px; width: 48px; text-align: center; }
   .bot-info { flex: 1; }
@@ -75,7 +47,7 @@
   .bot-status-active { color: var(--green); font-size: 11px; }
   .bot-status-working { color: var(--yellow); font-size: 11px; }
 
-  /* AUDIT REPORT */
+  /* Audit Report */
   .audit-item { padding: 12px 16px; border-left: 3px solid var(--border); margin-bottom: 8px; background: var(--bg); border-radius: 0 8px 8px 0; }
   .audit-item.pass { border-left-color: var(--green); }
   .audit-item.warn { border-left-color: var(--yellow); }
@@ -88,13 +60,13 @@
   .v-fail { background: rgba(248,113,113,0.15); color: var(--red); }
   .audit-detail { font-size: 12px; color: var(--muted); margin-top: 4px; }
 
-  /* STATS GRID */
+  /* Stats Grid (page-specific override) */
   .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 20px; }
-  .stat-card { background: var(--bg); padding: 16px; border-radius: 8px; border: 1px solid var(--border); text-align: center; }
+  .stats-grid .stat-card { background: var(--bg); text-align: center; }
   .stat-val { font-size: 22px; font-weight: 700; font-family: 'Courier New', monospace; }
   .stat-label { font-size: 10px; color: var(--muted); text-transform: uppercase; margin-top: 4px; }
 
-  /* FINDINGS */
+  /* Findings */
   .finding { padding: 12px 16px; background: var(--bg); border-radius: 8px; border: 1px solid var(--border); margin-bottom: 8px; }
   .finding-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
   .finding-title { font-weight: 700; font-size: 13px; }
@@ -103,36 +75,30 @@
   .finding-source { font-size: 10px; color: var(--accent); margin-top: 4px; }
 </style>
 </head>
-<body>
+<body class="theme-deductions">
 
-<!-- AUTH GATE -->
-<div class="auth-gate" id="authGate">
-<h1>&#128269; Deductions HQ</h1>
-<div class="auth-sub">Sign in with Google to access Deduction Management</div>
-<button class="g-btn" id="googleSignIn" onclick="doGoogleSignIn()">
-  <svg viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59A14.5 14.5 0 019.5 24c0-1.59.28-3.14.76-4.59l-7.98-6.19A23.9 23.9 0 000 24c0 3.77.9 7.35 2.56 10.53l7.97-5.94z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 5.94C6.51 42.62 14.62 48 24 48z"/></svg>
-  Sign in with Google
-</button>
-<div class="auth-err" id="authErr"></div>
-<div class="auth-loading" id="authLoading"></div>
-</div>
+<!-- Page Config (before shared scripts) -->
+<script>
+  window.FPCS_PAGE = {
+    name: 'Deductions HQ',
+    theme: 'theme-deductions'
+  };
+  window.FPCS_NAV = {
+    active: 'deductions',
+    sections: [
+      { icon: '&#128270;', label: 'DeductBot Team', href: '#sec-deductbot' },
+      { icon: '&#128373;', label: 'Guest Auditor', href: '#sec-auditor' },
+      { icon: '&#128197;', label: 'By Year', href: '#sec-years' },
+      { icon: '&#128161;', label: 'Findings', href: '#sec-findings' },
+      { icon: '&#9745;', label: 'Checklist', href: '#sec-checklist' }
+    ]
+  };
+</script>
+
+<!-- Auth gate injected by auth.js -->
 <div id="dashContent">
 
-<!-- NAVIGATION RAIL -->
-<nav class="nav-rail">
-  <a class="nav-link" href="index.html"><span class="nav-icon">&#128202;</span><span class="nav-label">Tax HQ</span></a>
-  <a class="nav-link" href="bots.html"><span class="nav-icon">&#129302;</span><span class="nav-label">Bot HQ</span></a>
-  <a class="nav-link" href="memory.html"><span class="nav-icon">&#128218;</span><span class="nav-label">Memory Bank</span></a>
-  <div class="nav-sep"></div>
-  <a class="nav-link active" href="#top"><span class="nav-icon">&#128269;</span><span class="nav-label">Deductions</span></a>
-  <a class="nav-link" href="#sec-deductbot"><span class="nav-icon">&#128270;</span><span class="nav-label">DeductBot</span></a>
-  <a class="nav-link" href="#sec-auditor"><span class="nav-icon">&#128373;</span><span class="nav-label">Auditor</span></a>
-  <a class="nav-link" href="#sec-findings"><span class="nav-icon">&#128161;</span><span class="nav-label">Findings</span></a>
-  <div class="nav-sep"></div>
-  <a class="nav-link" href="japster.html"><span class="nav-icon">&#128172;</span><span class="nav-label">Japster</span></a>
-  <a class="nav-link" href="helpdesk.html"><span class="nav-icon">&#127915;</span><span class="nav-label">Helpdesk</span></a>
-  <a class="nav-link" href="index.html" style="color:var(--accent)"><span class="nav-icon">&#8592;</span><span class="nav-label">Back</span></a>
-</nav>
+<!-- Nav rail injected by nav.js -->
 
 <!-- HEADER -->
 <div class="header" id="top">
@@ -518,61 +484,21 @@
 </div><!-- /container -->
 </div><!-- /dashContent -->
 
+<!-- Page-Specific JavaScript -->
 <script>
 // === YEAR TAB SWITCHING ===
-function switchYear(year){
-  document.querySelectorAll('.year-tab').forEach(function(t){t.classList.remove('active')});
-  document.querySelectorAll('.year-panel').forEach(function(p){p.classList.remove('active')});
+function switchYear(year) {
+  document.querySelectorAll('.year-tab').forEach(function(t) { t.classList.remove('active'); });
+  document.querySelectorAll('.year-panel').forEach(function(p) { p.classList.remove('active'); });
   event.target.classList.add('active');
-  var panel=document.getElementById('year-'+year);
-  if(panel) panel.classList.add('active');
+  var panel = document.getElementById('year-' + year);
+  if (panel) panel.classList.add('active');
 }
-
-// === FIREBASE GOOGLE AUTH GATE ===
-(function(){
-  var firebaseConfig={apiKey:"AIzaSyBgYAPO_0cEvhPzfU6GZykJVUnF55LEzXQ",authDomain:"fpcs-dashboard-63b25.firebaseapp.com",projectId:"fpcs-dashboard-63b25",storageBucket:"fpcs-dashboard-63b25.firebasestorage.app",messagingSenderId:"377879797743",appId:"1:377879797743:web:61a56f9bf69f2df9eba01a"};
-  var _AH=['2cf3a7d6f68c22e431d35aec11129074f9bb677598de0fe85df3ba3c0f513365'];
-  function _h(s){return crypto.subtle?crypto.subtle.digest('SHA-256',new TextEncoder().encode(s)).then(function(b){return Array.from(new Uint8Array(b)).map(function(x){return x.toString(16).padStart(2,'0')}).join('')}):Promise.resolve('')}
-  function _checkEmail(email){return _h(email.toLowerCase()).then(function(h){return _AH.indexOf(h)!==-1})}
-  function loadScript(src,cb){var s=document.createElement('script');s.src=src;s.onload=cb;document.head.appendChild(s)}
-  function initAuth(){
-    firebase.initializeApp(firebaseConfig);
-    var auth=firebase.auth();
-    var gate=document.getElementById('authGate');
-    var dash=document.getElementById('dashContent');
-    var errEl=document.getElementById('authErr');
-    var loadEl=document.getElementById('authLoading');
-    auth.onAuthStateChanged(function(user){
-      if(user){
-        _checkEmail(user.email).then(function(ok){
-          if(!ok){
-            errEl.textContent='Access denied: not authorized';
-            auth.signOut();
-            return;
-          }
-          gate.style.display='none';
-          dash.style.display='block';
-          console.log('[Deductions HQ] Authorized user signed in');
-        });
-      }else{
-        gate.style.display='flex';
-        dash.style.display='none';
-      }
-    });
-    window.doGoogleSignIn=function(){
-      loadEl.textContent='Signing in...';
-      errEl.textContent='';
-      auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()).catch(function(e){
-        errEl.textContent='Sign-in failed: '+e.message;
-        loadEl.textContent='';
-      });
-    };
-  }
-  loadScript('https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js',function(){
-    loadScript('https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js',initAuth);
-  });
-})();
 </script>
+
+<!-- Shared Modules (load after page config) -->
+<script src="js/auth.js"></script>
+<script src="js/nav.js"></script>
 <script src="bot-assistant.js"></script>
 </body>
 </html>

@@ -1,0 +1,78 @@
+/* ============================================================
+   FPCS Nav Rail — Shared navigation sidebar
+   Hover-expand pattern: 54px collapsed → 220px expanded
+   Injected by nav.js — styles only in this file
+   ============================================================ */
+
+.nav-rail {
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 54px;
+  background: #0b1120;
+  border-right: 1px solid var(--border);
+  z-index: 900;
+  display: flex;
+  flex-direction: column;
+  padding: 8px 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  transition: width 0.25s ease;
+}
+.nav-rail:hover {
+  width: 220px;
+}
+.nav-rail:hover .nav-label {
+  opacity: 1;
+  width: auto;
+}
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 12px;
+  white-space: nowrap;
+  border-left: 3px solid transparent;
+  transition: all 0.15s;
+}
+.nav-link:hover {
+  color: var(--accent);
+  background: rgba(56, 189, 248, 0.06);
+  border-left-color: var(--accent);
+}
+.nav-link.active {
+  color: var(--page-accent, var(--accent));
+  background: rgba(56, 189, 248, 0.08);
+  border-left-color: var(--page-accent, var(--accent));
+}
+
+.nav-icon {
+  font-size: 18px;
+  flex-shrink: 0;
+  width: 24px;
+  text-align: center;
+}
+
+.nav-label {
+  opacity: 0;
+  width: 0;
+  overflow: hidden;
+  font-weight: 600;
+  transition: opacity 0.2s;
+}
+
+.nav-sep {
+  height: 1px;
+  background: var(--border);
+  margin: 6px 12px;
+}
+
+/* Responsive: hide nav rail on mobile */
+@media (max-width: 768px) {
+  .nav-rail { display: none; }
+}

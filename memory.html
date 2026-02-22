@@ -4,46 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Memory Bank -- FPCS Knowledge System</title>
+<link rel="stylesheet" href="css/core.css">
+<link rel="stylesheet" href="css/nav.css">
+<link rel="stylesheet" href="css/auth.css">
 <style>
-  :root {
-    --bg: #0f172a; --card: #1e293b; --accent: #38bdf8; --green: #4ade80;
-    --yellow: #fbbf24; --red: #f87171; --text: #e2e8f0; --muted: #94a3b8;
-    --border: #334155; --purple: #a78bfa; --orange: #fb923c; --pink: #f472b6;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding-left: 54px; }
-  .header { background: linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%); padding: 24px 32px; border-bottom: 2px solid var(--green); }
-  .header h1 { font-size: 28px; color: var(--green); display: flex; align-items: center; gap: 12px; }
-  .header .subtitle { color: var(--muted); margin-top: 4px; font-size: 14px; }
-  .container { max-width: 1400px; margin: 0 auto; padding: 24px; }
-  .section { background: var(--card); border-radius: 12px; padding: 24px; margin-bottom: 20px; border: 1px solid var(--border); }
-  .section h2 { font-size: 18px; margin-bottom: 16px; color: var(--accent); display: flex; align-items: center; gap: 8px; }
-  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
-  .stat-card { background: var(--card); border-radius: 12px; padding: 20px; border: 1px solid var(--border); }
-  .stat-card .label { font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 8px; }
-  .stat-card .value { font-size: 28px; font-weight: 700; }
-  .stat-card .sub { font-size: 13px; color: var(--muted); margin-top: 4px; }
-  .footer { text-align: center; padding: 24px; color: var(--muted); font-size: 13px; }
-  /* NAV RAIL */
-  .nav-rail { position: fixed; left: 0; top: 0; bottom: 0; width: 54px; background: #0b1120; border-right: 1px solid var(--border); z-index: 900; display: flex; flex-direction: column; padding: 8px 0; overflow-y: auto; transition: width 0.2s; }
-  .nav-rail:hover { width: 220px; }
-  .nav-rail:hover .nav-label { opacity: 1; width: auto; }
-  .nav-link { display: flex; align-items: center; gap: 10px; padding: 10px 14px; color: var(--muted); text-decoration: none; font-size: 12px; white-space: nowrap; border-left: 3px solid transparent; transition: all 0.15s; }
-  .nav-link:hover, .nav-link.active { color: var(--accent); background: rgba(56,189,248,0.06); border-left-color: var(--accent); }
-  .nav-icon { font-size: 18px; flex-shrink: 0; width: 24px; text-align: center; }
-  .nav-label { opacity: 0; width: 0; overflow: hidden; font-weight: 600; transition: opacity 0.2s; }
-  .nav-sep { height: 1px; background: var(--border); margin: 6px 12px; }
-  /* AUTH GATE */
-  #authGate{position:fixed;top:0;left:0;width:100%;height:100%;background:#0a0a0a;z-index:99999;display:flex;align-items:center;justify-content:center;flex-direction:column;font-family:system-ui}
-  #authGate .lock-icon{font-size:64px;margin-bottom:16px}
-  #authGate h1{color:#e5e7eb;font-size:22px;margin-bottom:8px}
-  #authGate .auth-sub{color:#9ca3af;font-size:14px;margin-bottom:24px}
-  #authGate .g-btn{display:flex;align-items:center;gap:12px;padding:12px 28px;font-size:15px;font-weight:600;border:2px solid #333;border-radius:8px;background:#1a1a1a;color:#e5e7eb;cursor:pointer;transition:all .2s}
-  #authGate .g-btn:hover{border-color:#4285f4;background:#111}
-  #authGate .g-btn svg{width:20px;height:20px}
-  #authGate .auth-err{color:#ef4444;font-size:13px;margin-top:12px;min-height:20px}
-  #authGate .auth-loading{color:#9ca3af;font-size:14px;margin-top:12px}
-  #dashContent{display:none}
   /* CHART STYLES */
   .chart-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
   .chart-box { background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
@@ -87,37 +51,10 @@
   .demo-input button:hover { opacity: 0.85; }
   .connector { width: 2px; height: 12px; background: var(--border); margin-left: 15px; }
   @media (max-width: 900px) { .chart-row { grid-template-columns: 1fr; } }
-  @media (max-width: 768px) { .nav-rail { display: none; } body { padding-left: 0; } }
 </style>
 </head>
-<body>
-<div id="authGate">
-  <div class="lock-icon">&#128274;</div>
-  <h1>FPCS Memory Bank</h1>
-  <div class="auth-sub">Sign in with Google to access Memory Bank</div>
-  <button class="g-btn" id="googleSignIn" onclick="doGoogleSignIn()">
-    <svg viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59A14.5 14.5 0 019.5 24c0-1.59.28-3.14.76-4.59l-7.98-6.19A23.9 23.9 0 000 24c0 3.77.9 7.35 2.56 10.53l7.97-5.94z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 5.94C6.51 42.62 14.62 48 24 48z"/></svg>
-    Sign in with Google
-  </button>
-  <div class="auth-err" id="authErr"></div>
-  <div class="auth-loading" id="authLoading"></div>
-</div>
+<body class="theme-memory">
 <div id="dashContent">
-
-<!-- NAVIGATION RAIL -->
-<nav class="nav-rail">
-  <a class="nav-link" href="index.html"><span class="nav-icon">&#128202;</span><span class="nav-label">Tax HQ (Page 1)</span></a>
-  <a class="nav-link" href="bots.html"><span class="nav-icon">&#129302;</span><span class="nav-label">Bot HQ (Page 2)</span></a>
-  <a class="nav-link" href="deductions.html"><span class="nav-icon">&#128176;</span><span class="nav-label">Deductions (Page 3)</span></a>
-  <div class="nav-sep"></div>
-  <a class="nav-link active" href="#top"><span class="nav-icon">&#128218;</span><span class="nav-label">Memory Bank</span></a>
-  <a class="nav-link" href="#sec-arch"><span class="nav-icon">&#127959;</span><span class="nav-label">Architecture</span></a>
-  <a class="nav-link" href="#sec-sim"><span class="nav-icon">&#128200;</span><span class="nav-label">Simulation</span></a>
-  <a class="nav-link" href="#sec-demo"><span class="nav-icon">&#9889;</span><span class="nav-label">Live Demo</span></a>
-  <div class="nav-sep"></div>
-  <a class="nav-link" href="japster.html" style="color:#22d3ee"><span class="nav-icon">&#128172;</span><span class="nav-label">Japster Hub (Page 5)</span></a>
-  <a class="nav-link" href="helpdesk.html" style="color:var(--orange)"><span class="nav-icon">&#127915;</span><span class="nav-label">Helpdesk (Page 6)</span></a>
-</nav>
 
 <!-- HEADER -->
 <div class="header" id="top">
@@ -619,46 +556,24 @@ window.addEventListener('load', function() {
   setTimeout(runNarrowingDemo, 200);
 });
 window.addEventListener('resize', function() { setTimeout(renderCharts, 100); });
-
-// === FIREBASE GOOGLE AUTH GATE ===
-(function(){
-  var firebaseConfig={apiKey:"AIzaSyBgYAPO_0cEvhPzfU6GZykJVUnF55LEzXQ",authDomain:"fpcs-dashboard-63b25.firebaseapp.com",projectId:"fpcs-dashboard-63b25",storageBucket:"fpcs-dashboard-63b25.firebasestorage.app",messagingSenderId:"377879797743",appId:"1:377879797743:web:61a56f9bf69f2df9eba01a"};
-  var _AH=['2cf3a7d6f68c22e431d35aec11129074f9bb677598de0fe85df3ba3c0f513365'];
-  function _h(s){return crypto.subtle?crypto.subtle.digest('SHA-256',new TextEncoder().encode(s)).then(function(b){return Array.from(new Uint8Array(b)).map(function(x){return x.toString(16).padStart(2,'0')}).join('')}):Promise.resolve('')}
-  function _checkEmail(email){return _h(email.toLowerCase()).then(function(h){return _AH.indexOf(h)!==-1})}
-  function loadScript(src,cb){var s=document.createElement('script');s.src=src;s.onload=cb;document.head.appendChild(s)}
-  function initAuth(){
-    firebase.initializeApp(firebaseConfig);
-    var auth=firebase.auth();
-    var gate=document.getElementById('authGate');
-    var dash=document.getElementById('dashContent');
-    var errEl=document.getElementById('authErr');
-    var loadEl=document.getElementById('authLoading');
-    auth.onAuthStateChanged(function(user){
-      if(user){
-        _checkEmail(user.email).then(function(ok){
-          if(!ok){ errEl.textContent='Access denied: not authorized'; auth.signOut(); return; }
-          gate.style.display='none'; dash.style.display='block';
-          console.log('[FPCS Auth] Authorized user signed in');
-        });
-      }else{ gate.style.display='flex'; dash.style.display='none'; }
-    });
-    window.doGoogleSignIn=function(){
-      errEl.textContent=''; loadEl.textContent='Signing in...';
-      document.getElementById('googleSignIn').disabled=true;
-      var provider=new firebase.auth.GoogleAuthProvider();
-      auth.signInWithPopup(provider).then(function(){ loadEl.textContent=''; })
-      .catch(function(error){
-        loadEl.textContent=''; document.getElementById('googleSignIn').disabled=false;
-        errEl.textContent=error.message||'Sign-in failed';
-      });
-    };
-  }
-  loadScript('https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js',function(){
-    loadScript('https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js',initAuth);
-  });
-})();
 </script>
+<script>
+  window.FPCS_PAGE = {
+    name: 'Memory Bank',
+    theme: 'theme-memory'
+  };
+  window.FPCS_NAV = {
+    active: 'memory',
+    sections: [
+      { id: 'top', icon: '&#128218;', label: 'Memory Bank' },
+      { id: 'sec-arch', icon: '&#127959;', label: 'Architecture' },
+      { id: 'sec-sim', icon: '&#128200;', label: 'Simulation' },
+      { id: 'sec-demo', icon: '&#9889;', label: 'Live Demo' }
+    ]
+  };
+</script>
+<script src="js/auth.js"></script>
+<script src="js/nav.js"></script>
 <script src="bot-assistant.js"></script>
 </body>
 </html>
