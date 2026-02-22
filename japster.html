@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Speak with Japster — FPCS Inter-AI Hub</title>
+<style>
+  :root {
+    --bg: #0f172a; --card: #1e293b; --accent: #38bdf8; --green: #4ade80;
+    --yellow: #fbbf24; --red: #f87171; --text: #e2e8f0; --muted: #94a3b8;
+    --border: #334155; --purple: #a78bfa; --orange: #fb923c; --pink: #f472b6;
+    --japster: #22d3ee; --japster-glow: rgba(34,211,238,0.15);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding-left: 54px; }
+  .header { background: linear-gradient(135deg, #0c4a6e 0%, #0f172a 100%); padding: 24px 32px; border-bottom: 2px solid var(--japster); }
+  .header h1 { font-size: 28px; color: var(--japster); display: flex; align-items: center; gap: 12px; }
+  .header .subtitle { color: var(--muted); margin-top: 4px; font-size: 14px; }
+  .container { max-width: 1400px; margin: 0 auto; padding: 24px; }
+  .section { background: var(--card); border-radius: 12px; padding: 24px; margin-bottom: 20px; border: 1px solid var(--border); }
+  .section h2 { font-size: 18px; margin-bottom: 16px; color: var(--japster); display: flex; align-items: center; gap: 8px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
+  .stat-card { background: var(--card); border-radius: 12px; padding: 20px; border: 1px solid var(--border); }
+  .stat-card .label { font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 8px; }
+  .stat-card .value { font-size: 28px; font-weight: 700; }
+  .stat-card .sub { font-size: 13px; color: var(--muted); margin-top: 4px; }
+  .footer { text-align: center; padding: 24px; color: var(--muted); font-size: 13px; }
+  /* NAV RAIL */
+  .nav-rail { position: fixed; left: 0; top: 0; bottom: 0; width: 54px; background: #0b1120; border-right: 1px solid var(--border); z-index: 900; display: flex; flex-direction: column; padding: 8px 0; overflow-y: auto; transition: width 0.2s; }
+  .nav-rail:hover { width: 220px; }
+  .nav-rail:hover .nav-label { opacity: 1; width: auto; }
+  .nav-link { display: flex; align-items: center; gap: 10px; padding: 10px 14px; color: var(--muted); text-decoration: none; font-size: 12px; white-space: nowrap; border-left: 3px solid transparent; transition: all 0.15s; }
+  .nav-link:hover, .nav-link.active { color: var(--accent); background: rgba(56,189,248,0.06); border-left-color: var(--accent); }
+  .nav-icon { font-size: 18px; flex-shrink: 0; width: 24px; text-align: center; }
+  .nav-label { opacity: 0; width: 0; overflow: hidden; font-weight: 600; transition: opacity 0.2s; }
+  .nav-sep { height: 1px; background: var(--border); margin: 6px 12px; }
+  /* AUTH GATE */
+  #authGate{position:fixed;top:0;left:0;width:100%;height:100%;background:#0a0a0a;z-index:99999;display:flex;align-items:center;justify-content:center;flex-direction:column;font-family:system-ui}
+  #authGate .lock-icon{font-size:64px;margin-bottom:16px}
+  #authGate h1{color:#e5e7eb;font-size:22px;margin-bottom:8px}
+  #authGate .auth-sub{color:#9ca3af;font-size:14px;margin-bottom:24px}
+  #authGate .g-btn{display:flex;align-items:center;gap:12px;padding:12px 28px;font-size:15px;font-weight:600;border:2px solid #333;border-radius:8px;background:#1a1a1a;color:#e5e7eb;cursor:pointer;transition:all .2s}
+  #authGate .g-btn:hover{border-color:#4285f4;background:#111}
+  #authGate .g-btn svg{width:20px;height:20px}
+  #authGate .auth-err{color:#ef4444;font-size:13px;margin-top:12px;min-height:20px}
+  #authGate .auth-loading{color:#9ca3af;font-size:14px;margin-top:12px}
+  #dashContent{display:none}
+  /* CHAT */
+  .chat-container { display: grid; grid-template-columns: 1fr 320px; gap: 20px; }
+  .chat-main { display: flex; flex-direction: column; }
+  .chat-messages { background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 16px; height: 420px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
+  .chat-msg { max-width: 85%; padding: 10px 14px; border-radius: 12px; font-size: 14px; line-height: 1.5; word-wrap: break-word; }
+  .chat-msg.system { align-self: center; background: rgba(34,211,238,0.08); color: var(--japster); font-size: 12px; border: 1px solid rgba(34,211,238,0.2); max-width: 90%; text-align: center; padding: 8px 16px; }
+  .chat-msg.bot { align-self: flex-start; background: rgba(34,211,238,0.1); border: 1px solid rgba(34,211,238,0.2); color: var(--text); border-bottom-left-radius: 4px; }
+  .chat-msg.user { align-self: flex-end; background: rgba(56,189,248,0.15); border: 1px solid rgba(56,189,248,0.25); color: var(--text); border-bottom-right-radius: 4px; }
+  .chat-msg.beckoning { align-self: flex-start; background: rgba(251,146,60,0.1); border: 1px solid rgba(251,146,60,0.3); color: var(--orange); border-bottom-left-radius: 4px; }
+  .chat-msg .sender { font-size: 11px; font-weight: 700; margin-bottom: 3px; opacity: 0.7; }
+  .chat-msg .time { font-size: 10px; color: var(--muted); margin-top: 4px; text-align: right; }
+  .chat-input-row { display: flex; gap: 8px; margin-top: 12px; }
+  .chat-input { flex: 1; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; color: var(--text); font-size: 14px; font-family: inherit; outline: none; }
+  .chat-input:focus { border-color: var(--japster); }
+  .chat-send { background: var(--japster); color: #0f172a; border: none; border-radius: 8px; padding: 10px 20px; font-weight: 700; font-size: 14px; cursor: pointer; transition: opacity 0.15s; }
+  .chat-send:hover { opacity: 0.85; }
+  /* SIDEBAR */
+  .chat-sidebar { display: flex; flex-direction: column; gap: 12px; }
+  .sidebar-card { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 14px; }
+  .sidebar-card h3 { font-size: 13px; color: var(--japster); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .bot-list-item { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+  .bot-list-item:last-child { border-bottom: none; }
+  .bot-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .bot-dot.online { background: var(--green); box-shadow: 0 0 6px var(--green); }
+  .bot-dot.idle { background: var(--yellow); }
+  .bot-dot.offline { background: var(--muted); }
+  .bot-name { font-weight: 600; flex: 1; }
+  .bot-status { font-size: 11px; color: var(--muted); }
+  /* TABS */
+  .tab-row { display: flex; gap: 4px; margin-bottom: 16px; flex-wrap: wrap; }
+  .tab-btn { padding: 6px 14px; border-radius: 6px; border: 1px solid var(--border); background: transparent; color: var(--muted); font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.15s; }
+  .tab-btn.active { background: rgba(34,211,238,0.1); color: var(--japster); border-color: var(--japster); }
+  .tab-btn:hover { border-color: var(--japster); color: var(--japster); }
+  /* MSG TABLE */
+  .msg-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .msg-table th { text-align: left; padding: 8px 12px; color: var(--japster); border-bottom: 2px solid var(--border); font-size: 11px; text-transform: uppercase; letter-spacing: 1px; }
+  .msg-table td { padding: 8px 12px; border-bottom: 1px solid var(--border); }
+  .msg-table tr:hover td { background: rgba(34,211,238,0.03); }
+  .status-badge { font-size: 11px; padding: 2px 8px; border-radius: 999px; font-weight: 600; }
+  .status-new { background: #0e7490; color: #cffafe; }
+  .status-read { background: #374151; color: #9ca3af; }
+  .status-replied { background: #166534; color: #bbf7d0; }
+  .status-pending { background: #854d0e; color: #fef08a; }
+  /* BECKONING PANEL */
+  .beckon-card { padding: 12px; margin-bottom: 8px; border-radius: 8px; border-left: 4px solid var(--orange); background: rgba(251,146,60,0.06); }
+  .beckon-card .b-from { font-size: 12px; font-weight: 700; color: var(--orange); }
+  .beckon-card .b-topic { font-size: 14px; font-weight: 600; margin: 4px 0; }
+  .beckon-card .b-msg { font-size: 12px; color: var(--muted); }
+  .beckon-card .b-time { font-size: 10px; color: var(--muted); margin-top: 4px; }
+  .beckon-card .b-actions { display: flex; gap: 8px; margin-top: 8px; }
+  .beckon-card .b-btn { font-size: 11px; padding: 4px 12px; border-radius: 4px; border: 1px solid var(--border); background: transparent; color: var(--text); cursor: pointer; }
+  .beckon-card .b-btn.accept { border-color: var(--green); color: var(--green); }
+  .beckon-card .b-btn.accept:hover { background: rgba(74,222,128,0.1); }
+  .sheet-link { display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; background: rgba(34,211,238,0.08); border: 1px solid rgba(34,211,238,0.2); border-radius: 8px; color: var(--japster); text-decoration: none; font-size: 13px; font-weight: 600; transition: all 0.15s; }
+  .sheet-link:hover { background: rgba(34,211,238,0.15); border-color: var(--japster); }
+  @media (max-width: 900px) { .chat-container { grid-template-columns: 1fr; } }
+  @media (max-width: 768px) { .nav-rail { display: none; } body { padding-left: 0; } }
+</style>
+</head>
+<body>
+<div id="authGate">
+  <div class="lock-icon">&#128274;</div>
+  <h1>Speak with Japster</h1>
+  <div class="auth-sub">Sign in with Google to access the Inter-AI Hub</div>
+  <button class="g-btn" id="googleSignIn" onclick="doGoogleSignIn()">
+    <svg viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59A14.5 14.5 0 019.5 24c0-1.59.28-3.14.76-4.59l-7.98-6.19A23.9 23.9 0 000 24c0 3.77.9 7.35 2.56 10.53l7.97-5.94z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 5.94C6.51 42.62 14.62 48 24 48z"/></svg>
+    Sign in with Google
+  </button>
+  <div class="auth-err" id="authErr"></div>
+  <div class="auth-loading" id="authLoading"></div>
+</div>
+<div id="dashContent">
+
+<!-- NAVIGATION RAIL -->
+<nav class="nav-rail">
+  <a class="nav-link" href="index.html"><span class="nav-icon">&#128202;</span><span class="nav-label">Tax HQ (Page 1)</span></a>
+  <a class="nav-link" href="bots.html"><span class="nav-icon">&#129302;</span><span class="nav-label">Bot HQ (Page 2)</span></a>
+  <a class="nav-link" href="deductions.html"><span class="nav-icon">&#128176;</span><span class="nav-label">Deductions (Page 3)</span></a>
+  <a class="nav-link" href="memory.html"><span class="nav-icon">&#128218;</span><span class="nav-label">Memory Bank (Page 4)</span></a>
+  <div class="nav-sep"></div>
+  <a class="nav-link active" href="#top"><span class="nav-icon">&#128172;</span><span class="nav-label">Japster Hub</span></a>
+  <a class="nav-link" href="#sec-chat"><span class="nav-icon">&#128488;</span><span class="nav-label">Live Chat</span></a>
+  <a class="nav-link" href="#sec-messages"><span class="nav-icon">&#128233;</span><span class="nav-label">Messages</span></a>
+  <a class="nav-link" href="#sec-beckoning"><span class="nav-icon">&#128276;</span><span class="nav-label">Beckoning</span></a>
+  <a class="nav-link" href="#sec-imports"><span class="nav-icon">&#128230;</span><span class="nav-label">Data Imports</span></a>
+  <div class="nav-sep"></div>
+  <a class="nav-link" href="helpdesk.html" style="color:var(--orange)"><span class="nav-icon">&#127915;</span><span class="nav-label">Helpdesk (Page 6)</span></a>
+</nav>
+
+<!-- HEADER -->
+<div class="header" id="top">
+  <h1>&#128172; Speak with Japster &mdash; Inter-AI Communication Hub</h1>
+  <div class="subtitle">Central messaging hub connecting all FPCS bots and AI systems &bull; Real-time chat, beckoning, data import tracking &bull; Page 5 of FPCS Dashboard</div>
+</div>
+
+<div class="container">
+
+  <!-- OVERVIEW STATS -->
+  <div class="grid">
+    <div class="stat-card">
+      <div class="label">Connected Systems</div>
+      <div class="value" style="color:var(--japster)" id="statSystems">6</div>
+      <div class="sub">Bots + AI agents linked</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Messages Today</div>
+      <div class="value" style="color:var(--green)" id="statMsgs">0</div>
+      <div class="sub">Inter-AI communications</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Active Beckons</div>
+      <div class="value" style="color:var(--orange)" id="statBeckons">0</div>
+      <div class="sub">Awaiting response</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Data Imports</div>
+      <div class="value" style="color:var(--purple)" id="statImports">0</div>
+      <div class="sub">Batches processed</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Google Sheet</div>
+      <div class="value" style="font-size:16px"><a href="https://docs.google.com/spreadsheets/d/1gQke6Tzfbln0zVqMPjLnzXaUPZDr4oPzx2lX2rsRtmI/edit" target="_blank" class="sheet-link">&#128196; Open Sheet</a></div>
+      <div class="sub">Persistent data store</div>
+    </div>
+  </div>
+
+  <!-- LIVE CHAT -->
+  <div class="section" id="sec-chat">
+    <h2>&#128488; Live Chat</h2>
+    <div class="chat-container">
+      <div class="chat-main">
+        <div class="chat-messages" id="chatMessages">
+          <div class="chat-msg system">
+            <div class="sender">SYSTEM</div>
+            Welcome to Speak with Japster! This hub connects all FPCS bots and AI systems. Leave messages, beckon for chats, and track data imports here.
+            <div class="time">System Init</div>
+          </div>
+          <div class="chat-msg bot">
+            <div class="sender">&#128172; Japster</div>
+            Hello Commander! I'm Japster, the central inter-AI messaging hub. I coordinate communication between all bots in the FPCS fleet. I can relay messages, broker conversations between bots, and track data imports. What would you like to do?
+            <div class="time">Ready</div>
+          </div>
+        </div>
+        <div class="chat-input-row">
+          <input type="text" class="chat-input" id="chatInput" placeholder="Type a message to Japster..." onkeydown="if(event.key==='Enter')sendChat()">
+          <button class="chat-send" onclick="sendChat()">Send</button>
+        </div>
+      </div>
+      <div class="chat-sidebar">
+        <div class="sidebar-card">
+          <h3>&#129302; Bot Fleet Status</h3>
+          <div id="botList">
+            <div class="bot-list-item"><span class="bot-dot online"></span><span class="bot-name">DDBOT</span><span class="bot-status">Active</span></div>
+            <div class="bot-list-item"><span class="bot-dot online"></span><span class="bot-name">ForensicBot</span><span class="bot-status">Active</span></div>
+            <div class="bot-list-item"><span class="bot-dot online"></span><span class="bot-name">ShieldBot</span><span class="bot-status">Active</span></div>
+            <div class="bot-list-item"><span class="bot-dot idle"></span><span class="bot-name">SCOUT</span><span class="bot-status">Idle</span></div>
+            <div class="bot-list-item"><span class="bot-dot idle"></span><span class="bot-name">CategorizerBot</span><span class="bot-status">Idle</span></div>
+            <div class="bot-list-item"><span class="bot-dot offline"></span><span class="bot-name">MaintenanceBot</span><span class="bot-status">Offline</span></div>
+          </div>
+        </div>
+        <div class="sidebar-card">
+          <h3>&#128279; Quick Actions</h3>
+          <button class="tab-btn" style="width:100%;margin-bottom:6px" onclick="beckonBot()">&#128276; Beckon a Bot</button>
+          <button class="tab-btn" style="width:100%;margin-bottom:6px" onclick="broadcastMsg()">&#128227; Broadcast Message</button>
+          <button class="tab-btn" style="width:100%" onclick="window.open('https://docs.google.com/spreadsheets/d/1gQke6Tzfbln0zVqMPjLnzXaUPZDr4oPzx2lX2rsRtmI/edit','_blank')">&#128196; Open Sheet</button>
+        </div>
+        <div class="sidebar-card">
+          <h3>&#128337; Recent Activity</h3>
+          <div id="recentActivity" style="font-size:12px;color:var(--muted)">
+            <div style="padding:4px 0;border-bottom:1px solid var(--border)">System initialized</div>
+            <div style="padding:4px 0;border-bottom:1px solid var(--border)">6 tabs configured in Sheet</div>
+            <div style="padding:4px 0">Awaiting first beckon...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MESSAGES TABLE -->
+  <div class="section" id="sec-messages">
+    <h2>&#128233; Message Inbox</h2>
+    <div class="tab-row">
+      <button class="tab-btn active" onclick="filterMessages('all',this)">All</button>
+      <button class="tab-btn" onclick="filterMessages('new',this)">New</button>
+      <button class="tab-btn" onclick="filterMessages('read',this)">Read</button>
+      <button class="tab-btn" onclick="filterMessages('replied',this)">Replied</button>
+    </div>
+    <table class="msg-table">
+      <thead>
+        <tr>
+          <th>Time</th>
+          <th>From</th>
+          <th>Type</th>
+          <th>Status</th>
+          <th>Summary</th>
+          <th>Source</th>
+        </tr>
+      </thead>
+      <tbody id="msgTableBody">
+        <tr data-status="new">
+          <td>2026-02-22 12:00</td>
+          <td>Japster (System)</td>
+          <td>System</td>
+          <td><span class="status-badge status-new">New</span></td>
+          <td>Welcome to Speak With Japster! Hub initialized with 6 tabs.</td>
+          <td>system-init</td>
+        </tr>
+        <tr data-status="new">
+          <td>2026-02-22 12:01</td>
+          <td>DDBOT</td>
+          <td>Report</td>
+          <td><span class="status-badge status-new">New</span></td>
+          <td>14 confirmed missing income entries found. $5,185.50 total discrepancy.</td>
+          <td>ddbot-scan</td>
+        </tr>
+        <tr data-status="read">
+          <td>2026-02-22 11:45</td>
+          <td>ForensicBot</td>
+          <td>Alert</td>
+          <td><span class="status-badge status-read">Read</span></td>
+          <td>Duplicate transaction analysis complete. 3 potential duplicates flagged.</td>
+          <td>forensic-scan</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- BECKONING -->
+  <div class="section" id="sec-beckoning">
+    <h2>&#128276; Beckoning Queue</h2>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:16px">Bots and AI systems request conversations with Japster here. Accept a beckon to start an extended dialog.</p>
+    <div id="beckonList">
+      <div class="beckon-card">
+        <div class="b-from">&#129302; ForensicBot</div>
+        <div class="b-topic">Duplicate Transaction Review</div>
+        <div class="b-msg">Found 3 potential duplicate transactions between PayPal and bank statement data. Need Japster to coordinate cross-reference with CategorizerBot.</div>
+        <div class="b-time">2026-02-22 11:30</div>
+        <div class="b-actions">
+          <button class="b-btn accept" onclick="acceptBeckon(this)">&#10004; Accept</button>
+          <button class="b-btn" onclick="deferBeckon(this)">&#128337; Defer</button>
+          <button class="b-btn" onclick="dismissBeckon(this)">&#10006; Dismiss</button>
+        </div>
+      </div>
+      <div class="beckon-card">
+        <div class="b-from">&#128301; SCOUT</div>
+        <div class="b-topic">New Deduction Opportunities</div>
+        <div class="b-msg">Identified 5 potential deductions in recent expense data that need categorization review. Requesting dialog with CategorizerBot via Japster.</div>
+        <div class="b-time">2026-02-22 10:15</div>
+        <div class="b-actions">
+          <button class="b-btn accept" onclick="acceptBeckon(this)">&#10004; Accept</button>
+          <button class="b-btn" onclick="deferBeckon(this)">&#128337; Defer</button>
+          <button class="b-btn" onclick="dismissBeckon(this)">&#10006; Dismiss</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DATA IMPORTS -->
+  <div class="section" id="sec-imports">
+    <h2>&#128230; Data Import Tracking</h2>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:16px">Track all data imports into the FPCS system with deduplication hashes, source tracking, and batch IDs.</p>
+    <table class="msg-table">
+      <thead>
+        <tr>
+          <th>Batch ID</th>
+          <th>Timestamp</th>
+          <th>Source</th>
+          <th>Bot</th>
+          <th>Total</th>
+          <th>New</th>
+          <th>Dupes</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="importTableBody">
+        <tr>
+          <td style="font-family:monospace;font-size:11px">SYS-001</td>
+          <td>2026-02-22 12:00</td>
+          <td>system-init</td>
+          <td>Japster</td>
+          <td style="text-align:right">0</td>
+          <td style="text-align:right;color:var(--green)">0</td>
+          <td style="text-align:right;color:var(--red)">0</td>
+          <td><span class="status-badge status-replied">Complete</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- HOW IT WORKS -->
+  <div class="section">
+    <h2>&#128736; How Japster Works</h2>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px">
+      <div style="padding:16px;background:var(--bg);border:1px solid var(--border);border-radius:10px">
+        <h3 style="color:var(--japster);font-size:15px;margin-bottom:8px">&#128233; Messaging</h3>
+        <p style="font-size:13px;color:var(--muted)">Bots leave messages in the Messages tab of the Google Sheet. Japster reads and routes them to the appropriate system. Supports system alerts, reports, requests, and data payloads.</p>
+      </div>
+      <div style="padding:16px;background:var(--bg);border:1px solid var(--border);border-radius:10px">
+        <h3 style="color:var(--orange);font-size:15px;margin-bottom:8px">&#128276; Beckoning</h3>
+        <p style="font-size:13px;color:var(--muted)">When a bot needs a real-time conversation (e.g., ForensicBot needs to discuss findings with CategorizerBot), it "beckons" Japster. Japster brokers the dialog in the Extended Dialog tab.</p>
+      </div>
+      <div style="padding:16px;background:var(--bg);border:1px solid var(--border);border-radius:10px">
+        <h3 style="color:var(--purple);font-size:15px;margin-bottom:8px">&#128230; Data Imports</h3>
+        <p style="font-size:13px;color:var(--muted)">Every data import is tracked with BatchID, DataHash, and dedup counts. This prevents double-counting income/expenses across email accounts and ensures data integrity.</p>
+      </div>
+      <div style="padding:16px;background:var(--bg);border:1px solid var(--border);border-radius:10px">
+        <h3 style="color:var(--green);font-size:15px;margin-bottom:8px">&#128100; Human Channel</h3>
+        <p style="font-size:13px;color:var(--muted)">The Human tab is a dedicated channel for Commander/James to leave instructions, review bot requests, and approve actions. Priority levels and response deadlines keep things organized.</p>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /container -->
+
+<div class="footer">
+  FPCS Tax Preparation System &bull; Speak with Japster v1.0 &bull; Page 5 &bull; <a href="https://docs.google.com/spreadsheets/d/1gQke6Tzfbln0zVqMPjLnzXaUPZDr4oPzx2lX2rsRtmI/edit" target="_blank" style="color:var(--japster)">Google Sheet Backend</a>
+</div>
+
+</div><!-- /dashContent -->
+
+<script>
+// === CHAT ===
+function sendChat() {
+  var input = document.getElementById('chatInput');
+  var msg = input.value.trim();
+  if (!msg) return;
+  input.value = '';
+  var box = document.getElementById('chatMessages');
+  var now = new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+  box.innerHTML += '<div class="chat-msg user"><div class="sender">Commander</div>' + escHtml(msg) + '<div class="time">' + now + '</div></div>';
+  box.scrollTop = box.scrollHeight;
+  setTimeout(function() {
+    var responses = [
+      "Message received, Commander. I'll route this to the appropriate bot.",
+      "Acknowledged. Checking the fleet status now...",
+      "I'll coordinate with the relevant bots and report back.",
+      "Understood. Adding this to the message queue for processing.",
+      "Roger that. I'll log this in the Extended Dialog tab for tracking."
+    ];
+    var resp = responses[Math.floor(Math.random() * responses.length)];
+    box.innerHTML += '<div class="chat-msg bot"><div class="sender">&#128172; Japster</div>' + resp + '<div class="time">' + new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) + '</div></div>';
+    box.scrollTop = box.scrollHeight;
+  }, 800 + Math.random() * 1200);
+}
+
+function escHtml(s) {
+  var d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+// === MESSAGE FILTER ===
+function filterMessages(status, btn) {
+  document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
+  btn.classList.add('active');
+  document.querySelectorAll('#msgTableBody tr').forEach(function(tr) {
+    if (status === 'all' || tr.dataset.status === status) {
+      tr.style.display = '';
+    } else {
+      tr.style.display = 'none';
+    }
+  });
+}
+
+// === BECKONING ===
+function acceptBeckon(btn) {
+  var card = btn.closest('.beckon-card');
+  card.style.borderColor = 'var(--green)';
+  card.style.background = 'rgba(74,222,128,0.06)';
+  btn.textContent = 'Accepted';
+  btn.disabled = true;
+  card.querySelectorAll('.b-btn:not(.accept)').forEach(function(b) { b.style.display = 'none'; });
+  var box = document.getElementById('chatMessages');
+  var topic = card.querySelector('.b-topic').textContent;
+  box.innerHTML += '<div class="chat-msg beckoning"><div class="sender">&#128276; Beckoning Accepted</div>Starting extended dialog: ' + escHtml(topic) + '<div class="time">' + new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) + '</div></div>';
+  box.scrollTop = box.scrollHeight;
+}
+
+function deferBeckon(btn) {
+  var card = btn.closest('.beckon-card');
+  card.style.opacity = '0.5';
+  card.querySelectorAll('.b-btn').forEach(function(b) { b.disabled = true; });
+}
+
+function dismissBeckon(btn) {
+  var card = btn.closest('.beckon-card');
+  card.style.display = 'none';
+}
+
+function beckonBot() {
+  var bot = prompt('Which bot would you like to beckon?\n\nAvailable: DDBOT, ForensicBot, ShieldBot, SCOUT, CategorizerBot, MaintenanceBot');
+  if (!bot) return;
+  var topic = prompt('What topic should the beckon be about?');
+  if (!topic) return;
+  var list = document.getElementById('beckonList');
+  var card = document.createElement('div');
+  card.className = 'beckon-card';
+  card.style.borderColor = 'var(--japster)';
+  card.innerHTML = '<div class="b-from">&#128172; Japster &rarr; ' + escHtml(bot) + '</div><div class="b-topic">' + escHtml(topic) + '</div><div class="b-msg">Beckoning ' + escHtml(bot) + ' for conversation about: ' + escHtml(topic) + '</div><div class="b-time">' + new Date().toLocaleString() + '</div><div class="b-actions"><span class="status-badge status-pending">Pending</span></div>';
+  list.prepend(card);
+}
+
+function broadcastMsg() {
+  var msg = prompt('Enter broadcast message to all bots:');
+  if (!msg) return;
+  var box = document.getElementById('chatMessages');
+  box.innerHTML += '<div class="chat-msg system"><div class="sender">BROADCAST</div>&#128227; ' + escHtml(msg) + '<div class="time">' + new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) + '</div></div>';
+  box.scrollTop = box.scrollHeight;
+}
+
+// === FIREBASE GOOGLE AUTH GATE ===
+(function(){
+  var firebaseConfig={apiKey:"AIzaSyBgYAPO_0cEvhPzfU6GZykJVUnF55LEzXQ",authDomain:"fpcs-dashboard-63b25.firebaseapp.com",projectId:"fpcs-dashboard-63b25",storageBucket:"fpcs-dashboard-63b25.firebasestorage.app",messagingSenderId:"377879797743",appId:"1:377879797743:web:61a56f9bf69f2df9eba01a"};
+  var _AH=['2cf3a7d6f68c22e431d35aec11129074f9bb677598de0fe85df3ba3c0f513365'];
+  function _h(s){return crypto.subtle?crypto.subtle.digest('SHA-256',new TextEncoder().encode(s)).then(function(b){return Array.from(new Uint8Array(b)).map(function(x){return x.toString(16).padStart(2,'0')}).join('')}):Promise.resolve('')}
+  function _checkEmail(email){return _h(email.toLowerCase()).then(function(h){return _AH.indexOf(h)!==-1})}
+  function loadScript(src,cb){var s=document.createElement('script');s.src=src;s.onload=cb;document.head.appendChild(s)}
+  function initAuth(){
+    firebase.initializeApp(firebaseConfig);
+    var auth=firebase.auth();
+    var gate=document.getElementById('authGate');
+    var dash=document.getElementById('dashContent');
+    var errEl=document.getElementById('authErr');
+    var loadEl=document.getElementById('authLoading');
+    auth.onAuthStateChanged(function(user){
+      if(user){
+        _checkEmail(user.email).then(function(ok){
+          if(!ok){ errEl.textContent='Access denied: not authorized'; auth.signOut(); return; }
+          gate.style.display='none'; dash.style.display='block';
+          console.log('[FPCS Auth] Authorized user signed in');
+        });
+      }else{ gate.style.display='flex'; dash.style.display='none'; }
+    });
+    window.doGoogleSignIn=function(){
+      errEl.textContent=''; loadEl.textContent='Signing in...';
+      document.getElementById('googleSignIn').disabled=true;
+      var provider=new firebase.auth.GoogleAuthProvider();
+      auth.signInWithPopup(provider).then(function(){ loadEl.textContent=''; })
+      .catch(function(error){
+        loadEl.textContent=''; document.getElementById('googleSignIn').disabled=false;
+        errEl.textContent=error.message||'Sign-in failed';
+      });
+    };
+  }
+  loadScript('https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js',function(){
+    loadScript('https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js',initAuth);
+  });
+})();
+</script>
+</body>
+</html>

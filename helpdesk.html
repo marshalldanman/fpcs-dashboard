@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Helpdesk — FPCS Project Tracker</title>
+<style>
+  :root {
+    --bg: #0f172a; --card: #1e293b; --accent: #38bdf8; --green: #4ade80;
+    --yellow: #fbbf24; --red: #f87171; --text: #e2e8f0; --muted: #94a3b8;
+    --border: #334155; --purple: #a78bfa; --orange: #fb923c; --pink: #f472b6;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding-left: 54px; }
+  .header { background: linear-gradient(135deg, #4a1d96 0%, #0f172a 100%); padding: 24px 32px; border-bottom: 2px solid var(--orange); }
+  .header h1 { font-size: 28px; color: var(--orange); display: flex; align-items: center; gap: 12px; }
+  .header .subtitle { color: var(--muted); margin-top: 4px; font-size: 14px; }
+  .container { max-width: 1400px; margin: 0 auto; padding: 24px; }
+  .section { background: var(--card); border-radius: 12px; padding: 24px; margin-bottom: 20px; border: 1px solid var(--border); }
+  .section h2 { font-size: 18px; margin-bottom: 16px; color: var(--orange); display: flex; align-items: center; gap: 8px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 24px; }
+  .stat-card { background: var(--card); border-radius: 12px; padding: 20px; border: 1px solid var(--border); }
+  .stat-card .label { font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 8px; }
+  .stat-card .value { font-size: 28px; font-weight: 700; }
+  .stat-card .sub { font-size: 13px; color: var(--muted); margin-top: 4px; }
+  .footer { text-align: center; padding: 24px; color: var(--muted); font-size: 13px; }
+  /* NAV RAIL */
+  .nav-rail { position: fixed; left: 0; top: 0; bottom: 0; width: 54px; background: #0b1120; border-right: 1px solid var(--border); z-index: 900; display: flex; flex-direction: column; padding: 8px 0; overflow-y: auto; transition: width 0.2s; }
+  .nav-rail:hover { width: 220px; }
+  .nav-rail:hover .nav-label { opacity: 1; width: auto; }
+  .nav-link { display: flex; align-items: center; gap: 10px; padding: 10px 14px; color: var(--muted); text-decoration: none; font-size: 12px; white-space: nowrap; border-left: 3px solid transparent; transition: all 0.15s; }
+  .nav-link:hover, .nav-link.active { color: var(--accent); background: rgba(56,189,248,0.06); border-left-color: var(--accent); }
+  .nav-icon { font-size: 18px; flex-shrink: 0; width: 24px; text-align: center; }
+  .nav-label { opacity: 0; width: 0; overflow: hidden; font-weight: 600; transition: opacity 0.2s; }
+  .nav-sep { height: 1px; background: var(--border); margin: 6px 12px; }
+  /* AUTH GATE */
+  #authGate{position:fixed;top:0;left:0;width:100%;height:100%;background:#0a0a0a;z-index:99999;display:flex;align-items:center;justify-content:center;flex-direction:column;font-family:system-ui}
+  #authGate .lock-icon{font-size:64px;margin-bottom:16px}
+  #authGate h1{color:#e5e7eb;font-size:22px;margin-bottom:8px}
+  #authGate .auth-sub{color:#9ca3af;font-size:14px;margin-bottom:24px}
+  #authGate .g-btn{display:flex;align-items:center;gap:12px;padding:12px 28px;font-size:15px;font-weight:600;border:2px solid #333;border-radius:8px;background:#1a1a1a;color:#e5e7eb;cursor:pointer;transition:all .2s}
+  #authGate .g-btn:hover{border-color:#4285f4;background:#111}
+  #authGate .g-btn svg{width:20px;height:20px}
+  #authGate .auth-err{color:#ef4444;font-size:13px;margin-top:12px;min-height:20px}
+  #authGate .auth-loading{color:#9ca3af;font-size:14px;margin-top:12px}
+  #dashContent{display:none}
+  /* STATUS BADGES */
+  .badge { font-size: 11px; padding: 3px 10px; border-radius: 999px; font-weight: 600; white-space: nowrap; display: inline-block; }
+  .badge-progress { background: #1d4ed8; color: #bfdbfe; }
+  .badge-hold { background: #6b21a8; color: #e9d5ff; }
+  .badge-awaiting { background: #854d0e; color: #fef08a; }
+  .badge-approval { background: #b45309; color: #fed7aa; }
+  .badge-done { background: #166534; color: #bbf7d0; }
+  .badge-blocked { background: #991b1b; color: #fecaca; }
+  .badge-cancelled { background: #374151; color: #9ca3af; }
+  .badge-new { background: #0e7490; color: #cffafe; }
+  .badge-review { background: #4338ca; color: #c7d2fe; }
+  .badge-escalated { background: #be123c; color: #fecdd3; }
+  /* PRIORITY BADGES */
+  .pri-critical { color: var(--red); font-weight: 700; }
+  .pri-high { color: var(--orange); font-weight: 700; }
+  .pri-medium { color: var(--yellow); }
+  .pri-low { color: var(--muted); }
+  /* TICKET CARD */
+  .ticket-card { padding: 16px; margin-bottom: 10px; border-radius: 10px; border-left: 4px solid var(--border); background: var(--bg); cursor: pointer; transition: all 0.15s; }
+  .ticket-card:hover { border-color: var(--accent); background: rgba(56,189,248,0.03); }
+  .ticket-card.pri-border-critical { border-color: var(--red); }
+  .ticket-card.pri-border-high { border-color: var(--orange); }
+  .ticket-card.pri-border-medium { border-color: var(--yellow); }
+  .ticket-card.pri-border-low { border-color: var(--muted); }
+  .ticket-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; }
+  .ticket-id { font-size: 11px; font-family: monospace; color: var(--muted); }
+  .ticket-title { font-size: 15px; font-weight: 600; margin: 4px 0 6px; }
+  .ticket-meta { display: flex; gap: 12px; font-size: 12px; color: var(--muted); flex-wrap: wrap; align-items: center; }
+  .ticket-meta span { display: flex; align-items: center; gap: 4px; }
+  .ticket-desc { font-size: 13px; color: var(--muted); margin-top: 8px; line-height: 1.5; }
+  .ticket-tags { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+  .ticket-tag { font-size: 10px; padding: 2px 8px; border-radius: 4px; background: rgba(56,189,248,0.1); color: var(--accent); border: 1px solid rgba(56,189,248,0.2); }
+  /* FILTER BAR */
+  .filter-bar { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; }
+  .filter-bar label { font-size: 12px; color: var(--muted); font-weight: 600; }
+  .filter-select { background: var(--bg); color: var(--text); border: 1px solid var(--border); padding: 6px 12px; border-radius: 6px; font-size: 12px; cursor: pointer; }
+  .filter-select:focus { border-color: var(--accent); outline: none; }
+  .search-input { background: var(--bg); color: var(--text); border: 1px solid var(--border); padding: 8px 14px; border-radius: 8px; font-size: 13px; flex: 1; min-width: 200px; }
+  .search-input:focus { border-color: var(--orange); outline: none; }
+  /* CREATE TICKET FORM */
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+  .form-group { display: flex; flex-direction: column; gap: 4px; }
+  .form-group label { font-size: 12px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+  .form-group input, .form-group select, .form-group textarea { background: var(--bg); color: var(--text); border: 1px solid var(--border); padding: 8px 12px; border-radius: 6px; font-size: 13px; font-family: inherit; }
+  .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--orange); outline: none; }
+  .form-group textarea { resize: vertical; min-height: 80px; }
+  .form-full { grid-column: 1 / -1; }
+  .btn { padding: 8px 20px; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; font-size: 14px; }
+  .btn-orange { background: var(--orange); color: #0f172a; }
+  .btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--border); }
+  .btn:hover { opacity: 0.85; }
+  /* BOARD VIEW */
+  .board { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+  .board-col { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 12px; min-height: 200px; }
+  .board-col-header { font-size: 13px; font-weight: 700; padding: 6px 10px; border-radius: 6px; margin-bottom: 10px; text-align: center; }
+  .board-col-header.col-new { background: rgba(14,116,144,0.2); color: #67e8f9; }
+  .board-col-header.col-progress { background: rgba(29,78,216,0.2); color: #93c5fd; }
+  .board-col-header.col-awaiting { background: rgba(133,77,14,0.2); color: #fde68a; }
+  .board-col-header.col-hold { background: rgba(107,33,168,0.2); color: #d8b4fe; }
+  .board-col-header.col-approval { background: rgba(180,83,9,0.2); color: #fdba74; }
+  .board-col-header.col-done { background: rgba(22,101,52,0.2); color: #86efac; }
+  .board-ticket { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 10px; margin-bottom: 8px; font-size: 13px; cursor: grab; }
+  .board-ticket:hover { border-color: var(--accent); }
+  .board-ticket .bt-id { font-size: 10px; font-family: monospace; color: var(--muted); }
+  .board-ticket .bt-title { font-weight: 600; margin: 4px 0; }
+  .board-ticket .bt-meta { font-size: 11px; color: var(--muted); display: flex; justify-content: space-between; }
+  /* TABS */
+  .view-tabs { display: flex; gap: 4px; margin-bottom: 16px; }
+  .view-tab { padding: 6px 14px; border-radius: 6px; border: 1px solid var(--border); background: transparent; color: var(--muted); font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.15s; }
+  .view-tab.active { background: rgba(251,146,60,0.1); color: var(--orange); border-color: var(--orange); }
+  .view-tab:hover { border-color: var(--orange); color: var(--orange); }
+  .view-panel { display: none; }
+  .view-panel.active { display: block; }
+  /* TICKET DETAIL MODAL */
+  .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 1000; justify-content: center; align-items: center; }
+  .modal-overlay.open { display: flex; }
+  .modal { background: var(--card); border-radius: 16px; padding: 28px; max-width: 700px; width: 95%; max-height: 90vh; overflow-y: auto; border: 2px solid var(--orange); }
+  .modal h2 { color: var(--orange); margin-bottom: 16px; font-size: 20px; }
+  .modal-close { position: absolute; top: 16px; right: 20px; background: none; border: none; color: var(--muted); font-size: 24px; cursor: pointer; }
+  .comment-box { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 12px; margin-bottom: 8px; }
+  .comment-box .c-author { font-size: 12px; font-weight: 700; color: var(--accent); }
+  .comment-box .c-time { font-size: 10px; color: var(--muted); }
+  .comment-box .c-text { font-size: 13px; margin-top: 4px; line-height: 1.5; }
+  @media (max-width: 768px) { .nav-rail { display: none; } body { padding-left: 0; } .form-row { grid-template-columns: 1fr; } .board { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div id="authGate">
+  <div class="lock-icon">&#128274;</div>
+  <h1>FPCS Helpdesk</h1>
+  <div class="auth-sub">Sign in with Google to access the Helpdesk</div>
+  <button class="g-btn" id="googleSignIn" onclick="doGoogleSignIn()">
+    <svg viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59A14.5 14.5 0 019.5 24c0-1.59.28-3.14.76-4.59l-7.98-6.19A23.9 23.9 0 000 24c0 3.77.9 7.35 2.56 10.53l7.97-5.94z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 5.94C6.51 42.62 14.62 48 24 48z"/></svg>
+    Sign in with Google
+  </button>
+  <div class="auth-err" id="authErr"></div>
+  <div class="auth-loading" id="authLoading"></div>
+</div>
+<div id="dashContent">
+
+<!-- NAVIGATION RAIL -->
+<nav class="nav-rail">
+  <a class="nav-link" href="index.html"><span class="nav-icon">&#128202;</span><span class="nav-label">Tax HQ (Page 1)</span></a>
+  <a class="nav-link" href="bots.html"><span class="nav-icon">&#129302;</span><span class="nav-label">Bot HQ (Page 2)</span></a>
+  <a class="nav-link" href="deductions.html"><span class="nav-icon">&#128176;</span><span class="nav-label">Deductions (Page 3)</span></a>
+  <a class="nav-link" href="memory.html"><span class="nav-icon">&#128218;</span><span class="nav-label">Memory Bank (Page 4)</span></a>
+  <a class="nav-link" href="japster.html"><span class="nav-icon">&#128172;</span><span class="nav-label">Japster Hub (Page 5)</span></a>
+  <div class="nav-sep"></div>
+  <a class="nav-link active" href="#top"><span class="nav-icon">&#127915;</span><span class="nav-label">Helpdesk</span></a>
+  <a class="nav-link" href="#sec-board"><span class="nav-icon">&#128203;</span><span class="nav-label">Board View</span></a>
+  <a class="nav-link" href="#sec-tickets"><span class="nav-icon">&#127903;</span><span class="nav-label">All Tickets</span></a>
+  <a class="nav-link" href="#sec-create"><span class="nav-icon">&#10133;</span><span class="nav-label">New Ticket</span></a>
+</nav>
+
+<!-- HEADER -->
+<div class="header" id="top">
+  <h1>&#127915; FPCS Helpdesk &mdash; Project Tracker &amp; Issue System</h1>
+  <div class="subtitle">Track issues, projects, tasks, and requests with full status management &bull; Page 6 of FPCS Dashboard</div>
+</div>
+
+<div class="container">
+
+  <!-- OVERVIEW STATS -->
+  <div class="grid">
+    <div class="stat-card">
+      <div class="label">Open Tickets</div>
+      <div class="value" style="color:var(--accent)" id="statOpen">0</div>
+      <div class="sub">Active issues</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">In Progress</div>
+      <div class="value" style="color:var(--yellow)" id="statProgress">0</div>
+      <div class="sub">Being worked on</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Awaiting Info</div>
+      <div class="value" style="color:var(--orange)" id="statAwaiting">0</div>
+      <div class="sub">Need input</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Needs Approval</div>
+      <div class="value" style="color:var(--purple)" id="statApproval">0</div>
+      <div class="sub">Review required</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">On Hold</div>
+      <div class="value" style="color:var(--pink)" id="statHold">0</div>
+      <div class="sub">Paused</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Completed</div>
+      <div class="value" style="color:var(--green)" id="statDone">0</div>
+      <div class="sub">Resolved</div>
+    </div>
+  </div>
+
+  <!-- KANBAN BOARD VIEW -->
+  <div class="section" id="sec-board">
+    <h2>&#128203; Board View</h2>
+    <div class="board" id="boardView"></div>
+  </div>
+
+  <!-- ALL TICKETS LIST -->
+  <div class="section" id="sec-tickets">
+    <h2>&#127903; All Tickets</h2>
+    <div class="filter-bar">
+      <input type="text" class="search-input" id="searchInput" placeholder="Search tickets..." oninput="renderTickets()">
+      <label>Status:</label>
+      <select class="filter-select" id="filterStatus" onchange="renderTickets()">
+        <option value="all">All</option>
+        <option value="New">New</option>
+        <option value="In Progress">In Progress</option>
+        <option value="Awaiting Information">Awaiting Info</option>
+        <option value="On Hold">On Hold</option>
+        <option value="Needs Approval">Needs Approval</option>
+        <option value="In Review">In Review</option>
+        <option value="Escalated">Escalated</option>
+        <option value="Blocked">Blocked</option>
+        <option value="Done">Done</option>
+        <option value="Cancelled">Cancelled</option>
+      </select>
+      <label>Priority:</label>
+      <select class="filter-select" id="filterPri" onchange="renderTickets()">
+        <option value="all">All</option>
+        <option value="Critical">Critical</option>
+        <option value="High">High</option>
+        <option value="Medium">Medium</option>
+        <option value="Low">Low</option>
+      </select>
+      <label>Type:</label>
+      <select class="filter-select" id="filterType" onchange="renderTickets()">
+        <option value="all">All</option>
+        <option value="Issue">Issue</option>
+        <option value="Task">Task</option>
+        <option value="Project">Project</option>
+        <option value="Request">Request</option>
+        <option value="Bug">Bug</option>
+      </select>
+    </div>
+    <div id="ticketList"></div>
+  </div>
+
+  <!-- CREATE TICKET -->
+  <div class="section" id="sec-create">
+    <h2>&#10133; Create New Ticket</h2>
+    <div class="form-row">
+      <div class="form-group form-full">
+        <label>Title</label>
+        <input type="text" id="newTitle" placeholder="Brief description of the issue or task">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Type</label>
+        <select id="newType">
+          <option value="Issue">Issue</option>
+          <option value="Task">Task</option>
+          <option value="Project">Project</option>
+          <option value="Request">Request</option>
+          <option value="Bug">Bug</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Priority</label>
+        <select id="newPriority">
+          <option value="Medium">Medium</option>
+          <option value="Critical">Critical</option>
+          <option value="High">High</option>
+          <option value="Low">Low</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Status</label>
+        <select id="newStatus">
+          <option value="New">New</option>
+          <option value="In Progress">In Progress</option>
+          <option value="Awaiting Information">Awaiting Information</option>
+          <option value="On Hold">On Hold</option>
+          <option value="Needs Approval">Needs Approval</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Assigned To</label>
+        <select id="newAssignee">
+          <option value="Commander">Commander (James)</option>
+          <option value="DDBOT">DDBOT</option>
+          <option value="ForensicBot">ForensicBot</option>
+          <option value="ShieldBot">ShieldBot</option>
+          <option value="SCOUT">SCOUT</option>
+          <option value="CategorizerBot">CategorizerBot</option>
+          <option value="Japster">Japster</option>
+          <option value="Claude">Claude AI</option>
+          <option value="Unassigned">Unassigned</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Category</label>
+        <select id="newCategory">
+          <option value="Tax Prep">Tax Prep</option>
+          <option value="Dashboard">Dashboard</option>
+          <option value="Bots">Bots</option>
+          <option value="Data">Data</option>
+          <option value="Infrastructure">Infrastructure</option>
+          <option value="Email">Email</option>
+          <option value="Deductions">Deductions</option>
+          <option value="Income">Income</option>
+          <option value="Integration">Integration</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Tags (comma-separated)</label>
+        <input type="text" id="newTags" placeholder="e.g. urgent, 2022-taxes, ebay">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group form-full">
+        <label>Description</label>
+        <textarea id="newDesc" placeholder="Detailed description, steps to reproduce, expected outcome, etc."></textarea>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:8px">
+      <button class="btn btn-orange" onclick="createTicket()">&#10133; Create Ticket</button>
+      <button class="btn btn-ghost" onclick="clearForm()">Clear</button>
+    </div>
+  </div>
+
+</div><!-- /container -->
+
+<!-- TICKET DETAIL MODAL -->
+<div class="modal-overlay" id="ticketModal" onclick="if(event.target===this)closeModal()">
+  <div class="modal" style="position:relative">
+    <button class="modal-close" onclick="closeModal()">&times;</button>
+    <div id="modalContent"></div>
+  </div>
+</div>
+
+<div class="footer">
+  FPCS Tax Preparation System &bull; Helpdesk v1.0 &bull; Page 6 &bull; Issues &amp; Project Tracker
+</div>
+
+</div><!-- /dashContent -->
+
+<script>
+// === TICKET DATA ===
+var STATUSES = ['New','In Progress','Awaiting Information','On Hold','Needs Approval','In Review','Escalated','Blocked','Done','Cancelled'];
+var STATUS_CLASSES = {'New':'badge-new','In Progress':'badge-progress','Awaiting Information':'badge-awaiting','On Hold':'badge-hold','Needs Approval':'badge-approval','In Review':'badge-review','Escalated':'badge-escalated','Blocked':'badge-blocked','Done':'badge-done','Cancelled':'badge-cancelled'};
+var BOARD_COLS = ['New','In Progress','Awaiting Information','On Hold','Needs Approval','Done'];
+var COL_CLASSES = {'New':'col-new','In Progress':'col-progress','Awaiting Information':'col-awaiting','On Hold':'col-hold','Needs Approval':'col-approval','Done':'col-done'};
+
+var nextId = 1;
+function tid() { return 'FPCS-' + String(nextId++).padStart(3,'0'); }
+
+var tickets = [];
+
+// Seed with real FPCS project tickets
+function seedTickets() {
+  var seed = [
+    {title:'Add remaining 12 missing income entries to ledger',type:'Task',priority:'Critical',status:'In Progress',assignee:'Claude',category:'Income',tags:['2022-taxes','income','ledger'],desc:'14 confirmed missing income entries found ($5,185.50). 2 added so far, 12 remaining ($4,660.50). Sources: PayPal, eBay, Amazon, Cash App.'},
+    {title:'Process daniel@friendlypcsupport.com email data',type:'Task',priority:'High',status:'New',assignee:'Claude',category:'Email',tags:['email','dedup','outlook'],desc:'Access outlook.office.com, check ALL folders including Deleted Items. Resurrect improperly deleted emails (hacker activity). Find all business/finance/tax emails. Deduplicate against marshalldanman@gmail.com data.'},
+    {title:'Configure GitHub Pages for fpcs-bots repo',type:'Task',priority:'Medium',status:'Awaiting Information',assignee:'Commander',category:'Infrastructure',tags:['dns','github-pages','bots'],desc:'CNAME record for bots.justout.today has been created at GoDaddy. Need to enable GitHub Pages on fpcs-bots repo with custom domain bots.justout.today.'},
+    {title:'Build interactive drill-down dashboard',type:'Project',priority:'High',status:'New',assignee:'Claude',category:'Dashboard',tags:['dashboard','drill-down','sheets-api'],desc:'Architect click-to-expand dashboard with Google Sheets backend. Batch categorization, year filter, database-backed everything.'},
+    {title:'Fix HTTPS warnings on dashboard',type:'Bug',priority:'Medium',status:'New',assignee:'Claude',category:'Infrastructure',tags:['https','ssl','dashboard'],desc:'Mixed content warnings or certificate issues on dashboard.justout.today. Need to investigate and resolve.'},
+    {title:'Build bot assistant with cartoon face UI',type:'Project',priority:'Medium',status:'New',assignee:'Claude',category:'Dashboard',tags:['ui','chat-bubble','bot-face'],desc:'Floating bot assistant with cartoon face chat bubble UI on all dashboard pages. Should provide contextual help.'},
+    {title:'IRS transcript analysis',type:'Task',priority:'High',status:'On Hold',assignee:'Commander',category:'Tax Prep',tags:['irs','transcripts','2022-taxes'],desc:'Need to obtain and analyze IRS transcripts for 2022 tax year to cross-reference reported income.'},
+    {title:'Truck rental deduction research',type:'Task',priority:'Medium',status:'On Hold',assignee:'Claude',category:'Deductions',tags:['truck','rental','deduction'],desc:'Research whether truck rental expenses qualify as business deductions for 2022. Check IRS guidelines.'},
+    {title:'Self-rental arrangement documentation',type:'Task',priority:'Medium',status:'Awaiting Information',assignee:'Commander',category:'Tax Prep',tags:['self-rental','documentation'],desc:'Document self-rental arrangement for tax purposes. Need details from Commander about rental terms.'},
+    {title:'Deploy MaintenanceBot',type:'Task',priority:'Low',status:'New',assignee:'Claude',category:'Bots',tags:['bots','maintenance','deployment'],desc:'Build and deploy MaintenanceBot for automated system health checks, dashboard monitoring, and routine maintenance tasks.'},
+    {title:'Set up Discord bot integration',type:'Task',priority:'Low',status:'New',assignee:'Claude',category:'Integration',tags:['discord','bot','integration'],desc:'Create Discord bot for FPCS notifications and Commander interaction. Should relay alerts from dashboard.'},
+    {title:'Categorize uncategorized QBO transactions',type:'Task',priority:'High',status:'In Progress',assignee:'CategorizerBot',category:'Data',tags:['qbo','categorization','transactions'],desc:'CategorizerBot working through uncategorized QuickBooks Online transactions. Need to ensure proper Schedule C mapping.'},
+    {title:'Village library knowledge system',type:'Project',priority:'Low',status:'New',assignee:'Japster',category:'Infrastructure',tags:['library','knowledge','village'],desc:'Build persistent knowledge "books" in the town library for other AI to glean off of and humans to read in village mode. Each major task produces a book.'},
+    {title:'Research best cross-comparison tools for data dedup',type:'Task',priority:'Medium',status:'New',assignee:'Claude',category:'Data',tags:['dedup','tools','research'],desc:'Find the ultimate method for cross-comparing financial data across multiple sources. Evaluate tools, methods, and solutions for ensuring no duplicate entries.'},
+    {title:'MAIL final 2022 tax return by April 10',type:'Task',priority:'Critical',status:'On Hold',assignee:'Commander',category:'Tax Prep',tags:['deadline','filing','2022-taxes'],desc:'Oregon 3-year statute expires April 15, 2026. Must physically MAIL tax return by April 10 to ensure delivery.'}
+  ];
+  seed.forEach(function(t) {
+    tickets.push({
+      id: tid(),
+      title: t.title,
+      type: t.type,
+      priority: t.priority,
+      status: t.status,
+      assignee: t.assignee,
+      category: t.category,
+      tags: t.tags,
+      desc: t.desc,
+      created: '2026-02-22',
+      updated: '2026-02-22',
+      comments: []
+    });
+  });
+}
+
+// === RENDER ===
+function renderAll() {
+  renderStats();
+  renderBoard();
+  renderTickets();
+}
+
+function renderStats() {
+  var counts = {};
+  STATUSES.forEach(function(s) { counts[s] = 0; });
+  tickets.forEach(function(t) { counts[t.status] = (counts[t.status] || 0) + 1; });
+  document.getElementById('statOpen').textContent = tickets.filter(function(t) { return t.status !== 'Done' && t.status !== 'Cancelled'; }).length;
+  document.getElementById('statProgress').textContent = counts['In Progress'] || 0;
+  document.getElementById('statAwaiting').textContent = counts['Awaiting Information'] || 0;
+  document.getElementById('statApproval').textContent = counts['Needs Approval'] || 0;
+  document.getElementById('statHold').textContent = counts['On Hold'] || 0;
+  document.getElementById('statDone').textContent = counts['Done'] || 0;
+}
+
+function renderBoard() {
+  var board = document.getElementById('boardView');
+  board.innerHTML = '';
+  BOARD_COLS.forEach(function(col) {
+    var colEl = document.createElement('div');
+    colEl.className = 'board-col';
+    var colTickets = tickets.filter(function(t) { return t.status === col; });
+    colEl.innerHTML = '<div class="board-col-header ' + (COL_CLASSES[col] || '') + '">' + col + ' (' + colTickets.length + ')</div>';
+    colTickets.forEach(function(t) {
+      var priClass = t.priority === 'Critical' ? 'pri-critical' : t.priority === 'High' ? 'pri-high' : t.priority === 'Medium' ? 'pri-medium' : 'pri-low';
+      colEl.innerHTML += '<div class="board-ticket" onclick="openTicket(\'' + t.id + '\')"><div class="bt-id">' + t.id + '</div><div class="bt-title">' + escHtml(t.title) + '</div><div class="bt-meta"><span class="' + priClass + '">' + t.priority + '</span><span>' + t.assignee + '</span></div></div>';
+    });
+    board.appendChild(colEl);
+  });
+}
+
+function renderTickets() {
+  var search = (document.getElementById('searchInput').value || '').toLowerCase();
+  var fStatus = document.getElementById('filterStatus').value;
+  var fPri = document.getElementById('filterPri').value;
+  var fType = document.getElementById('filterType').value;
+  var list = document.getElementById('ticketList');
+  list.innerHTML = '';
+  var filtered = tickets.filter(function(t) {
+    if (fStatus !== 'all' && t.status !== fStatus) return false;
+    if (fPri !== 'all' && t.priority !== fPri) return false;
+    if (fType !== 'all' && t.type !== fType) return false;
+    if (search && t.title.toLowerCase().indexOf(search) === -1 && t.desc.toLowerCase().indexOf(search) === -1 && t.tags.join(' ').toLowerCase().indexOf(search) === -1) return false;
+    return true;
+  });
+  if (filtered.length === 0) {
+    list.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted)">No tickets match the current filters.</div>';
+    return;
+  }
+  filtered.forEach(function(t) {
+    var priClass = t.priority === 'Critical' ? 'pri-border-critical' : t.priority === 'High' ? 'pri-border-high' : t.priority === 'Medium' ? 'pri-border-medium' : 'pri-border-low';
+    var priText = t.priority === 'Critical' ? 'pri-critical' : t.priority === 'High' ? 'pri-high' : t.priority === 'Medium' ? 'pri-medium' : 'pri-low';
+    var statusCls = STATUS_CLASSES[t.status] || 'badge-new';
+    var tagsHtml = t.tags.map(function(tag) { return '<span class="ticket-tag">' + escHtml(tag) + '</span>'; }).join('');
+    list.innerHTML += '<div class="ticket-card ' + priClass + '" onclick="openTicket(\'' + t.id + '\')">' +
+      '<div class="ticket-top"><div><div class="ticket-id">' + t.id + ' &bull; ' + t.type + '</div><div class="ticket-title">' + escHtml(t.title) + '</div></div><span class="badge ' + statusCls + '">' + t.status + '</span></div>' +
+      '<div class="ticket-meta"><span class="' + priText + '">&#9679; ' + t.priority + '</span><span>&#128100; ' + t.assignee + '</span><span>&#128193; ' + t.category + '</span><span>&#128197; ' + t.created + '</span></div>' +
+      '<div class="ticket-desc">' + escHtml(t.desc).substring(0, 200) + (t.desc.length > 200 ? '...' : '') + '</div>' +
+      '<div class="ticket-tags">' + tagsHtml + '</div></div>';
+  });
+}
+
+// === TICKET DETAIL MODAL ===
+function openTicket(id) {
+  var t = tickets.find(function(x) { return x.id === id; });
+  if (!t) return;
+  var statusCls = STATUS_CLASSES[t.status] || 'badge-new';
+  var priText = t.priority === 'Critical' ? 'pri-critical' : t.priority === 'High' ? 'pri-high' : t.priority === 'Medium' ? 'pri-medium' : 'pri-low';
+  var tagsHtml = t.tags.map(function(tag) { return '<span class="ticket-tag">' + escHtml(tag) + '</span>'; }).join('');
+  var commentsHtml = t.comments.map(function(c) {
+    return '<div class="comment-box"><div style="display:flex;justify-content:space-between"><span class="c-author">' + escHtml(c.author) + '</span><span class="c-time">' + c.time + '</span></div><div class="c-text">' + escHtml(c.text) + '</div></div>';
+  }).join('');
+  var statusOptions = STATUSES.map(function(s) { return '<option value="' + s + '"' + (s === t.status ? ' selected' : '') + '>' + s + '</option>'; }).join('');
+
+  document.getElementById('modalContent').innerHTML =
+    '<div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px"><div><div class="ticket-id" style="margin-bottom:4px">' + t.id + ' &bull; ' + t.type + ' &bull; ' + t.category + '</div><h2 style="color:var(--text);margin-bottom:8px">' + escHtml(t.title) + '</h2></div><span class="badge ' + statusCls + '" style="font-size:13px;padding:4px 14px">' + t.status + '</span></div>' +
+    '<div class="ticket-meta" style="margin-bottom:16px"><span class="' + priText + '">&#9679; ' + t.priority + '</span><span>&#128100; ' + t.assignee + '</span><span>Created: ' + t.created + '</span><span>Updated: ' + t.updated + '</span></div>' +
+    '<div class="ticket-tags" style="margin-bottom:16px">' + tagsHtml + '</div>' +
+    '<div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:16px;margin-bottom:16px"><h3 style="color:var(--accent);font-size:14px;margin-bottom:8px">Description</h3><p style="font-size:13px;line-height:1.6;color:var(--muted)">' + escHtml(t.desc) + '</p></div>' +
+    '<div style="margin-bottom:16px"><h3 style="color:var(--accent);font-size:14px;margin-bottom:8px">Update Status</h3><div style="display:flex;gap:8px;align-items:center"><select class="filter-select" id="modalStatus">' + statusOptions + '</select><button class="btn btn-orange" onclick="updateTicketStatus(\'' + t.id + '\')">Update</button></div></div>' +
+    '<div style="margin-bottom:16px"><h3 style="color:var(--accent);font-size:14px;margin-bottom:8px">Comments (' + t.comments.length + ')</h3>' + (commentsHtml || '<div style="color:var(--muted);font-size:13px">No comments yet.</div>') + '</div>' +
+    '<div><div style="display:flex;gap:8px"><input type="text" class="search-input" id="newComment" placeholder="Add a comment..." style="min-width:0"><button class="btn btn-orange" onclick="addComment(\'' + t.id + '\')">Post</button></div></div>';
+
+  document.getElementById('ticketModal').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('ticketModal').classList.remove('open');
+}
+
+function updateTicketStatus(id) {
+  var t = tickets.find(function(x) { return x.id === id; });
+  if (!t) return;
+  var newStatus = document.getElementById('modalStatus').value;
+  t.status = newStatus;
+  t.updated = new Date().toISOString().slice(0, 10);
+  renderAll();
+  openTicket(id);
+}
+
+function addComment(id) {
+  var t = tickets.find(function(x) { return x.id === id; });
+  if (!t) return;
+  var input = document.getElementById('newComment');
+  var text = input.value.trim();
+  if (!text) return;
+  t.comments.push({
+    author: 'Commander',
+    time: new Date().toLocaleString(),
+    text: text
+  });
+  t.updated = new Date().toISOString().slice(0, 10);
+  input.value = '';
+  openTicket(id);
+}
+
+// === CREATE TICKET ===
+function createTicket() {
+  var title = document.getElementById('newTitle').value.trim();
+  if (!title) { alert('Please enter a ticket title.'); return; }
+  var t = {
+    id: tid(),
+    title: title,
+    type: document.getElementById('newType').value,
+    priority: document.getElementById('newPriority').value,
+    status: document.getElementById('newStatus').value,
+    assignee: document.getElementById('newAssignee').value,
+    category: document.getElementById('newCategory').value,
+    tags: document.getElementById('newTags').value.split(',').map(function(s) { return s.trim(); }).filter(Boolean),
+    desc: document.getElementById('newDesc').value.trim() || 'No description provided.',
+    created: new Date().toISOString().slice(0, 10),
+    updated: new Date().toISOString().slice(0, 10),
+    comments: []
+  };
+  tickets.push(t);
+  clearForm();
+  renderAll();
+  openTicket(t.id);
+}
+
+function clearForm() {
+  document.getElementById('newTitle').value = '';
+  document.getElementById('newDesc').value = '';
+  document.getElementById('newTags').value = '';
+  document.getElementById('newType').selectedIndex = 0;
+  document.getElementById('newPriority').selectedIndex = 0;
+  document.getElementById('newStatus').selectedIndex = 0;
+  document.getElementById('newAssignee').selectedIndex = 0;
+  document.getElementById('newCategory').selectedIndex = 0;
+}
+
+function escHtml(s) {
+  var d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+// === INIT ===
+seedTickets();
+renderAll();
+
+// Save/restore from localStorage
+function saveTickets() {
+  try { localStorage.setItem('fpcs_helpdesk_tickets', JSON.stringify(tickets)); } catch(e) {}
+}
+function loadTickets() {
+  try {
+    var saved = localStorage.getItem('fpcs_helpdesk_tickets');
+    if (saved) {
+      tickets = JSON.parse(saved);
+      nextId = tickets.reduce(function(max, t) {
+        var n = parseInt(t.id.replace('FPCS-',''), 10);
+        return n >= max ? n + 1 : max;
+      }, nextId);
+      renderAll();
+    }
+  } catch(e) {}
+}
+// Auto-save on any change
+var _origCreate = createTicket;
+createTicket = function() { _origCreate(); saveTickets(); };
+var _origUpdate = updateTicketStatus;
+updateTicketStatus = function(id) { _origUpdate(id); saveTickets(); };
+var _origComment = addComment;
+addComment = function(id) { _origComment(id); saveTickets(); };
+
+// Load saved data if any
+loadTickets();
+
+// === FIREBASE GOOGLE AUTH GATE ===
+(function(){
+  var firebaseConfig={apiKey:"AIzaSyBgYAPO_0cEvhPzfU6GZykJVUnF55LEzXQ",authDomain:"fpcs-dashboard-63b25.firebaseapp.com",projectId:"fpcs-dashboard-63b25",storageBucket:"fpcs-dashboard-63b25.firebasestorage.app",messagingSenderId:"377879797743",appId:"1:377879797743:web:61a56f9bf69f2df9eba01a"};
+  var _AH=['2cf3a7d6f68c22e431d35aec11129074f9bb677598de0fe85df3ba3c0f513365'];
+  function _h(s){return crypto.subtle?crypto.subtle.digest('SHA-256',new TextEncoder().encode(s)).then(function(b){return Array.from(new Uint8Array(b)).map(function(x){return x.toString(16).padStart(2,'0')}).join('')}):Promise.resolve('')}
+  function _checkEmail(email){return _h(email.toLowerCase()).then(function(h){return _AH.indexOf(h)!==-1})}
+  function loadScript(src,cb){var s=document.createElement('script');s.src=src;s.onload=cb;document.head.appendChild(s)}
+  function initAuth(){
+    firebase.initializeApp(firebaseConfig);
+    var auth=firebase.auth();
+    var gate=document.getElementById('authGate');
+    var dash=document.getElementById('dashContent');
+    var errEl=document.getElementById('authErr');
+    var loadEl=document.getElementById('authLoading');
+    auth.onAuthStateChanged(function(user){
+      if(user){
+        _checkEmail(user.email).then(function(ok){
+          if(!ok){ errEl.textContent='Access denied: not authorized'; auth.signOut(); return; }
+          gate.style.display='none'; dash.style.display='block';
+          console.log('[FPCS Auth] Authorized user signed in');
+        });
+      }else{ gate.style.display='flex'; dash.style.display='none'; }
+    });
+    window.doGoogleSignIn=function(){
+      errEl.textContent=''; loadEl.textContent='Signing in...';
+      document.getElementById('googleSignIn').disabled=true;
+      var provider=new firebase.auth.GoogleAuthProvider();
+      auth.signInWithPopup(provider).then(function(){ loadEl.textContent=''; })
+      .catch(function(error){
+        loadEl.textContent=''; document.getElementById('googleSignIn').disabled=false;
+        errEl.textContent=error.message||'Sign-in failed';
+      });
+    };
+  }
+  loadScript('https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js',function(){
+    loadScript('https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js',initAuth);
+  });
+})();
+</script>
+</body>
+</html>
