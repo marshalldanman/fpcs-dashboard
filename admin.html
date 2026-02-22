@@ -7,6 +7,7 @@
 <link rel="stylesheet" href="css/core.css">
 <link rel="stylesheet" href="css/nav.css">
 <link rel="stylesheet" href="css/auth.css">
+<link rel="stylesheet" href="css/chiligbot.css">
 <style>
   :root {
     --admin: #a78bfa; --admin-glow: rgba(167,139,250,0.15);
@@ -193,11 +194,50 @@
   .activity-desc { color: var(--muted); margin-top: 2px; }
   .activity-time { font-size: 10px; color: var(--muted); flex-shrink: 0; min-width: 60px; text-align: right; }
 
+  /* REPORT SECTIONS */
+  .rpt-section { background: var(--card); border: 1px solid var(--border); border-radius: 10px; margin-bottom: 12px; overflow: hidden; transition: all 0.15s; }
+  .rpt-section:hover { border-color: var(--admin-border); }
+  .rpt-header { display: flex; align-items: center; gap: 10px; padding: 14px 16px; cursor: pointer; user-select: none; }
+  .rpt-num { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--admin); color: #fff; font-size: 13px; font-weight: 800; flex-shrink: 0; }
+  .rpt-title { font-size: 15px; font-weight: 700; color: var(--text); flex: 1; }
+  .rpt-toggle { font-size: 10px; color: var(--muted); transition: transform 0.2s; }
+  .rpt-section.rpt-open .rpt-toggle { transform: rotate(180deg); }
+  .rpt-body { display: none; padding: 0 16px 16px; }
+  .rpt-section.rpt-open .rpt-body { display: block; }
+
+  .rpt-badge { font-size: 10px; padding: 2px 8px; border-radius: 999px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+  .rpt-badge--success { background: rgba(74,222,128,0.15); color: #4ade80; }
+  .rpt-badge--danger { background: rgba(248,113,113,0.15); color: #f87171; }
+  .rpt-badge--warning { background: rgba(251,191,36,0.15); color: #fbbf24; }
+  .rpt-badge--info { background: rgba(56,189,248,0.15); color: #38bdf8; }
+  .rpt-badge--special { background: rgba(251,146,60,0.15); color: #fb923c; }
+
+  .rpt-summary { font-size: 13px; color: var(--text); line-height: 1.7; margin-bottom: 14px; padding: 10px 12px; background: rgba(255,255,255,0.02); border-radius: 6px; border-left: 3px solid var(--admin); }
+  .rpt-detail { display: flex; flex-direction: column; gap: 10px; }
+
+  .rpt-item { display: flex; gap: 10px; padding: 10px 12px; border-radius: 8px; background: rgba(255,255,255,0.015); }
+  .rpt-item--positive { border-left: 3px solid var(--green); }
+  .rpt-item--negative { border-left: 3px solid var(--red); }
+  .rpt-item--neutral { border-left: 3px solid var(--yellow); }
+  .rpt-item strong { font-size: 13px; color: var(--text); display: block; margin-bottom: 4px; }
+  .rpt-item p { font-size: 12px; color: var(--muted); line-height: 1.6; margin: 0; }
+  .rpt-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 5px; }
+  .rpt-dot--green { background: var(--green); box-shadow: 0 0 6px var(--green); }
+  .rpt-dot--red { background: var(--red); box-shadow: 0 0 6px var(--red); }
+  .rpt-dot--yellow { background: var(--yellow); box-shadow: 0 0 6px var(--yellow); }
+
+  .rpt-kv { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.04); font-size: 13px; }
+  .rpt-kv:last-child { border-bottom: none; }
+  .rpt-k { color: var(--muted); }
+  .rpt-v { color: var(--text); font-weight: 600; text-align: right; max-width: 60%; }
+
   @media (max-width: 768px) {
     .admin-tabs { gap: 2px; }
     .admin-tab { padding: 8px 12px; font-size: 12px; }
     .shaper-controls { flex-direction: column; }
     .user-card { flex-wrap: wrap; }
+    .rpt-kv { flex-direction: column; gap: 2px; }
+    .rpt-v { text-align: left; max-width: 100%; }
   }
 </style>
 </head>
@@ -232,6 +272,7 @@
     <button class="admin-tab" data-panel="builds"><span class="tab-icon">&#128736;</span> Builds</button>
     <button class="admin-tab" data-panel="system"><span class="tab-icon">&#9881;</span> System</button>
     <button class="admin-tab" data-panel="settings"><span class="tab-icon">&#128295;</span> Settings</button>
+    <button class="admin-tab" data-panel="reports"><span class="tab-icon">&#128202;</span> Reports</button>
   </div>
 
   <!-- ==================== PROJECT SHAPER TAB ==================== -->
@@ -1048,6 +1089,390 @@
     </div>
   </div>
 
+  <!-- ==================== REPORTS TAB ==================== -->
+  <div class="admin-panel" id="panel-reports">
+    <div class="section" id="sec-reports">
+      <h2 style="color:var(--admin)">&#128202; Project Assessment &mdash; Full Status Report</h2>
+      <p style="color:var(--muted); font-size:13px; margin-bottom:20px;">
+        Comprehensive 7-section analysis with ADHD-friendly formatting. Progressive disclosure: click headers to expand. SupbotPro&rsquo;s isolated review at the bottom.
+      </p>
+
+      <!-- Report Controls -->
+      <div style="display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap; align-items:center;">
+        <button class="shaper-filter active" data-rfilter="all">All Sections</button>
+        <button class="shaper-filter" data-rfilter="good">&#128994; Good</button>
+        <button class="shaper-filter" data-rfilter="bad">&#128308; Needs Work</button>
+        <button class="shaper-filter" data-rfilter="mixed">&#128992; Mixed</button>
+        <span style="margin-left:auto; font-size:11px; color:var(--muted);">Last assessed: Feb 22, 2026</span>
+      </div>
+
+      <!-- SECTION 1: PURPOSE & INTENT -->
+      <div class="rpt-section" data-rtype="good" id="rpt-purpose">
+        <div class="rpt-header" onclick="this.parentElement.classList.toggle('rpt-open')">
+          <span class="rpt-num">1</span>
+          <span class="rpt-title">Purpose &amp; Intent</span>
+          <span class="rpt-badge rpt-badge--info">Foundation</span>
+          <span class="rpt-toggle">&#9660;</span>
+        </div>
+        <div class="rpt-body">
+          <div class="rpt-summary">
+            <strong>What this project IS:</strong> A modular tax preparation dashboard that doubles as the first product of TRAILS (Technology &middot; Robotics &middot; AI &middot; Language &middot; Skills) Career Center.
+          </div>
+          <div class="rpt-detail">
+            <div class="rpt-kv"><span class="rpt-k">Primary Goal</span><span class="rpt-v">File 2022 Oregon taxes before April 10, 2026 deadline</span></div>
+            <div class="rpt-kv"><span class="rpt-k">Secondary Goal</span><span class="rpt-v">Build commercial-grade dashboard architecture for future products</span></div>
+            <div class="rpt-kv"><span class="rpt-k">Architecture</span><span class="rpt-v">Thin Pages + Fat Shared Modules (Phase 1 complete)</span></div>
+            <div class="rpt-kv"><span class="rpt-k">Hosting</span><span class="rpt-v">$0 &mdash; GitHub Pages + Firebase Auth free tier</span></div>
+            <div class="rpt-kv"><span class="rpt-k">Users</span><span class="rpt-v">3-tier access (Admin / Member / Guest) with SHA-256 hashing</span></div>
+            <div class="rpt-kv"><span class="rpt-k">Pages Built</span><span class="rpt-v">8 pages, all converted to thin shells with shared CSS/JS</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION 2: REALISTIC GROWTH AREAS -->
+      <div class="rpt-section" data-rtype="mixed" id="rpt-growth">
+        <div class="rpt-header" onclick="this.parentElement.classList.toggle('rpt-open')">
+          <span class="rpt-num">2</span>
+          <span class="rpt-title">Realistic Growth Areas</span>
+          <span class="rpt-badge rpt-badge--warning">Opportunity</span>
+          <span class="rpt-toggle">&#9660;</span>
+        </div>
+        <div class="rpt-body">
+          <div class="rpt-summary">
+            The architecture is solid. The main growth vector is connecting the pipeline (Python scripts) to the dashboard (reactive data store). This is Phases 2-4.
+          </div>
+          <div class="rpt-detail">
+            <div class="rpt-item rpt-item--positive">
+              <span class="rpt-dot rpt-dot--green"></span>
+              <div>
+                <strong>Firebase RTDB Integration (Phase 2)</strong>
+                <p>The killer feature: change one number and everything updates everywhere. RTDB is already in the same Firebase project. Enable it, add security rules, connect store.js.</p>
+              </div>
+            </div>
+            <div class="rpt-item rpt-item--positive">
+              <span class="rpt-dot rpt-dot--green"></span>
+              <div>
+                <strong>Widget Registry (Phase 3)</strong>
+                <p>Replace hardcoded HTML stat cards with render functions that subscribe to store paths. Zero stale data possible.</p>
+              </div>
+            </div>
+            <div class="rpt-item rpt-item--neutral">
+              <span class="rpt-dot rpt-dot--yellow"></span>
+              <div>
+                <strong>Pipeline Adapter (Phase 4)</strong>
+                <p>Python scripts currently output to CSV. Need generate_store.py to produce fpcs-2022.json that the dashboard reads. Risk: changes to 12 Python scripts.</p>
+              </div>
+            </div>
+            <div class="rpt-item rpt-item--neutral">
+              <span class="rpt-dot rpt-dot--yellow"></span>
+              <div>
+                <strong>Multi-Project + Worlds (Phase 5)</strong>
+                <p>Post-deadline. Each user gets their own World. Project selector in nav. Data isolation per project. This is the commercial multiplier.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION 3: GOOD REPORT -->
+      <div class="rpt-section rpt-open" data-rtype="good" id="rpt-good">
+        <div class="rpt-header" onclick="this.parentElement.classList.toggle('rpt-open')">
+          <span class="rpt-num">3</span>
+          <span class="rpt-title">Good Report</span>
+          <span class="rpt-badge rpt-badge--success">Strengths</span>
+          <span class="rpt-toggle">&#9660;</span>
+        </div>
+        <div class="rpt-body">
+          <div class="rpt-summary">
+            The project has strong fundamentals. Phase 1 extraction eliminated 60% of duplicated code. Auth system is production-grade. Bot ecosystem is creative and functional.
+          </div>
+          <div class="rpt-detail">
+            <div class="rpt-item rpt-item--positive">
+              <span class="rpt-dot rpt-dot--green"></span>
+              <div>
+                <strong>Phase 1 Complete: Shared Modules</strong>
+                <p>All 8 pages use shared core.css, nav.css, auth.css, auth.js, nav.js. Each page is now a ~50-line thin shell. Cache-friendly, maintainable, DRY.</p>
+              </div>
+            </div>
+            <div class="rpt-item rpt-item--positive">
+              <span class="rpt-dot rpt-dot--green"></span>
+              <div>
+                <strong>3-Tier Auth System</strong>
+                <p>SHA-256 email hashing, admin/member/guest roles, onboarding flow, boot animation, guest workspace. No server needed.</p>
+              </div>
+            </div>
+            <div class="rpt-item rpt-item--positive">
+              <span class="rpt-dot rpt-dot--green"></span>
+              <div>
+                <strong>Admin HQ (Page 8)</strong>
+                <p>7 tabs covering Project Shaper, Users, Audit, Builds, System, Settings, and now Reports. Living command history. Build monitor with list/board/feed views.</p>
+              </div>
+            </div>
+            <div class="rpt-item rpt-item--positive">
+              <span class="rpt-dot rpt-dot--green"></span>
+              <div>
+                <strong>Bot Ecosystem</strong>
+                <p>Realbotville lore. Beckoning system. Google Sheet relay for bot-to-bot communication. Bot Registry for tracking 100+ bots. ChiliGBot construction mascot.</p>
+              </div>
+            </div>
+            <div class="rpt-item rpt-item--positive">
+              <span class="rpt-dot rpt-dot--green"></span>
+              <div>
+                <strong>$0 Operating Cost</strong>
+                <p>GitHub Pages for hosting, Firebase free tier for auth. No server, no monthly bills, no vendor lock-in on the hosting layer.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION 4: BAD REPORT -->
+      <div class="rpt-section" data-rtype="bad" id="rpt-bad">
+        <div class="rpt-header" onclick="this.parentElement.classList.toggle('rpt-open')">
+          <span class="rpt-num">4</span>
+          <span class="rpt-title">Needs Attention</span>
+          <span class="rpt-badge rpt-badge--danger">Gaps</span>
+          <span class="rpt-toggle">&#9660;</span>
+        </div>
+        <div class="rpt-body">
+          <div class="rpt-summary">
+            No reactive data store yet. Dashboard still shows hardcoded sample data. Incognito auth fails. No automated testing. Several planned features exist only as UI shells.
+          </div>
+          <div class="rpt-detail">
+            <div class="rpt-item rpt-item--negative">
+              <span class="rpt-dot rpt-dot--red"></span>
+              <div>
+                <strong>All Dashboard Data Is Hardcoded</strong>
+                <p>Every stat card, table, and chart shows placeholder values. Nothing reads from the Python pipeline output. Phase 2 (store.js + Firebase RTDB) fixes this entirely.</p>
+              </div>
+            </div>
+            <div class="rpt-item rpt-item--negative">
+              <span class="rpt-dot rpt-dot--red"></span>
+              <div>
+                <strong>No signInWithRedirect Fallback</strong>
+                <p>Firebase Auth uses signInWithPopup only. Fails in incognito and popup-blocked browsers. Need to add redirect fallback to auth.js.</p>
+              </div>
+            </div>
+            <div class="rpt-item rpt-item--negative">
+              <span class="rpt-dot rpt-dot--red"></span>
+              <div>
+                <strong>No Automated Testing</strong>
+                <p>Zero unit tests, no integration tests, no CI/CD pipeline. Changes are verified manually by opening each page. Risk increases with each new feature.</p>
+              </div>
+            </div>
+            <div class="rpt-item rpt-item--negative">
+              <span class="rpt-dot rpt-dot--red"></span>
+              <div>
+                <strong>UI Shells Without Functionality</strong>
+                <p>Several tabs have beautiful UI but no backend logic: Deductions calculations, Income aggregation, Memory Bank storage. These are visual mockups awaiting Phase 2-3 data.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION 5: MIXED REPORT -->
+      <div class="rpt-section" data-rtype="mixed" id="rpt-mixed">
+        <div class="rpt-header" onclick="this.parentElement.classList.toggle('rpt-open')">
+          <span class="rpt-num">5</span>
+          <span class="rpt-title">Mixed Signals</span>
+          <span class="rpt-badge rpt-badge--warning">Both Sides</span>
+          <span class="rpt-toggle">&#9660;</span>
+        </div>
+        <div class="rpt-body">
+          <div class="rpt-summary">
+            Some things are both strengths and risks. The vision is massive (which inspires but also scatters). The vanilla JS choice is both freeing and limiting.
+          </div>
+          <div class="rpt-detail">
+            <div class="rpt-item rpt-item--neutral">
+              <span class="rpt-dot rpt-dot--yellow"></span>
+              <div>
+                <strong>Vision Scope vs. Execution Speed</strong>
+                <p><span style="color:var(--green);">&#9650;</span> The TRAILS vision is genuinely inspiring and commercially viable. Worlds, bot teams, gamification &mdash; real product thinking.
+                <br><span style="color:var(--red);">&#9660;</span> Risk of spreading too thin. 47 days to deadline. Must ruthlessly prioritize tax-filing features over ecosystem features.</p>
+              </div>
+            </div>
+            <div class="rpt-item rpt-item--neutral">
+              <span class="rpt-dot rpt-dot--yellow"></span>
+              <div>
+                <strong>No Framework (Vanilla JS)</strong>
+                <p><span style="color:var(--green);">&#9650;</span> No build tools, no dependencies, no npm. Any developer can open and understand. GitHub Pages serves as-is.
+                <br><span style="color:var(--red);">&#9660;</span> Past ~20 pages, vanilla JS becomes harder to manage. No TypeScript = no compile-time type checking. Refactoring is riskier.</p>
+              </div>
+            </div>
+            <div class="rpt-item rpt-item--neutral">
+              <span class="rpt-dot rpt-dot--yellow"></span>
+              <div>
+                <strong>Firebase Dependency</strong>
+                <p><span style="color:var(--green);">&#9650;</span> Free tier is generous (1GB storage, 10GB/mo bandwidth, 100 concurrent connections). Auth already working perfectly.
+                <br><span style="color:var(--red);">&#9660;</span> Vendor lock-in. If Google changes pricing or deprecates RTDB, migration is painful. Mitigation: static JSON baseline always exists in git.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION 6: HICCUP AREAS -->
+      <div class="rpt-section" data-rtype="bad" id="rpt-hiccups">
+        <div class="rpt-header" onclick="this.parentElement.classList.toggle('rpt-open')">
+          <span class="rpt-num">6</span>
+          <span class="rpt-title">Hiccup Areas</span>
+          <span class="rpt-badge rpt-badge--danger">Recurring</span>
+          <span class="rpt-toggle">&#9660;</span>
+        </div>
+        <div class="rpt-body">
+          <div class="rpt-summary">
+            Patterns that keep tripping up the build. Addressing these reduces friction across all future sessions.
+          </div>
+          <div class="rpt-detail">
+            <div class="rpt-item rpt-item--negative">
+              <span class="rpt-dot rpt-dot--red"></span>
+              <div>
+                <strong>Context Window Limits</strong>
+                <p>Sessions run out of context mid-task. Complex state must be summarized and resumed. Solution: better session handoff via MEMORY.md and ONBOARD.md, plus background agents.</p>
+              </div>
+            </div>
+            <div class="rpt-item rpt-item--negative">
+              <span class="rpt-dot rpt-dot--red"></span>
+              <div>
+                <strong>Large File Edits</strong>
+                <p>admin.html is now 1100+ lines. Reading and editing requires multiple offset reads. Solution: will shrink to thin shell when Phase 3 widget registry is built.</p>
+              </div>
+            </div>
+            <div class="rpt-item rpt-item--neutral">
+              <span class="rpt-dot rpt-dot--yellow"></span>
+              <div>
+                <strong>Chrome Extension Limitations</strong>
+                <p>Cannot access incognito tabs. Extension disconnects occasionally. Google Sheet navigation requires precise pixel coordinates. These are tooling limits, not code issues.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION 7: NUTS & BOLTS -->
+      <div class="rpt-section" data-rtype="good" id="rpt-nuts">
+        <div class="rpt-header" onclick="this.parentElement.classList.toggle('rpt-open')">
+          <span class="rpt-num">7</span>
+          <span class="rpt-title">Nuts &amp; Bolts</span>
+          <span class="rpt-badge rpt-badge--info">Technical</span>
+          <span class="rpt-toggle">&#9660;</span>
+        </div>
+        <div class="rpt-body">
+          <div class="rpt-summary">
+            Concrete technical metrics and file inventory.
+          </div>
+          <div class="rpt-detail">
+            <div class="sys-grid">
+              <div class="sys-card">
+                <h3>&#128193; File Inventory</h3>
+                <div class="sys-item"><span class="sys-label">HTML Pages</span><span class="sys-val">8</span></div>
+                <div class="sys-item"><span class="sys-label">Shared CSS</span><span class="sys-val">3 (core, nav, auth) + chiligbot</span></div>
+                <div class="sys-item"><span class="sys-label">Shared JS</span><span class="sys-val">2 (auth, nav) + chiligbot</span></div>
+                <div class="sys-item"><span class="sys-label">Python Scripts</span><span class="sys-val">12</span></div>
+                <div class="sys-item"><span class="sys-label">Data Files</span><span class="sys-val">CSV + JSON configs</span></div>
+              </div>
+
+              <div class="sys-card">
+                <h3>&#128200; Code Metrics</h3>
+                <div class="sys-item"><span class="sys-label">auth.js</span><span class="sys-val">538 lines</span></div>
+                <div class="sys-item"><span class="sys-label">nav.js</span><span class="sys-val">122 lines</span></div>
+                <div class="sys-item"><span class="sys-label">core.css</span><span class="sys-val">~200 lines</span></div>
+                <div class="sys-item"><span class="sys-label">Admin HQ</span><span class="sys-val">1100+ lines (largest page)</span></div>
+                <div class="sys-item"><span class="sys-label">Code Reduction</span><span class="sys-val" style="color:var(--green)">~60% via Phase 1</span></div>
+              </div>
+
+              <div class="sys-card">
+                <h3>&#9889; Performance</h3>
+                <div class="sys-item"><span class="sys-label">Hosting</span><span class="sys-val">GitHub Pages CDN</span></div>
+                <div class="sys-item"><span class="sys-label">Build Step</span><span class="sys-val">None (pure vanilla)</span></div>
+                <div class="sys-item"><span class="sys-label">Dependencies</span><span class="sys-val">Firebase SDK only</span></div>
+                <div class="sys-item"><span class="sys-label">Bundle Size</span><span class="sys-val">~50KB shared (pre-gzip)</span></div>
+                <div class="sys-item"><span class="sys-label">TTFB</span><span class="sys-val">&lt;100ms (CDN edge)</span></div>
+              </div>
+
+              <div class="sys-card">
+                <h3>&#128274; Security</h3>
+                <div class="sys-item"><span class="sys-label">Auth</span><span class="sys-val">Firebase Google OAuth</span></div>
+                <div class="sys-item"><span class="sys-label">Whitelist</span><span class="sys-val">SHA-256 email hashes</span></div>
+                <div class="sys-item"><span class="sys-label">Tiers</span><span class="sys-val">3 (Admin/Member/Guest)</span></div>
+                <div class="sys-item"><span class="sys-label">HTTPS</span><span class="sys-val" style="color:var(--green)">Enforced</span></div>
+                <div class="sys-item"><span class="sys-label">Guest Logging</span><span class="sys-val" style="color:var(--green)">Active</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION 8: CAPTAIN'S REVIEW (SupbotPro) -->
+      <div class="rpt-section rpt-open" data-rtype="mixed" id="rpt-captain" style="border-left:3px solid var(--orange);">
+        <div class="rpt-header" onclick="this.parentElement.classList.toggle('rpt-open')">
+          <span class="rpt-num" style="background:var(--orange);">&#9733;</span>
+          <span class="rpt-title">Captain&rsquo;s Review &mdash; SupbotPro</span>
+          <span class="rpt-badge rpt-badge--special">Isolated Perspective</span>
+          <span class="rpt-toggle">&#9660;</span>
+        </div>
+        <div class="rpt-body">
+          <div class="rpt-captain-intro" style="background:rgba(251,146,60,0.08); border:1px solid rgba(251,146,60,0.2); border-radius:8px; padding:14px; margin-bottom:14px;">
+            <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
+              <span style="font-size:24px;">&#128171;</span>
+              <div>
+                <strong style="color:var(--orange); font-size:14px;">SupbotPro &mdash; Independent Assessment</strong>
+                <div style="font-size:11px; color:var(--muted);">Objective review from outside the build team. No sugar coating.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="rpt-detail">
+            <div class="rpt-item rpt-item--positive">
+              <span class="rpt-dot rpt-dot--green"></span>
+              <div>
+                <strong>Architecture Decision: Correct</strong>
+                <p>Going vanilla JS + GitHub Pages was the right call for this project&rsquo;s constraints. $0 hosting, no build tools, and the Commander can inspect every line. The &ldquo;thin pages, fat modules&rdquo; pattern is textbook separation of concerns. Well executed.</p>
+              </div>
+            </div>
+            <div class="rpt-item rpt-item--positive">
+              <span class="rpt-dot rpt-dot--green"></span>
+              <div>
+                <strong>Auth System: Production-Grade</strong>
+                <p>The 3-tier auth with SHA-256 hashing, onboarding flow, and boot animation is genuinely impressive for a static site. Most &ldquo;professional&rdquo; dashboards don&rsquo;t have this level of access control. The guest tracking is a smart security layer.</p>
+              </div>
+            </div>
+            <div class="rpt-item rpt-item--negative">
+              <span class="rpt-dot rpt-dot--red"></span>
+              <div>
+                <strong>Deadline Risk: Real</strong>
+                <p>47 days to mail. The dashboard looks great, but the actual tax numbers are still hardcoded. Phase 2 (reactive store) is the critical path. If it doesn&rsquo;t ship, the dashboard is a beautiful shell with no engine. Recommendation: freeze all non-tax features until Phase 2 data flow works end-to-end.</p>
+              </div>
+            </div>
+            <div class="rpt-item rpt-item--neutral">
+              <span class="rpt-dot rpt-dot--yellow"></span>
+              <div>
+                <strong>Bot Ecosystem: Creative but Sprawling</strong>
+                <p>Realbotville, ChiliGBot, MatthiasZ, DanielZ, SupbotPro, 5-bot teams per user &mdash; the lore is genuinely fun and adds personality. But each new bot concept is a context-window tax. The Commander should keep building the lore (it&rsquo;s good for the product) but delay bot implementation until after the tax deadline. The Google Sheet relay system is clever and works today.</p>
+              </div>
+            </div>
+            <div class="rpt-item rpt-item--positive">
+              <span class="rpt-dot rpt-dot--green"></span>
+              <div>
+                <strong>Commander&rsquo;s Vision: Commercially Viable</strong>
+                <p>TRAILS as a career center SaaS is a real business idea. Tax prep as the first product, then expand to other guided workflows. The multi-world architecture supports multi-tenancy. The per-user theming is a differentiator. This isn&rsquo;t just a tax tool &mdash; it&rsquo;s a platform. The Commander sees it clearly.</p>
+              </div>
+            </div>
+
+            <div style="margin-top:16px; padding:12px; background:rgba(251,146,60,0.06); border-radius:8px; border-left:3px solid var(--orange);">
+              <strong style="color:var(--orange); font-size:13px;">&#128171; Bottom Line</strong>
+              <p style="color:var(--text); font-size:13px; margin-top:6px; line-height:1.7;">
+                Ship the tax deadline first. The architecture is solid, the vision is real, and the team (human + bot) is productive. But right now there are two projects competing for the same context window: &ldquo;build the product&rdquo; and &ldquo;file the taxes.&rdquo; For the next 47 days, the taxes win. Everything else is Phase 2+. Trust the plan.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
 </div><!-- /container -->
 
 <div class="footer">
@@ -1134,6 +1559,22 @@
           card.style.display = '';
         } else {
           card.style.display = card.dataset.status === filter ? '' : 'none';
+        }
+      });
+    });
+  });
+
+  // --- Report Filters ---
+  document.querySelectorAll('[data-rfilter]').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      document.querySelectorAll('[data-rfilter]').forEach(function(b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      var filter = btn.dataset.rfilter;
+      document.querySelectorAll('.rpt-section').forEach(function(sec) {
+        if (filter === 'all') {
+          sec.style.display = '';
+        } else {
+          sec.style.display = sec.dataset.rtype === filter ? '' : 'none';
         }
       });
     });
@@ -1297,7 +1738,8 @@
       { icon: '&#128101;', label: 'Users',          href: '#sec-users' },
       { icon: '&#128203;', label: 'Audit Log',      href: '#sec-audit' },
       { icon: '&#9881;',   label: 'System',         href: '#sec-system' },
-      { icon: '&#128295;', label: 'Settings',       href: '#sec-settings' }
+      { icon: '&#128295;', label: 'Settings',       href: '#sec-settings' },
+      { icon: '&#128202;', label: 'Reports',        href: '#sec-reports' }
     ]
   };
 </script>
@@ -1305,6 +1747,7 @@
 <!-- AUTH & NAV -->
 <script src="js/auth.js"></script>
 <script src="js/nav.js"></script>
+<script src="js/chiligbot.js"></script>
 <script src="bot-assistant.js"></script>
 </body>
 </html>

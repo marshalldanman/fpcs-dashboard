@@ -1,0 +1,501 @@
+/* ==============================================================
+   FPCS Report Styles — ADHD-Assistive Formatting System
+   Part of TRAILS: Technology · Robotics · AI · Language · Skills
+   =============================================================
+   Built by MatthiasZ  |  Completed by JapsterPro
+   Realbotville Twin Dev Squad
+   =============================================================
+
+   DESIGN PRINCIPLES:
+     1. Semantic color = instant meaning (no guessing)
+     2. Progressive disclosure = no overwhelm
+     3. Chunked content = scannable in seconds
+     4. Zero italics, generous spacing, hard size floors
+     5. Dark-theme native (--bg: #0f172a)
+
+   SECTIONS:
+     I.   Semantic Palette (CSS Custom Properties)
+     II.  Progressive Disclosure (L0 / L1 / L2)
+     III. Report Card Components
+     IV.  Typography & ADHD Rules
+     V.   Badges & Status Pills
+     VI.  Metrics & Data Display
+     VII. Progress Bars
+     VIII.Design Mode Utilities
+     IX.  Utility Helpers
+   ============================================================= */
+
+
+/* =============================================================
+   I. SEMANTIC PALETTE — 5-color system
+   ============================================================= */
+:root {
+  --rpt-success:   #4ade80;
+  --rpt-success-bg: rgba(74, 222, 128, 0.08);
+  --rpt-success-border: rgba(74, 222, 128, 0.25);
+
+  --rpt-warning:   #fbbf24;
+  --rpt-warning-bg: rgba(251, 191, 36, 0.08);
+  --rpt-warning-border: rgba(251, 191, 36, 0.25);
+
+  --rpt-danger:    #f87171;
+  --rpt-danger-bg: rgba(248, 113, 113, 0.08);
+  --rpt-danger-border: rgba(248, 113, 113, 0.25);
+
+  --rpt-info:      #38bdf8;
+  --rpt-info-bg: rgba(56, 189, 248, 0.08);
+  --rpt-info-border: rgba(56, 189, 248, 0.25);
+
+  --rpt-muted:     #94a3b8;
+  --rpt-muted-bg: rgba(148, 163, 184, 0.06);
+  --rpt-muted-border: rgba(148, 163, 184, 0.15);
+
+  /* Typography tokens */
+  --rpt-font: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --rpt-line-height: 1.65;
+  --rpt-max-width: 65ch;
+  --rpt-min-font: 14px;
+}
+
+
+/* =============================================================
+   II. PROGRESSIVE DISCLOSURE — L0 / L1 / L2
+   Show less by default, reveal on demand.
+   L0 = always visible (headline, summary)
+   L1 = first expansion (key details)
+   L2 = deep dive (full data)
+   ============================================================= */
+
+/* L0: Always visible */
+.rpt-l0 {
+  display: block;
+}
+
+/* L1: Hidden by default, shown when parent has .rpt-expanded */
+.rpt-l1 {
+  display: none;
+  animation: rpt-slide-in 0.25s ease-out;
+}
+.rpt-expanded > .rpt-l1,
+.rpt-expanded .rpt-l1 {
+  display: block;
+}
+
+/* L2: Deep content, shown on second expansion */
+.rpt-l2 {
+  display: none;
+  animation: rpt-slide-in 0.3s ease-out;
+}
+.rpt-deep > .rpt-l2,
+.rpt-deep .rpt-l2 {
+  display: block;
+}
+
+/* Expand trigger buttons */
+.rpt-expand-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--border, #334155);
+  background: transparent;
+  color: var(--rpt-muted);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  margin-top: 8px;
+}
+.rpt-expand-btn:hover {
+  color: var(--rpt-info);
+  border-color: var(--rpt-info-border);
+  background: var(--rpt-info-bg);
+}
+
+@keyframes rpt-slide-in {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+
+/* =============================================================
+   III. REPORT CARD COMPONENTS
+   ============================================================= */
+
+/* Main report card container */
+.rpt-card {
+  background: var(--card, #1e293b);
+  border: 1px solid var(--border, #334155);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 16px;
+  transition: border-color 0.15s;
+}
+.rpt-card:hover {
+  border-color: rgba(167, 139, 250, 0.3);
+}
+
+/* Semantic card variants */
+.rpt-card--success { border-left: 4px solid var(--rpt-success); }
+.rpt-card--warning { border-left: 4px solid var(--rpt-warning); }
+.rpt-card--danger  { border-left: 4px solid var(--rpt-danger); }
+.rpt-card--info    { border-left: 4px solid var(--rpt-info); }
+.rpt-card--muted   { border-left: 4px solid var(--rpt-muted); }
+
+/* Card header */
+.rpt-card__header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.rpt-card__icon {
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.rpt-card__title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text, #e2e8f0);
+  flex: 1;
+  line-height: 1.3;
+}
+
+.rpt-card__chevron {
+  font-size: 10px;
+  color: var(--rpt-muted);
+  transition: transform 0.2s;
+}
+.rpt-expanded .rpt-card__chevron {
+  transform: rotate(180deg);
+}
+
+/* Card body */
+.rpt-card__body {
+  font-size: var(--rpt-min-font);
+  color: var(--text, #e2e8f0);
+  line-height: var(--rpt-line-height);
+  max-width: var(--rpt-max-width);
+}
+
+/* Card summary (L0 always visible) */
+.rpt-card__summary {
+  font-size: 14px;
+  color: var(--rpt-muted);
+  line-height: var(--rpt-line-height);
+  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.015);
+  border-radius: 8px;
+  margin-bottom: 12px;
+}
+
+
+/* =============================================================
+   IV. TYPOGRAPHY — ADHD-Friendly Rules
+   ============================================================= */
+
+/* No italics anywhere in reports */
+.rpt-card,
+.rpt-card * {
+  font-style: normal !important;
+}
+
+/* Minimum font size floor */
+.rpt-card p,
+.rpt-card li,
+.rpt-card td,
+.rpt-card span {
+  font-size: max(var(--rpt-min-font), 14px);
+  line-height: var(--rpt-line-height);
+}
+
+/* Generous paragraph spacing */
+.rpt-card p + p {
+  margin-top: 12px;
+}
+
+/* Headings — clear hierarchy */
+.rpt-h1 { font-size: 22px; font-weight: 800; color: var(--text, #e2e8f0); margin-bottom: 12px; }
+.rpt-h2 { font-size: 18px; font-weight: 700; color: var(--text, #e2e8f0); margin-bottom: 10px; }
+.rpt-h3 { font-size: 15px; font-weight: 700; color: var(--rpt-muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+/* Key-value pair rows */
+.rpt-kv-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  font-size: 14px;
+  gap: 16px;
+}
+.rpt-kv-row:last-child { border-bottom: none; }
+.rpt-kv-row__key { color: var(--rpt-muted); flex-shrink: 0; }
+.rpt-kv-row__val { color: var(--text, #e2e8f0); font-weight: 600; text-align: right; }
+
+/* Bulleted list with semantic dots */
+.rpt-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.rpt-list li {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+  line-height: var(--rpt-line-height);
+}
+.rpt-list li:last-child { border-bottom: none; }
+
+.rpt-list__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 7px;
+}
+.rpt-list__dot--success { background: var(--rpt-success); box-shadow: 0 0 6px var(--rpt-success); }
+.rpt-list__dot--warning { background: var(--rpt-warning); box-shadow: 0 0 6px var(--rpt-warning); }
+.rpt-list__dot--danger  { background: var(--rpt-danger);  box-shadow: 0 0 6px var(--rpt-danger); }
+.rpt-list__dot--info    { background: var(--rpt-info);    box-shadow: 0 0 6px var(--rpt-info); }
+.rpt-list__dot--muted   { background: var(--rpt-muted); }
+
+
+/* =============================================================
+   V. BADGES & STATUS PILLS
+   ============================================================= */
+.rpt-badge {
+  display: inline-block;
+  font-size: 11px;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+.rpt-badge--success { background: var(--rpt-success-bg); color: var(--rpt-success); border: 1px solid var(--rpt-success-border); }
+.rpt-badge--warning { background: var(--rpt-warning-bg); color: var(--rpt-warning); border: 1px solid var(--rpt-warning-border); }
+.rpt-badge--danger  { background: var(--rpt-danger-bg);  color: var(--rpt-danger);  border: 1px solid var(--rpt-danger-border); }
+.rpt-badge--info    { background: var(--rpt-info-bg);    color: var(--rpt-info);    border: 1px solid var(--rpt-info-border); }
+.rpt-badge--muted   { background: var(--rpt-muted-bg);   color: var(--rpt-muted);   border: 1px solid var(--rpt-muted-border); }
+
+/* Score badges (numeric) */
+.rpt-score {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  font-size: 14px;
+  font-weight: 800;
+}
+.rpt-score--high   { background: var(--rpt-success-bg); color: var(--rpt-success); border: 2px solid var(--rpt-success); }
+.rpt-score--mid    { background: var(--rpt-warning-bg); color: var(--rpt-warning); border: 2px solid var(--rpt-warning); }
+.rpt-score--low    { background: var(--rpt-danger-bg);  color: var(--rpt-danger);  border: 2px solid var(--rpt-danger); }
+
+
+/* =============================================================
+   VI. METRICS & DATA DISPLAY
+   ============================================================= */
+
+/* Metric grid — 2-4 columns of stat mini-cards */
+.rpt-metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.rpt-metric {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border, #334155);
+  border-radius: 8px;
+  padding: 12px;
+  text-align: center;
+}
+
+.rpt-metric__value {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--text, #e2e8f0);
+  line-height: 1.2;
+}
+
+.rpt-metric__label {
+  font-size: 11px;
+  color: var(--rpt-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 4px;
+}
+
+/* Colored metric values */
+.rpt-metric--success .rpt-metric__value { color: var(--rpt-success); }
+.rpt-metric--warning .rpt-metric__value { color: var(--rpt-warning); }
+.rpt-metric--danger  .rpt-metric__value { color: var(--rpt-danger); }
+.rpt-metric--info    .rpt-metric__value { color: var(--rpt-info); }
+
+
+/* =============================================================
+   VII. PROGRESS BARS
+   ============================================================= */
+.rpt-progress {
+  width: 100%;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 4px;
+  overflow: hidden;
+  margin: 8px 0;
+}
+
+.rpt-progress__fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.4s ease;
+}
+
+.rpt-progress__fill--success { background: var(--rpt-success); }
+.rpt-progress__fill--warning { background: var(--rpt-warning); }
+.rpt-progress__fill--danger  { background: var(--rpt-danger); }
+.rpt-progress__fill--info    { background: var(--rpt-info); }
+
+/* Progress with label */
+.rpt-progress-labeled {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 8px 0;
+}
+.rpt-progress-labeled .rpt-progress { flex: 1; }
+.rpt-progress-labeled__text {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text, #e2e8f0);
+  min-width: 40px;
+  text-align: right;
+}
+
+
+/* =============================================================
+   VIII. DESIGN MODE UTILITIES
+   Classes toggled by designmode.js
+   ============================================================= */
+
+/* Elements only visible in design mode */
+.design-only {
+  display: none;
+}
+body.design-mode .design-only {
+  display: block;
+}
+body.design-mode .design-only[data-display="flex"] {
+  display: flex;
+}
+body.design-mode .design-only[data-display="grid"] {
+  display: grid;
+}
+body.design-mode .design-only[data-display="inline"] {
+  display: inline;
+}
+
+/* Elements hidden in design mode */
+body.design-mode .design-hidden {
+  display: none !important;
+}
+
+/* Outline for design inspection */
+body.design-mode .design-outline {
+  outline: 2px dashed rgba(167, 139, 250, 0.4) !important;
+  outline-offset: 2px;
+}
+
+
+/* =============================================================
+   IX. UTILITY HELPERS
+   ============================================================= */
+
+/* Semantic text colors */
+.rpt-text-success { color: var(--rpt-success) !important; }
+.rpt-text-warning { color: var(--rpt-warning) !important; }
+.rpt-text-danger  { color: var(--rpt-danger)  !important; }
+.rpt-text-info    { color: var(--rpt-info)    !important; }
+.rpt-text-muted   { color: var(--rpt-muted)   !important; }
+
+/* Semantic backgrounds */
+.rpt-bg-success { background: var(--rpt-success-bg) !important; }
+.rpt-bg-warning { background: var(--rpt-warning-bg) !important; }
+.rpt-bg-danger  { background: var(--rpt-danger-bg)  !important; }
+.rpt-bg-info    { background: var(--rpt-info-bg)    !important; }
+
+/* Spacing helpers */
+.rpt-mt-sm { margin-top: 8px; }
+.rpt-mt-md { margin-top: 16px; }
+.rpt-mt-lg { margin-top: 24px; }
+.rpt-mb-sm { margin-bottom: 8px; }
+.rpt-mb-md { margin-bottom: 16px; }
+.rpt-mb-lg { margin-bottom: 24px; }
+.rpt-gap-sm { gap: 8px; }
+.rpt-gap-md { gap: 14px; }
+
+/* Divider */
+.rpt-divider {
+  height: 1px;
+  background: var(--border, #334155);
+  margin: 16px 0;
+  border: none;
+}
+
+/* Callout box */
+.rpt-callout {
+  padding: 14px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  line-height: var(--rpt-line-height);
+  margin: 12px 0;
+}
+.rpt-callout--success { background: var(--rpt-success-bg); border-left: 3px solid var(--rpt-success); }
+.rpt-callout--warning { background: var(--rpt-warning-bg); border-left: 3px solid var(--rpt-warning); }
+.rpt-callout--danger  { background: var(--rpt-danger-bg);  border-left: 3px solid var(--rpt-danger); }
+.rpt-callout--info    { background: var(--rpt-info-bg);    border-left: 3px solid var(--rpt-info); }
+
+/* Highlight emphasis (replaces italic usage) */
+.rpt-highlight {
+  font-weight: 700;
+  color: var(--text, #e2e8f0);
+  padding: 1px 4px;
+  border-radius: 3px;
+  background: rgba(167, 139, 250, 0.1);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .rpt-metrics {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .rpt-kv-row {
+    flex-direction: column;
+    gap: 2px;
+  }
+  .rpt-kv-row__val {
+    text-align: left;
+  }
+  .rpt-card {
+    padding: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .rpt-metrics {
+    grid-template-columns: 1fr;
+  }
+}

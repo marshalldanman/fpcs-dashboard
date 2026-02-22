@@ -519,6 +519,7 @@
       document.getElementById('googleSignIn').disabled = true;
 
       var provider = new firebase.auth.GoogleAuthProvider();
+      provider.setCustomParameters({ prompt: 'select_account' });
       auth.signInWithPopup(provider).then(function () {
         loadEl.textContent = '';
       }).catch(function (error) {
@@ -528,6 +529,58 @@
         console.error('[FPCS Auth] Error:', error);
       });
     };
+
+    // Global sign-out function — allows switching Google accounts
+    window.doFPCSLogout = function () {
+      auth.signOut().then(function () {
+        console.log('[FPCS Auth] Signed out successfully');
+        window.FPCS_USER = null;
+        // Force Google account chooser on next sign-in
+        // by clearing the cached credential
+        window.location.reload();
+      }).catch(function (error) {
+        console.error('[FPCS Auth] Sign-out error:', error);
+      });
+    };
+
+    // Inject logout button into dashboard (top-right corner)
+    function injectLogoutButton() {
+      var existing = document.getElementById('fpcs-logout-btn');
+      if (existing) return;
+
+      var btn = document.createElement('button');
+      btn.id = 'fpcs-logout-btn';
+      btn.innerHTML = '&#128682; Switch Account';
+      btn.title = 'Sign out and switch Google account';
+      btn.style.cssText = 'position:fixed;top:12px;right:16px;z-index:9998;' +
+        'background:rgba(248,113,113,0.12);border:1px solid rgba(248,113,113,0.3);' +
+        'border-radius:8px;padding:6px 14px;font-size:12px;font-weight:600;' +
+        'color:#f87171;cursor:pointer;font-family:inherit;transition:all 0.15s;';
+      btn.onmouseenter = function () {
+        btn.style.background = 'rgba(248,113,113,0.25)';
+        btn.style.borderColor = 'rgba(248,113,113,0.5)';
+      };
+      btn.onmouseleave = function () {
+        btn.style.background = 'rgba(248,113,113,0.12)';
+        btn.style.borderColor = 'rgba(248,113,113,0.3)';
+      };
+      btn.onclick = function () {
+        if (confirm('Sign out and switch to a different Google account?')) {
+          window.doFPCSLogout();
+        }
+      };
+      document.body.appendChild(btn);
+    }
+
+    // Show logout button once user is authenticated
+    auth.onAuthStateChanged(function (user) {
+      if (user) {
+        injectLogoutButton();
+      } else {
+        var logoutBtn = document.getElementById('fpcs-logout-btn');
+        if (logoutBtn) logoutBtn.remove();
+      }
+    });
   }
 
   // --- Boot ---
