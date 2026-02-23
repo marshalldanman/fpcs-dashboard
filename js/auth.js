@@ -717,11 +717,14 @@
       document.getElementById('googleSignIn').disabled = true;
 
       var provider = new firebase.auth.GoogleAuthProvider();
-      provider.addScope('https://www.googleapis.com/auth/spreadsheets');
+      // NOTE: Spreadsheets scope removed from login flow to prevent
+      // "Google hasn't verified this app" warning in Edge and other browsers.
+      // Sensitive scopes (spreadsheets) are now requested on-demand via
+      // window.requestSheetsAccess() only when Sheets write access is needed.
       provider.setCustomParameters({ prompt: 'select_account' });
       auth.signInWithPopup(provider).then(function (result) {
         loadEl.textContent = '';
-        // Capture Google OAuth token for Sheets API writes
+        // Capture Google OAuth token if available (read-only at login)
         if (result && result.credential) {
           window._fpcsOAuthToken = result.credential.accessToken;
           if (window.FPCSSheets) {
@@ -752,6 +755,42 @@
         window.location.reload();
       }).catch(function (error) {
         console.error('[FPCS Auth] Sign-out error:', error);
+      });
+    };
+
+    // --- On-demand Sheets scope upgrade (avoids unverified app warning at login) ---
+    // Call window.requestSheetsAccess() when user needs to write to Google Sheets.
+    // This re-authenticates with the spreadsheets scope only when explicitly needed.
+    window.requestSheetsAccess = function () {
+      var sheetsProvider = new firebase.auth.GoogleAuthProvider();
+      sheetsProvider.addScope('https://www.googleapis.com/auth/spreadsheets');
+      return auth.currentUser.linkWithPopup(sheetsProvider).then(function (result) {
+        if (result && result.credential) {
+          window._fpcsOAuthToken = result.credential.accessToken;
+          if (window.FPCSSheets) {
+            window.FPCSSheets.setToken(result.credential.accessToken);
+          }
+        }
+        console.log('[FPCS Auth] Sheets scope granted');
+        return result;
+      }).catch(function (err) {
+        // If already linked, try re-auth instead
+        if (err.code === 'auth/provider-already-linked') {
+          var reProvider = new firebase.auth.GoogleAuthProvider();
+          reProvider.addScope('https://www.googleapis.com/auth/spreadsheets');
+          return auth.signInWithPopup(reProvider).then(function (result) {
+            if (result && result.credential) {
+              window._fpcsOAuthToken = result.credential.accessToken;
+              if (window.FPCSSheets) {
+                window.FPCSSheets.setToken(result.credential.accessToken);
+              }
+            }
+            console.log('[FPCS Auth] Sheets scope re-granted');
+            return result;
+          });
+        }
+        console.error('[FPCS Auth] Sheets scope request failed:', err);
+        throw err;
       });
     };
 
