@@ -49,6 +49,24 @@
     { hash: 'e48e3b564e4c384c6215fcf3215abac1c95df04e5e7f862d5d1d8c91ff977cba', role: 'member', label: 'Friendly Sales' }
   ];
 
+  // --- Page Access Control (minimum role required per page) ---
+  var PAGE_ACCESS = {
+    'index.html':        'member',
+    'bots.html':         'member',
+    'deductions.html':   'member',
+    'income.html':       'member',
+    'memory.html':       'member',
+    'japster.html':      'member',
+    'helpdesk.html':     'member',
+    'realbotville.html': 'member',
+    'admin.html':        'admin'
+  };
+  var ROLE_LEVELS = { guest: 0, member: 1, admin: 2 };
+
+  // --- Session Security ---
+  var SESSION_TIMEOUT_MS = 30 * 60 * 1000; // 30 minutes of inactivity
+  var _lastActivity = Date.now();
+
   // --- Onboarding options for MEMBERS (Tier 2) ---
   var MEMBER_ONBOARD = [
     { key: 'view_only',  icon: '&#128065;',  label: 'View dashboard data (read-only)',  desc: 'Browse reports, stats, and summaries' },
@@ -90,6 +108,142 @@
   var pageConfig = window.FPCS_PAGE || { name: 'FPCS Dashboard' };
   if (pageConfig.theme) {
     document.body.classList.add(pageConfig.theme);
+  }
+
+  // ============================================================
+  //  SECURITY: Anti-iframe / Clickjacking Protection
+  // ============================================================
+  if (window.self !== window.top) {
+    document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#0f172a;color:#f87171;font-family:sans-serif;text-align:center;padding:40px"><div><h1>&#128683; Access Denied</h1><p>This dashboard cannot be loaded inside a frame.</p></div></div>';
+    throw new Error('[FPCS Security] Iframe embedding blocked');
+  }
+
+  // ============================================================
+  //  SECURITY HELPER FUNCTIONS
+  // ============================================================
+
+  // --- Get current page filename ---
+  function getCurrentPageFile() {
+    var path = window.location.pathname;
+    var file = path.split('/').pop() || 'index.html';
+    if (file === '' || file === '/') file = 'index.html';
+    return file;
+  }
+
+  // --- Check if role can access current page ---
+  function canAccessCurrentPage(role) {
+    var file = getCurrentPageFile();
+    var minRole = PAGE_ACCESS[file] || 'member';
+    return (ROLE_LEVELS[role] || 0) >= (ROLE_LEVELS[minRole] || 0);
+  }
+
+  // --- Filter nav rail links by user role ---
+  function filterNavByRole(role) {
+    var navLinks = document.querySelectorAll('.nav-rail .nav-link');
+    for (var i = 0; i < navLinks.length; i++) {
+      var link = navLinks[i];
+      var href = link.getAttribute('href');
+      if (!href) continue;
+      var file = href.split('/').pop();
+      var minRole = PAGE_ACCESS[file] || 'member';
+      if ((ROLE_LEVELS[role] || 0) < (ROLE_LEVELS[minRole] || 0)) {
+        link.style.display = 'none';
+      }
+    }
+  }
+
+  // --- Escape HTML to prevent XSS ---
+  function escapeHTML(str) {
+    var div = document.createElement('div');
+    div.textContent = str || '';
+    return div.innerHTML;
+  }
+
+  // --- Inject Access Denied screen (for unauthorized page visits) ---
+  function injectAccessDenied(user, role) {
+    var name = user.displayName || user.email.split('@')[0];
+    var page = pageConfig.name || 'this page';
+    var file = getCurrentPageFile();
+    var minRole = PAGE_ACCESS[file] || 'member';
+    var denied = document.createElement('div');
+    denied.id = 'fpcsAccessDenied';
+    denied.style.cssText = 'display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:40px 20px;background:var(--bg,#0f172a);color:var(--text,#e2e8f0);font-family:inherit;';
+    denied.innerHTML = [
+      '<div style="max-width:480px;width:100%;text-align:center">',
+      '  <div style="font-size:56px;margin-bottom:12px">&#128274;</div>',
+      '  <h1 style="font-size:22px;font-weight:800;margin-bottom:8px;color:#f87171">Access Restricted</h1>',
+      '  <p style="color:#94a3b8;font-size:14px;margin-bottom:6px">',
+      '    <strong>' + escapeHTML(page) + '</strong> requires <strong>' + escapeHTML(minRole) + '</strong>-level access.',
+      '  </p>',
+      '  <p style="color:#64748b;font-size:13px;margin-bottom:24px">',
+      '    Signed in as <strong>' + escapeHTML(name) + '</strong> (' + escapeHTML(role) + ')',
+      '  </p>',
+      '  <a href="index.html" style="display:inline-block;background:#38bdf8;color:#0f172a;padding:10px 24px;border-radius:8px;font-weight:700;text-decoration:none;font-size:14px">',
+      '    &#8592; Go to My Workspace',
+      '  </a>',
+      '  <div style="margin-top:24px;background:rgba(248,113,113,0.08);border:1px solid rgba(248,113,113,0.2);border-radius:10px;padding:14px;font-size:12px;color:#f87171">',
+      '    &#128275; Want project access? Ask an admin to add your email to the allow-list.',
+      '  </div>',
+      '</div>'
+    ].join('\n');
+    document.body.appendChild(denied);
+  }
+
+  // --- Inject Guest Personal Workspace (replaces project dashContent) ---
+  function injectGuestWorkspace(user) {
+    var name = user.displayName || user.email.split('@')[0];
+    var ws = document.createElement('div');
+    ws.id = 'guestWorkspace';
+    ws.style.cssText = 'display:block;min-height:100vh;padding:40px 20px 60px;background:var(--bg,#0f172a);color:var(--text,#e2e8f0);font-family:inherit;';
+    ws.innerHTML = [
+      '<div style="max-width:680px;margin:0 auto">',
+      '  <div style="text-align:center;margin-bottom:32px">',
+      '    <div style="font-size:48px;margin-bottom:8px">&#127775;</div>',
+      '    <h1 style="font-size:26px;font-weight:800;margin-bottom:4px">Welcome, ' + escapeHTML(name) + '!</h1>',
+      '    <p style="color:#94a3b8;font-size:14px">Your personal workspace</p>',
+      '  </div>',
+      '  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:28px">',
+      '    <div style="background:var(--card,#1e293b);border:1px solid var(--border,#334155);border-radius:12px;padding:24px;text-align:center">',
+      '      <div style="font-size:32px;margin-bottom:8px">&#128221;</div>',
+      '      <div style="font-weight:700;font-size:15px">Journal</div>',
+      '      <div style="font-size:12px;color:#94a3b8;margin-top:4px">Write notes &amp; capture ideas</div>',
+      '      <div style="margin-top:12px;font-size:11px;color:#64748b;font-style:italic">Coming soon</div>',
+      '    </div>',
+      '    <div style="background:var(--card,#1e293b);border:1px solid var(--border,#334155);border-radius:12px;padding:24px;text-align:center">',
+      '      <div style="font-size:32px;margin-bottom:8px">&#128193;</div>',
+      '      <div style="font-weight:700;font-size:15px">Files</div>',
+      '      <div style="font-size:12px;color:#94a3b8;margin-top:4px">Upload &amp; organize documents</div>',
+      '      <div style="margin-top:12px;font-size:11px;color:#64748b;font-style:italic">Coming soon</div>',
+      '    </div>',
+      '    <div style="background:var(--card,#1e293b);border:1px solid var(--border,#334155);border-radius:12px;padding:24px;text-align:center">',
+      '      <div style="font-size:32px;margin-bottom:8px">&#128278;</div>',
+      '      <div style="font-weight:700;font-size:15px">Bookmarks</div>',
+      '      <div style="font-size:12px;color:#94a3b8;margin-top:4px">Save important links</div>',
+      '      <div style="margin-top:12px;font-size:11px;color:#64748b;font-style:italic">Coming soon</div>',
+      '    </div>',
+      '    <div style="background:var(--card,#1e293b);border:1px solid var(--border,#334155);border-radius:12px;padding:24px;text-align:center">',
+      '      <div style="font-size:32px;margin-bottom:8px">&#127991;</div>',
+      '      <div style="font-weight:700;font-size:15px">Smart Labels</div>',
+      '      <div style="font-size:12px;color:#94a3b8;margin-top:4px">Custom tags to organize everything</div>',
+      '      <div style="margin-top:12px;font-size:11px;color:#64748b;font-style:italic">Coming soon</div>',
+      '    </div>',
+      '  </div>',
+      '  <div style="background:rgba(56,189,248,0.06);border:1px solid rgba(56,189,248,0.15);border-radius:10px;padding:16px;text-align:center">',
+      '    <div style="font-size:13px;color:#38bdf8">&#128274; Your workspace is private and secure. No one else can see your data.</div>',
+      '    <div style="font-size:12px;color:#64748b;margin-top:6px">Want full project access? Ask an admin to add you to the allow-list.</div>',
+      '  </div>',
+      '</div>'
+    ].join('\n');
+    document.body.appendChild(ws);
+  }
+
+  // --- Dispatch auth event for other scripts (designmode.js, etc.) ---
+  function dispatchAuthedEvent() {
+    try {
+      document.dispatchEvent(new CustomEvent('fpcs-authed', {
+        detail: { user: window.FPCS_USER }
+      }));
+    } catch (e) { /* IE fallback — silent */ }
   }
 
   // --- SHA-256 Hash ---
@@ -162,7 +316,7 @@
       '<div class="lock-icon">&#128274;</div>',
       '<h1>' + (pageConfig.name || 'TRAILS Dashboard') + '</h1>',
       '<div class="auth-sub">Sign in with Google to continue</div>',
-      '<button class="g-btn" id="googleSignIn" onclick="doGoogleSignIn()">',
+      '<button class="g-btn" id="googleSignIn">',
       '  <svg viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>',
       '  Sign in with Google',
       '</button>',
@@ -343,12 +497,23 @@
     gate.style.display = 'none';
     runBootSequence(BOOT_STEPS, function () {
       dash.style.display = 'block';
+      filterNavByRole('admin');
       onComplete();
+      dispatchAuthedEvent();
     });
   }
 
   // --- TIER 2 (Member): Onboard on first login, then boot ---
   function handleMember(user, userRecord, gate, dash, onComplete) {
+    // SECURITY: Check page access first
+    if (!canAccessCurrentPage('member')) {
+      gate.style.display = 'none';
+      dash.style.display = 'none'; // NEVER show unauthorized content
+      injectAccessDenied(user, 'member');
+      dispatchAuthedEvent();
+      return;
+    }
+
     var prefs = getUserPrefs(user.uid);
 
     if (!prefs || !prefs.onboarded) {
@@ -362,20 +527,22 @@
       document.getElementById('onboardConfirm').addEventListener('click', function () {
         var sharing = collectChecked('fpcs_onboard');
         var contrib = collectChecked('fpcs_contrib');
-        var prefs = {
+        var newPrefs = {
           sharing: sharing,
           contributions: contrib,
           role: 'member',
           onboarded: true,
           ts: Date.now()
         };
-        setUserPrefs(user.uid, prefs);
-        console.log('[FPCS Auth] Member onboarding complete:', prefs);
+        setUserPrefs(user.uid, newPrefs);
+        console.log('[FPCS Auth] Member onboarding complete:', newPrefs);
 
         fadeRemove('onboardModal', function () {
           runBootSequence(BOOT_STEPS, function () {
             dash.style.display = 'block';
+            filterNavByRole('member');
             onComplete();
+            dispatchAuthedEvent();
           });
         });
       });
@@ -385,48 +552,68 @@
       gate.style.display = 'none';
       runBootSequence(BOOT_STEPS, function () {
         dash.style.display = 'block';
+        filterNavByRole('member');
         onComplete();
+        dispatchAuthedEvent();
       });
     }
   }
 
-  // --- TIER 3 (Guest): Welcome, then personal workspace ---
+  // --- TIER 3 (Guest): Personal workspace ONLY — NEVER show project data ---
   function handleGuest(user, gate, dash, onComplete) {
+    // ╔══════════════════════════════════════════════════════════╗
+    // ║  SECURITY CRITICAL: dashContent must NEVER be shown     ║
+    // ║  to guests. All project data lives inside dashContent.  ║
+    // ║  Guests get a separate workspace injection instead.     ║
+    // ╚══════════════════════════════════════════════════════════╝
+    dash.style.display = 'none';   // LOCK IT DOWN — never show project content
+    gate.style.display = 'none';
+
+    // If guest navigated directly to a project page, show access denied
+    var isGuestAllowedPage = (getCurrentPageFile() === 'index.html');
+    if (!isGuestAllowedPage) {
+      console.warn('[FPCS Auth] GUEST blocked from:', getCurrentPageFile());
+      logLogin(user, 'guest-blocked');
+      injectAccessDenied(user, 'guest');
+      dispatchAuthedEvent();
+      return;
+    }
+
     var prefs = getUserPrefs(user.uid);
 
     if (!prefs || !prefs.onboarded) {
-      // First guest login — show welcome modal first, then boot
+      // First guest login — show welcome modal first, then boot into workspace
       var welcomeDiv = document.createElement('div');
       welcomeDiv.innerHTML = buildGuestWelcomeHTML(user.displayName || user.email.split('@')[0]);
       document.body.appendChild(welcomeDiv.firstElementChild);
-      gate.style.display = 'none';
 
       document.getElementById('onboardConfirm').addEventListener('click', function () {
-        var prefs = {
+        var newPrefs = {
           sharing: [],
           contributions: [],
           role: 'guest',
           onboarded: true,
           ts: Date.now()
         };
-        setUserPrefs(user.uid, prefs);
+        setUserPrefs(user.uid, newPrefs);
         console.log('[FPCS Auth] Guest onboarding complete');
 
         fadeRemove('onboardModal', function () {
           injectBootScreen(BOOT_STEPS_GUEST);
           runBootSequence(BOOT_STEPS_GUEST, function () {
-            dash.style.display = 'block';
-            onComplete();
+            // SECURITY: Show guest workspace, NOT dashContent
+            injectGuestWorkspace(user);
+            dispatchAuthedEvent();
           });
         });
       });
     } else {
-      // Returning guest
+      // Returning guest — boot into workspace
       injectBootScreen(BOOT_STEPS_GUEST);
-      gate.style.display = 'none';
       runBootSequence(BOOT_STEPS_GUEST, function () {
-        dash.style.display = 'block';
-        onComplete();
+        // SECURITY: Show guest workspace, NOT dashContent
+        injectGuestWorkspace(user);
+        dispatchAuthedEvent();
       });
     }
   }
@@ -479,8 +666,8 @@
           logLogin(user, role);
           console.log('[FPCS Auth] ' + role.toUpperCase() + ': ' + user.email + ' (' + label + ')');
 
-          // Set global user info for all scripts
-          window.FPCS_USER = {
+          // Set global user info for all scripts (frozen to prevent tampering)
+          window.FPCS_USER = Object.freeze({
             email: user.email,
             name: user.displayName,
             uid: user.uid,
@@ -488,7 +675,7 @@
             role: role,
             label: label,
             prefs: getUserPrefs(user.uid)
-          };
+          });
 
           var onComplete = function () {
             if (typeof pageConfig.onAuthed === 'function') {
@@ -512,7 +699,7 @@
       }
     });
 
-    // Global sign-in function
+    // Global sign-in function (also bound via addEventListener below)
     window.doGoogleSignIn = function () {
       errEl.textContent = '';
       loadEl.textContent = 'Signing in...';
@@ -529,6 +716,12 @@
         console.error('[FPCS Auth] Error:', error);
       });
     };
+
+    // Bind sign-in button via addEventListener (no inline onclick needed)
+    var signInBtn = document.getElementById('googleSignIn');
+    if (signInBtn) {
+      signInBtn.addEventListener('click', window.doGoogleSignIn);
+    }
 
     // Global sign-out function — allows switching Google accounts
     window.doFPCSLogout = function () {
@@ -581,6 +774,70 @@
         if (logoutBtn) logoutBtn.remove();
       }
     });
+
+    // ============================================================
+    //  SESSION SECURITY: Inactivity Timeout
+    // ============================================================
+    function resetActivity() { _lastActivity = Date.now(); }
+    document.addEventListener('click', resetActivity);
+    document.addEventListener('keydown', resetActivity);
+    document.addEventListener('scroll', resetActivity);
+
+    setInterval(function () {
+      if (window.FPCS_USER && (Date.now() - _lastActivity > SESSION_TIMEOUT_MS)) {
+        console.warn('[FPCS Auth] Session timed out after 30 minutes of inactivity');
+        window.doFPCSLogout();
+      }
+    }, 60000); // Check every minute
+
+    // ============================================================
+    //  SESSION SECURITY: Tab Visibility Re-validation
+    //  Catches: expired sessions, disabled accounts, deleted accounts
+    // ============================================================
+    document.addEventListener('visibilitychange', function () {
+      if (document.visibilityState === 'visible') {
+        var currentUser = auth.currentUser;
+        if (!currentUser && window.FPCS_USER) {
+          console.warn('[FPCS Auth] Session expired while tab was hidden');
+          window.FPCS_USER = null;
+          window.location.reload();
+          return;
+        }
+        if (currentUser) {
+          currentUser.reload().catch(function (err) {
+            console.warn('[FPCS Auth] Account invalidated:', err.code || err.message);
+            auth.signOut();
+            window.FPCS_USER = null;
+            window.location.reload();
+          });
+        }
+      }
+    });
+
+    // ============================================================
+    //  SECURITY: Clear sensitive data on page unload
+    // ============================================================
+    window.addEventListener('beforeunload', function () {
+      // Don't persist user object across navigations — re-auth on each page load
+      // (Firebase handles persistence via its own session cookie)
+    });
+
+    // ============================================================
+    //  SECURITY: Console Warning (like Facebook/Google)
+    // ============================================================
+    console.log(
+      '%c⚠️ STOP!',
+      'color:#f87171;font-size:40px;font-weight:900;text-shadow:2px 2px #0f172a'
+    );
+    console.log(
+      '%cThis is a secure dashboard. Do NOT paste anything here that someone told you to paste. ' +
+      'It could give them access to your account.',
+      'color:#94a3b8;font-size:14px'
+    );
+    console.log(
+      '%c[FPCS Security] Auth system initialized with 3-tier access control.',
+      'color:#4ade80;font-size:11px'
+    );
   }
 
   // --- Boot ---

@@ -1,0 +1,1102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://apis.google.com https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://*.googleapis.com https://*.firebaseio.com wss://*.firebaseio.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com; frame-src https://accounts.google.com https://*.firebaseapp.com; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+<title>Realbotville — FPCS Dashboard</title>
+<link rel="stylesheet" href="css/core.css">
+<link rel="stylesheet" href="css/nav.css">
+<link rel="stylesheet" href="css/auth.css">
+<style>
+  /* ===== FULLSCREEN VILLAGE ===== */
+  html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; }
+
+  #dashContent { display: none; height: 100vh; }
+
+  /* Village fills entire viewport */
+  .village-fullscreen {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: #0a0e1a;
+    z-index: 100;
+    overflow: hidden;
+  }
+  .village-fullscreen canvas {
+    display: block;
+    width: 100% !important;
+    height: 100% !important;
+  }
+
+  /* HUD — Top Bar */
+  .v3d-hud-top {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    background: linear-gradient(180deg, rgba(10,14,26,0.92) 0%, rgba(10,14,26,0) 100%);
+    z-index: 200;
+    pointer-events: none;
+  }
+  .v3d-hud-top > * { pointer-events: auto; }
+
+  .v3d-title {
+    font-size: 20px;
+    font-weight: 800;
+    color: #38bdf8;
+    text-shadow: 0 0 12px rgba(56,189,248,0.4);
+    letter-spacing: 1px;
+  }
+  .v3d-title span { font-size: 14px; color: #94a3b8; font-weight: 400; margin-left: 12px; }
+
+  .v3d-stats {
+    display: flex;
+    gap: 20px;
+    font-size: 13px;
+    color: #cbd5e1;
+  }
+  .v3d-stats strong { color: #38bdf8; margin-left: 4px; }
+
+  .v3d-back-btn {
+    background: rgba(30,41,59,0.85);
+    border: 1px solid #334155;
+    color: #94a3b8;
+    padding: 8px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    backdrop-filter: blur(8px);
+    transition: all 0.2s;
+    text-decoration: none;
+    display: inline-block;
+  }
+  .v3d-back-btn:hover { border-color: #38bdf8; color: #38bdf8; }
+
+  /* HUD — Bottom Controls */
+  .v3d-hud-bottom {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 20px;
+    background: linear-gradient(0deg, rgba(10,14,26,0.92) 0%, rgba(10,14,26,0) 100%);
+    z-index: 200;
+    pointer-events: none;
+    flex-wrap: wrap;
+  }
+  .v3d-hud-bottom > * { pointer-events: auto; }
+
+  .v3d-ctrl-btn {
+    background: rgba(30,41,59,0.85);
+    border: 1px solid #334155;
+    color: #cbd5e1;
+    padding: 8px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+    backdrop-filter: blur(8px);
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .v3d-ctrl-btn:hover { border-color: #38bdf8; color: #38bdf8; }
+  .v3d-ctrl-btn.active { border-color: #a855f7; color: #a855f7; }
+
+  /* Tooltip */
+  .v3d-tooltip {
+    position: fixed;
+    display: none;
+    background: rgba(15,23,42,0.95);
+    border: 1px solid #38bdf8;
+    color: #e2e8f0;
+    padding: 10px 16px;
+    border-radius: 10px;
+    font-size: 13px;
+    pointer-events: none;
+    z-index: 300;
+    white-space: nowrap;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+  }
+  .v3d-tooltip .tt-name { font-weight: 700; color: #38bdf8; font-size: 14px; }
+  .v3d-tooltip .tt-bot { color: #fbbf24; font-size: 12px; margin-top: 3px; }
+  .v3d-tooltip .tt-desc { color: #94a3b8; font-size: 11px; margin-top: 3px; font-style: italic; }
+
+  /* Building Info Panel */
+  .v3d-info-panel {
+    position: fixed;
+    right: 20px;
+    top: 60px;
+    width: 300px;
+    max-height: calc(100vh - 120px);
+    background: rgba(15,23,42,0.95);
+    border: 1px solid #334155;
+    border-radius: 12px;
+    padding: 20px;
+    z-index: 250;
+    backdrop-filter: blur(10px);
+    display: none;
+    overflow-y: auto;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  }
+  .v3d-info-panel.open { display: block; }
+  .v3d-info-panel h3 { color: #38bdf8; margin: 0 0 8px 0; font-size: 16px; }
+  .v3d-info-panel .info-bot { color: #fbbf24; font-size: 13px; margin-bottom: 6px; }
+  .v3d-info-panel .info-desc { color: #94a3b8; font-size: 12px; line-height: 1.6; }
+  .v3d-info-panel .info-close {
+    position: absolute; top: 10px; right: 14px;
+    background: none; border: none; color: #64748b; cursor: pointer; font-size: 18px;
+  }
+  .v3d-info-panel .info-close:hover { color: #ef4444; }
+
+  /* ASCII Map Overlay */
+  .v3d-ascii-overlay {
+    position: fixed;
+    top: 60px; left: 50%;
+    transform: translateX(-50%);
+    background: rgba(10,14,26,0.95);
+    border: 1px solid #334155;
+    border-radius: 12px;
+    padding: 24px;
+    z-index: 250;
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    color: #4ade80;
+    line-height: 1.6;
+    white-space: pre;
+    overflow: auto;
+    max-width: 90vw;
+    max-height: calc(100vh - 140px);
+    display: none;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  }
+  .v3d-ascii-overlay.open { display: block; }
+  .v3d-ascii-close {
+    position: absolute; top: 8px; right: 14px;
+    background: none; border: none; color: #64748b; cursor: pointer; font-size: 18px;
+  }
+  .v3d-ascii-close:hover { color: #ef4444; }
+
+  /* Minimap */
+  .v3d-minimap {
+    position: fixed;
+    bottom: 70px; left: 20px;
+    width: 180px; height: 140px;
+    background: rgba(10,14,26,0.85);
+    border: 1px solid #334155;
+    border-radius: 10px;
+    z-index: 200;
+    overflow: hidden;
+    display: none;
+  }
+  .v3d-minimap.open { display: block; }
+  .v3d-minimap canvas { width: 100%; height: 100%; }
+
+  /* Fullscreen toggle indicator */
+  .fs-indicator {
+    position: fixed;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(15,23,42,0.9);
+    border: 1px solid #38bdf8;
+    color: #38bdf8;
+    padding: 16px 32px;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 700;
+    z-index: 500;
+    display: none;
+    animation: fsPulse 0.6s ease-out;
+  }
+  @keyframes fsPulse {
+    0% { transform: translate(-50%, -50%) scale(0.8); opacity: 0; }
+    50% { transform: translate(-50%, -50%) scale(1.05); }
+    100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+  }
+
+  /* Hide nav rail in fullscreen mode */
+  .nav-rail { display: none !important; }
+
+  /* Loading screen */
+  .v3d-loading {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: #0a0e1a;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 400;
+    transition: opacity 0.5s;
+  }
+  .v3d-loading.fade-out { opacity: 0; pointer-events: none; }
+  .v3d-loading h2 { color: #38bdf8; font-size: 24px; margin-bottom: 8px; }
+  .v3d-loading p { color: #64748b; font-size: 14px; }
+  .v3d-loading .spinner {
+    width: 40px; height: 40px;
+    border: 3px solid #1e293b;
+    border-top: 3px solid #38bdf8;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 20px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  @media (max-width: 768px) {
+    .v3d-title { font-size: 16px; }
+    .v3d-title span { display: none; }
+    .v3d-stats { gap: 10px; font-size: 11px; }
+    .v3d-info-panel { width: 85%; right: 7.5%; }
+    .v3d-ctrl-btn { padding: 6px 10px; font-size: 11px; }
+  }
+</style>
+</head>
+<body class="theme-bots">
+<div id="dashContent">
+
+  <!-- Loading Screen -->
+  <div class="v3d-loading" id="loadingScreen">
+    <div class="spinner"></div>
+    <h2>&#127968; Realbotville</h2>
+    <p>Loading the village...</p>
+  </div>
+
+  <!-- 3D Canvas Container -->
+  <div class="village-fullscreen" id="village3d"></div>
+
+  <!-- HUD Top Bar -->
+  <div class="v3d-hud-top">
+    <div style="display:flex;align-items:center;gap:16px">
+      <a class="v3d-back-btn" href="bots.html">&#8592; Bot HQ</a>
+      <div class="v3d-title">&#127968; Realbotville<span>Command Center</span></div>
+    </div>
+    <div class="v3d-stats">
+      <div>&#128101; Pop: <strong id="villPop">0</strong></div>
+      <div>&#9728; Day: <strong id="villDay">1</strong></div>
+      <div>&#127808; Season: <strong id="villSeason">Winter</strong></div>
+      <div>&#128176; Treasury: <strong id="villTreasury">0</strong> XP</div>
+    </div>
+  </div>
+
+  <!-- HUD Bottom Controls -->
+  <div class="v3d-hud-bottom">
+    <button class="v3d-ctrl-btn" id="btnReset" title="Reset camera to default view">&#127968; Reset View</button>
+    <button class="v3d-ctrl-btn" id="btnDayNight" title="Toggle day/night mode">&#127769; Day / Night</button>
+    <button class="v3d-ctrl-btn" id="btnLabels" title="Toggle building labels">&#127991; Labels</button>
+    <button class="v3d-ctrl-btn" id="btnAscii" title="Show ASCII map overlay">&#128462; ASCII Map</button>
+    <button class="v3d-ctrl-btn" id="btnFullscreen" title="Enter/exit browser fullscreen (F11)">&#128250; Fullscreen</button>
+    <button class="v3d-ctrl-btn" id="btnMinimap" title="Toggle minimap">&#128506; Minimap</button>
+    <button class="v3d-ctrl-btn" id="btnCinematic" title="Auto-orbit camera">&#127910; Cinematic</button>
+  </div>
+
+  <!-- Tooltip (follows cursor) -->
+  <div class="v3d-tooltip" id="v3dTooltip">
+    <div class="tt-name"></div>
+    <div class="tt-bot"></div>
+    <div class="tt-desc"></div>
+  </div>
+
+  <!-- Building Info Panel -->
+  <div class="v3d-info-panel" id="infoPanel">
+    <button class="info-close" id="infoPanelClose">&#10005;</button>
+    <h3 id="infoPanelTitle"></h3>
+    <div class="info-bot" id="infoPanelBot"></div>
+    <div class="info-desc" id="infoPanelDesc"></div>
+  </div>
+
+  <!-- ASCII Map Overlay -->
+  <div class="v3d-ascii-overlay" id="asciiOverlay">
+    <button class="v3d-ascii-close" id="asciiClose">&#10005;</button>
+                    [Mountain Pass]
+                         |
+    [Farm Fields]---[Village Gate]---[Mine Entrance]
+         |               |               |
+    [Farmer Houses] [Town Square]  [Miner Houses]
+         |          /    |    \         |
+    [Granary]  [Bank] [Hall] [Shop] [Smeltery]
+                     |
+              [School]---[Library]
+                     |
+    [Workshop]  [Arena]  [Planning Office]
+         |          |         |
+    [Guard Post] [Houses] [Jail]
+                     |
+              [Bounty Board]
+
+    Legend: Each location has an assigned bot or function.
+    Click buildings in 3D view for details.
+  </div>
+
+  <!-- Minimap Canvas -->
+  <div class="v3d-minimap" id="minimapWrap">
+    <canvas id="minimapCanvas" width="180" height="140"></canvas>
+  </div>
+
+  <!-- Fullscreen Indicator -->
+  <div class="fs-indicator" id="fsIndicator"></div>
+
+</div>
+
+<script>
+// ============================================================
+//   REALBOTVILLE — Full-Screen 3D Village Engine
+//   Part of TRAILS: Technology · Robotics · AI · Language · Skills
+//   Powered by Three.js r128
+// ============================================================
+
+// --- Bot Data (mirrors bots.html roster) ---
+function loadBots() {
+  return [
+    { id:'opus', name:'OPUS', role:'Commander', color:'#7c3aed', xp:2500, village:'Supreme Commander' },
+    { id:'sarge', name:'The Sarge', role:'Supervisor', color:'#b45309', xp:2200, village:'Commander\'s Representative' },
+    { id:'penny', name:'Penny Pincher', role:'UX/Aesthetics', color:'#ec4899', xp:1800, village:'Village Decorator' },
+    { id:'shield', name:'SHIELD', role:'Security Sentinel', color:'#ef4444', xp:2100, village:'Village Guard' },
+    { id:'deductbot', name:'DeductBot', role:'Tax Deductions', color:'#22c55e', xp:1900, village:'Village Prospector' },
+    { id:'cruncher', name:'Cruncher', role:'Data Analyst', color:'#3b82f6', xp:1700, village:'Village Accountant' },
+    { id:'scribbles', name:'Scribbles', role:'Documentation', color:'#06b6d4', xp:1600, village:'ScribeBot / Librarian' },
+    { id:'ddbot', name:'DDBOT', role:'Discrepancy Detector', color:'#f59e0b', xp:1400, village:'Village Inspector' },
+    { id:'tokenwatch', name:'TokenWatchBot', role:'Efficiency Auditor', color:'#8b5cf6', xp:1200, village:'Village Auditor' },
+    { id:'gamerparty', name:'GamerPartyBot', role:'Gamification', color:'#f472b6', xp:1500, village:'Arena Master' },
+    { id:'jokerbot', name:'JokerBot', role:'Humor & Morale', color:'#facc15', xp:1100, village:'Village Comedian' },
+    { id:'brainstorm', name:'BrainstormBot', role:'Innovation', color:'#a855f7', xp:1300, village:'Workshop Inventor' },
+    { id:'mayorbot', name:'MayorBot', role:'Village Governor', color:'#0ea5e9', xp:2000, village:'Town Hall' },
+    { id:'lawbot', name:'LawBot', role:'Law Enforcement', color:'#64748b', xp:1600, village:'Jail / Patrol' },
+    { id:'cityplanner', name:'CityPlannerBot', role:'Urban Dev', color:'#14b8a6', xp:1400, village:'Planning Office' }
+  ];
+}
+
+// --- Village Day/Season ---
+function updateVillageTime() {
+  var now = new Date();
+  var dayOfYear = Math.floor((now - new Date(now.getFullYear(),0,0)) / 86400000);
+  var seasons = ['Winter','Spring','Summer','Fall'];
+  var seasonIdx = Math.floor(((dayOfYear + 10) % 365) / 91.25);
+  var el = document.getElementById;
+  var pop = document.getElementById('villPop');
+  var day = document.getElementById('villDay');
+  var sea = document.getElementById('villSeason');
+  var tre = document.getElementById('villTreasury');
+  var bots = loadBots();
+  if (pop) pop.textContent = bots.length;
+  if (day) day.textContent = dayOfYear;
+  if (sea) sea.textContent = seasons[seasonIdx] || 'Winter';
+  if (tre) tre.textContent = bots.reduce(function(s,b){ return s + b.xp; }, 0).toLocaleString();
+}
+updateVillageTime();
+
+// --- Building Descriptions ---
+var BUILDING_DESCRIPTIONS = {
+  'Mountain Pass': 'The treacherous northern pass. Only the bravest bots venture here for rare resources.',
+  'Village Gate': 'Main entry to Realbotville. SHIELD stands guard 24/7, checking all who enter.',
+  'Farm Fields': 'Fertile fields that feed the village. Crop rotation keeps yields high year-round.',
+  'Mine Entrance': 'Rich veins of data-ore. Miners extract valuable insights from raw information.',
+  'Farmer Houses': 'Cozy homes for the farming bots. Simple but warm.',
+  'Town Square': 'The heart of Realbotville. Announcements, festivals, and community gatherings happen here.',
+  'Miner Houses': 'Sturdy dwellings built from mine stone. The miners rest here between shifts.',
+  'Granary': 'Stores the village food supply. Carefully managed to avoid waste.',
+  'Bank': 'Cruncher manages the village treasury here. Every XP coin is accounted for.',
+  'Town Hall': 'MayorBot governs from this grand building. Laws are debated and signed here.',
+  'Shop': 'Penny Pincher runs the village shop. Best deals in all of Realbotville.',
+  'Smeltery': 'Raw materials are refined here. The furnace never goes cold.',
+  'School': 'Scribbles teaches new bots the ways of the village. Knowledge is power.',
+  'Library': 'The village archive. Every document, law, and story is preserved here.',
+  'Workshop': 'BrainstormBot tinkers and invents. Explosions are... occasional.',
+  'Planning Office': 'CityPlannerBot dreams up expansions and infrastructure improvements.',
+  'Jail': 'LawBot keeps order. Timeout corner for misbehaving bots.',
+  'Guard Post': 'SHIELD\'s watchtower. Eyes on the perimeter at all times.',
+  'Arena': 'GamerPartyBot hosts competitions and tournaments. Glory awaits!',
+  'Bounty Board': 'Active missions and bounties posted here. Check daily for new opportunities.',
+  'House Row 1': 'Residential housing. Home to several working bots.',
+  'House Row 2': 'Residential housing. A quiet neighborhood.',
+  'House Row 3': 'Residential housing. Close to the library and school.',
+  'House Row 4': 'Residential housing. Premium location near the arena.'
+};
+
+// === 3D REALBOTVILLE ENGINE ===
+(function(){
+var v3dReady = false, v3dScene, v3dCamera, v3dRenderer;
+var v3dControls = {};
+var v3dBuildings = [], v3dBotMeshes = [], v3dLabels = [];
+var v3dNight = false, v3dShowLabels = true, v3dCinematic = false;
+var v3dRAF;
+
+// Building definitions
+var VILLAGE_BUILDINGS = [
+  {name:'Mountain Pass',x:0,z:-14,w:4,h:5,d:3,color:0x6b7280,icon:'\u26f0',bot:null,roof:'peak'},
+  {name:'Village Gate',x:0,z:-10,w:5,h:4,d:3,color:0x92400e,icon:'\ud83c\udf3f',bot:'SHIELD',roof:'flat'},
+  {name:'Farm Fields',x:-10,z:-10,w:6,h:2,d:4,color:0x65a30d,icon:'\ud83c\udf3e',bot:null,roof:'flat'},
+  {name:'Mine Entrance',x:10,z:-10,w:4,h:3,d:3,color:0x78716c,icon:'\u26cf',bot:null,roof:'peak'},
+  {name:'Farmer Houses',x:-10,z:-6,w:4,h:3,d:3,color:0xca8a04,icon:'\ud83c\udfe0',bot:null,roof:'peak'},
+  {name:'Town Square',x:0,z:-6,w:7,h:1,d:7,color:0x64748b,icon:'\u2b50',bot:'MayorBot',roof:'none'},
+  {name:'Miner Houses',x:10,z:-6,w:4,h:3,d:3,color:0xa16207,icon:'\ud83c\udfe0',bot:null,roof:'peak'},
+  {name:'Granary',x:-10,z:-2,w:3,h:4,d:3,color:0xd97706,icon:'\ud83c\udf3e',bot:null,roof:'peak'},
+  {name:'Bank',x:-4,z:-2,w:3,h:4,d:3,color:0xfbbf24,icon:'\ud83c\udfe6',bot:'Cruncher',roof:'dome'},
+  {name:'Town Hall',x:0,z:-2,w:5,h:6,d:4,color:0x0ea5e9,icon:'\ud83c\udfdb',bot:'MayorBot',roof:'dome'},
+  {name:'Shop',x:4,z:-2,w:3,h:3,d:3,color:0xf97316,icon:'\ud83c\udfea',bot:'Penny Pincher',roof:'flat'},
+  {name:'Smeltery',x:10,z:-2,w:3,h:4,d:3,color:0xef4444,icon:'\ud83d\udd25',bot:null,roof:'peak'},
+  {name:'School',x:-3,z:3,w:4,h:4,d:3,color:0x8b5cf6,icon:'\ud83c\udf93',bot:'Scribbles',roof:'dome'},
+  {name:'Library',x:3,z:3,w:4,h:4,d:3,color:0x06b6d4,icon:'\ud83d\udcda',bot:'Scribbles',roof:'peak'},
+  {name:'Workshop',x:-8,z:3,w:4,h:3,d:3,color:0xa855f7,icon:'\ud83d\udd27',bot:'BrainstormBot',roof:'flat'},
+  {name:'Planning Office',x:8,z:3,w:3,h:3,d:3,color:0x14b8a6,icon:'\ud83d\udcdd',bot:'CityPlannerBot',roof:'flat'},
+  {name:'Jail',x:12,z:7,w:3,h:4,d:3,color:0x64748b,icon:'\u2696',bot:'LawBot',roof:'flat'},
+  {name:'Guard Post',x:-12,z:7,w:2,h:5,d:2,color:0xef4444,icon:'\ud83d\udee1',bot:'SHIELD',roof:'peak'},
+  {name:'Arena',x:0,z:8,w:8,h:2,d:6,color:0xf472b6,icon:'\u2694',bot:'GamerPartyBot',roof:'none'},
+  {name:'Bounty Board',x:0,z:14,w:3,h:3,d:2,color:0x4ade80,icon:'\ud83d\udcb0',bot:null,roof:'flat'},
+  {name:'House Row 1',x:-6,z:7,w:2,h:2,d:2,color:0x475569,icon:'\ud83c\udfe0',bot:null,roof:'peak'},
+  {name:'House Row 2',x:-3,z:7,w:2,h:3,d:2,color:0x64748b,icon:'\ud83c\udfe0',bot:null,roof:'peak'},
+  {name:'House Row 3',x:3,z:7,w:2,h:3,d:2,color:0x94a3b8,icon:'\ud83c\udfe0',bot:null,roof:'peak'},
+  {name:'House Row 4',x:6,z:7,w:2,h:4,d:2,color:0xfbbf24,icon:'\ud83c\udfe0',bot:null,roof:'peak'}
+];
+
+var BOTS = loadBots();
+var BOT_COLORS = {};
+BOTS.forEach(function(b){ BOT_COLORS[b.name] = parseInt(b.color.replace('#',''),16); });
+
+function loadThreeJS(cb){
+  if(window.THREE) return cb();
+  var s = document.createElement('script');
+  s.src = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
+  s.onload = function(){
+    console.log('[Realbotville] Three.js loaded');
+    cb();
+  };
+  s.onerror = function(){
+    console.error('[Realbotville] Failed to load Three.js');
+    var ls = document.getElementById('loadingScreen');
+    if(ls){ ls.querySelector('p').textContent = 'Failed to load 3D engine. Try refreshing.'; }
+  };
+  document.head.appendChild(s);
+}
+
+// Camera orbit state
+var isDragging = false, prevMX = 0, prevMY = 0;
+var camAngle = 0.6, camPitch = 0.8, camDist = 35;
+var camTargetX = 0, camTargetZ = 0;
+var cinematicSpeed = 0.002;
+
+function updateCamPos(){
+  if(!v3dCamera) return;
+  v3dCamera.position.x = camTargetX + Math.sin(camAngle) * Math.cos(camPitch) * camDist;
+  v3dCamera.position.y = Math.sin(camPitch) * camDist;
+  v3dCamera.position.z = camTargetZ + Math.cos(camAngle) * Math.cos(camPitch) * camDist;
+  v3dCamera.lookAt(camTargetX, 2, camTargetZ);
+}
+
+function initVillage3D(){
+  var container = document.getElementById('village3d');
+  if(!container || v3dReady) return;
+
+  var W = window.innerWidth;
+  var H = window.innerHeight;
+
+  // Scene
+  v3dScene = new THREE.Scene();
+  v3dScene.background = new THREE.Color(0x0a0e1a);
+  v3dScene.fog = new THREE.FogExp2(0x0a0e1a, 0.008);
+
+  // Camera
+  v3dCamera = new THREE.PerspectiveCamera(50, W/H, 0.1, 300);
+  v3dCamera.position.set(20, 22, 28);
+  v3dCamera.lookAt(0, 0, 0);
+
+  // Renderer
+  v3dRenderer = new THREE.WebGLRenderer({antialias:true, alpha:false});
+  v3dRenderer.setSize(W, H);
+  v3dRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  v3dRenderer.shadowMap.enabled = true;
+  v3dRenderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  container.appendChild(v3dRenderer.domElement);
+
+  // Lights
+  var amb = new THREE.AmbientLight(0x334155, 0.6);
+  v3dScene.add(amb);
+  v3dControls.ambLight = amb;
+
+  var sun = new THREE.DirectionalLight(0xffeedd, 1.0);
+  sun.position.set(15, 25, 10);
+  sun.castShadow = true;
+  sun.shadow.mapSize.width = 2048;
+  sun.shadow.mapSize.height = 2048;
+  sun.shadow.camera.near = 0.5;
+  sun.shadow.camera.far = 80;
+  sun.shadow.camera.left = -30;
+  sun.shadow.camera.right = 30;
+  sun.shadow.camera.top = 30;
+  sun.shadow.camera.bottom = -30;
+  v3dScene.add(sun);
+  v3dControls.sunLight = sun;
+
+  var point1 = new THREE.PointLight(0x38bdf8, 0.3, 40);
+  point1.position.set(0, 6, 0);
+  v3dScene.add(point1);
+
+  // Ground plane (larger for fullscreen)
+  var groundGeo = new THREE.PlaneGeometry(80, 70);
+  var groundMat = new THREE.MeshLambertMaterial({color:0x1a2e1a});
+  var ground = new THREE.Mesh(groundGeo, groundMat);
+  ground.rotation.x = -Math.PI/2;
+  ground.position.y = -0.01;
+  ground.receiveShadow = true;
+  v3dScene.add(ground);
+  v3dControls.ground = ground;
+
+  // Water feature (pond near arena)
+  var pondGeo = new THREE.CircleGeometry(3, 24);
+  var pondMat = new THREE.MeshLambertMaterial({color:0x0c4a6e, transparent:true, opacity:0.7});
+  var pond = new THREE.Mesh(pondGeo, pondMat);
+  pond.rotation.x = -Math.PI/2;
+  pond.position.set(7, 0.02, 12);
+  v3dScene.add(pond);
+
+  // Paths
+  function makePath(x1,z1,x2,z2,width){
+    var dx=x2-x1, dz=z2-z1, len=Math.sqrt(dx*dx+dz*dz);
+    var pg=new THREE.PlaneGeometry(width||0.6, len);
+    var pm=new THREE.MeshLambertMaterial({color:0x3f3f2e});
+    var path=new THREE.Mesh(pg, pm);
+    path.rotation.x=-Math.PI/2;
+    path.rotation.z=-Math.atan2(dx, dz);
+    path.position.set((x1+x2)/2, 0.01, (z1+z2)/2);
+    v3dScene.add(path);
+  }
+  makePath(0,-14,0,16,0.8);  // Main north-south road
+  makePath(-12,-10,12,-10);   // East-west roads
+  makePath(-12,-6,12,-6);
+  makePath(-12,-2,12,-2);
+  makePath(-10,3,10,3);
+  makePath(-12,7,14,7);
+
+  // Build buildings
+  VILLAGE_BUILDINGS.forEach(function(b){
+    var group = new THREE.Group();
+    group.userData = {name:b.name, bot:b.bot, icon:b.icon};
+
+    // Main body
+    var geo = new THREE.BoxGeometry(b.w, b.h, b.d);
+    var mat = new THREE.MeshLambertMaterial({color:b.color});
+    var mesh = new THREE.Mesh(geo, mat);
+    mesh.position.y = b.h/2;
+    mesh.castShadow = true;
+    mesh.receiveShadow = true;
+    group.add(mesh);
+
+    // Roof
+    if(b.roof === 'peak'){
+      var roofGeo = new THREE.ConeGeometry(Math.max(b.w,b.d)*0.65, 2, 4);
+      var roofMat = new THREE.MeshLambertMaterial({color:darken(b.color,0.3)});
+      var roof = new THREE.Mesh(roofGeo, roofMat);
+      roof.position.y = b.h+1;
+      roof.rotation.y = Math.PI/4;
+      roof.castShadow = true;
+      group.add(roof);
+    } else if(b.roof === 'dome'){
+      var domeGeo = new THREE.SphereGeometry(Math.max(b.w,b.d)*0.4, 16, 10, 0, Math.PI*2, 0, Math.PI/2);
+      var domeMat = new THREE.MeshLambertMaterial({color:darken(b.color,0.2)});
+      var dome = new THREE.Mesh(domeGeo, domeMat);
+      dome.position.y = b.h;
+      dome.castShadow = true;
+      group.add(dome);
+    }
+
+    // Door
+    if(b.h > 1){
+      var doorGeo = new THREE.PlaneGeometry(0.8, 1.4);
+      var doorMat = new THREE.MeshLambertMaterial({color:0x1e1e1e});
+      var door = new THREE.Mesh(doorGeo, doorMat);
+      door.position.set(0, 0.7, b.d/2+0.01);
+      group.add(door);
+    }
+
+    // Windows
+    if(b.h >= 3){
+      var winGeo = new THREE.PlaneGeometry(0.5, 0.5);
+      var winMat = new THREE.MeshLambertMaterial({color:0xfef3c7, emissive:0x44400a, emissiveIntensity:0.3});
+      [-1,1].forEach(function(side){
+        var win = new THREE.Mesh(winGeo, winMat);
+        win.position.set(side*(b.w/2-0.5), b.h*0.6, b.d/2+0.01);
+        group.add(win);
+      });
+    }
+
+    // Chimney smoke for smeltery
+    if(b.name === 'Smeltery'){
+      var chimneyGeo = new THREE.CylinderGeometry(0.2, 0.2, 2, 6);
+      var chimneyMat = new THREE.MeshLambertMaterial({color:0x44403c});
+      var chimney = new THREE.Mesh(chimneyGeo, chimneyMat);
+      chimney.position.set(1, b.h+1, 0);
+      group.add(chimney);
+    }
+
+    group.position.set(b.x, 0, b.z);
+    v3dScene.add(group);
+    v3dBuildings.push(group);
+  });
+
+  // Trees
+  var treePositions = [
+    [-14,-8],[-14,0],[-14,10],[14,-8],[14,0],[14,10],
+    [-7,12],[7,12],[-13,-13],[13,-13],[-7,-14],[7,-14],
+    [-16,-4],[-16,6],[16,-4],[16,6],
+    [-18,0],[18,0],[-10,14],[10,14]
+  ];
+  treePositions.forEach(function(p){
+    var trunk = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.15, 0.2, 1.5, 6),
+      new THREE.MeshLambertMaterial({color:0x5c3a1e})
+    );
+    trunk.position.set(p[0], 0.75, p[1]);
+    trunk.castShadow = true;
+    v3dScene.add(trunk);
+    var leaves = new THREE.Mesh(
+      new THREE.SphereGeometry(0.8+Math.random()*0.4, 8, 6),
+      new THREE.MeshLambertMaterial({color: 0x1a6e1a + Math.floor(Math.random()*0x002000)})
+    );
+    leaves.position.set(p[0], 2+Math.random()*0.3, p[1]);
+    leaves.castShadow = true;
+    v3dScene.add(leaves);
+  });
+
+  // Stars
+  var starGeo = new THREE.BufferGeometry();
+  var starVerts = [];
+  for(var i=0; i<400; i++){
+    starVerts.push((Math.random()-0.5)*150, 25+Math.random()*40, (Math.random()-0.5)*150);
+  }
+  starGeo.setAttribute('position', new THREE.Float32BufferAttribute(starVerts, 3));
+  var starMat = new THREE.PointsMaterial({color:0xffffff, size:0.15, transparent:true, opacity:0.5});
+  var stars = new THREE.Points(starGeo, starMat);
+  v3dScene.add(stars);
+  v3dControls.stars = stars;
+
+  // Bot figures
+  BOTS.forEach(function(bot, idx){
+    var bColor = BOT_COLORS[bot.name] || 0x38bdf8;
+    var bGroup = new THREE.Group();
+
+    // Body
+    var body = new THREE.Mesh(
+      new THREE.BoxGeometry(0.4, 0.6, 0.3),
+      new THREE.MeshLambertMaterial({color:bColor})
+    );
+    body.position.y = 0.8;
+    bGroup.add(body);
+
+    // Head
+    var head = new THREE.Mesh(
+      new THREE.BoxGeometry(0.3, 0.3, 0.3),
+      new THREE.MeshLambertMaterial({color:lighten(bColor, 0.3)})
+    );
+    head.position.y = 1.25;
+    bGroup.add(head);
+
+    // Eyes
+    var eyeGeo = new THREE.BoxGeometry(0.06, 0.06, 0.02);
+    var eyeMat = new THREE.MeshBasicMaterial({color:0xffffff});
+    var eyeL = new THREE.Mesh(eyeGeo, eyeMat); eyeL.position.set(-0.07, 1.28, 0.16); bGroup.add(eyeL);
+    var eyeR = new THREE.Mesh(eyeGeo, eyeMat); eyeR.position.set(0.07, 1.28, 0.16); bGroup.add(eyeR);
+
+    // Legs
+    var legGeo = new THREE.BoxGeometry(0.14, 0.5, 0.14);
+    var legMat = new THREE.MeshLambertMaterial({color:darken(bColor, 0.4)});
+    var legL = new THREE.Mesh(legGeo, legMat); legL.position.set(-0.1, 0.25, 0); bGroup.add(legL);
+    var legR = new THREE.Mesh(legGeo, legMat); legR.position.set(0.1, 0.25, 0); bGroup.add(legR);
+
+    // Name tag above head
+    // (Using 3D sprite would require canvas text — done in label overlay instead)
+
+    // Position near home building
+    var homeBuilding = VILLAGE_BUILDINGS.find(function(vb){ return vb.bot === bot.name; });
+    var startX = homeBuilding ? homeBuilding.x + (Math.random()-0.5)*3 : (Math.random()-0.5)*20;
+    var startZ = homeBuilding ? homeBuilding.z + (Math.random()-0.5)*3 : (Math.random()-0.5)*20;
+    bGroup.position.set(startX, 0, startZ);
+
+    bGroup.userData = {
+      name: bot.name, role: bot.role, color: bColor,
+      targetX: startX, targetZ: startZ,
+      speed: 0.005 + Math.random()*0.01,
+      homeX: startX, homeZ: startZ,
+      walkTimer: Math.random()*300
+    };
+
+    v3dScene.add(bGroup);
+    v3dBotMeshes.push(bGroup);
+  });
+
+  // --- Camera Controls ---
+  updateCamPos();
+
+  v3dRenderer.domElement.addEventListener('mousedown', function(e){
+    isDragging = true; prevMX = e.clientX; prevMY = e.clientY;
+    v3dCinematic = false; // Stop cinematic on interaction
+  });
+  window.addEventListener('mouseup', function(){ isDragging = false; });
+  v3dRenderer.domElement.addEventListener('mousemove', function(e){
+    if(isDragging){
+      camAngle += (e.clientX - prevMX) * 0.005;
+      camPitch = Math.max(0.1, Math.min(1.5, camPitch + (e.clientY - prevMY) * 0.005));
+      prevMX = e.clientX; prevMY = e.clientY;
+      updateCamPos();
+    }
+    handleHover(e);
+  });
+  v3dRenderer.domElement.addEventListener('wheel', function(e){
+    camDist = Math.max(8, Math.min(80, camDist + e.deltaY * 0.03));
+    updateCamPos();
+    e.preventDefault();
+    v3dCinematic = false;
+  },{passive:false});
+
+  // Touch controls
+  var touchStartX=0, touchStartY=0, touchDist=0;
+  v3dRenderer.domElement.addEventListener('touchstart', function(e){
+    v3dCinematic = false;
+    if(e.touches.length===1){ touchStartX=e.touches[0].clientX; touchStartY=e.touches[0].clientY; }
+    if(e.touches.length===2){
+      var dx=e.touches[0].clientX-e.touches[1].clientX;
+      var dy=e.touches[0].clientY-e.touches[1].clientY;
+      touchDist=Math.sqrt(dx*dx+dy*dy);
+    }
+  },{passive:true});
+  v3dRenderer.domElement.addEventListener('touchmove', function(e){
+    if(e.touches.length===1){
+      camAngle += (e.touches[0].clientX - touchStartX) * 0.005;
+      camPitch = Math.max(0.1, Math.min(1.5, camPitch + (e.touches[0].clientY - touchStartY) * 0.005));
+      touchStartX = e.touches[0].clientX; touchStartY = e.touches[0].clientY;
+      updateCamPos();
+    }
+    if(e.touches.length===2){
+      var dx=e.touches[0].clientX-e.touches[1].clientX;
+      var dy=e.touches[0].clientY-e.touches[1].clientY;
+      var d=Math.sqrt(dx*dx+dy*dy);
+      camDist = Math.max(8, Math.min(80, camDist - (d-touchDist)*0.08));
+      touchDist = d;
+      updateCamPos();
+    }
+    e.preventDefault();
+  },{passive:false});
+
+  // Click on building
+  v3dRenderer.domElement.addEventListener('click', function(e){
+    if(isDragging) return;
+    var rect = v3dRenderer.domElement.getBoundingClientRect();
+    var mx = ((e.clientX - rect.left)/rect.width)*2-1;
+    var my = -((e.clientY - rect.top)/rect.height)*2+1;
+    var raycaster = new THREE.Raycaster();
+    raycaster.setFromCamera(new THREE.Vector2(mx, my), v3dCamera);
+    var hits = raycaster.intersectObjects(v3dScene.children, true);
+    for(var i=0; i<hits.length; i++){
+      var obj = hits[i].object;
+      while(obj.parent && !obj.userData.name) obj = obj.parent;
+      if(obj.userData.name){
+        showBuildingInfo(obj.userData);
+        break;
+      }
+    }
+  });
+
+  // Hover tooltip
+  var tooltip = document.getElementById('v3dTooltip');
+  function handleHover(e){
+    if(isDragging){ tooltip.style.display='none'; return; }
+    var rect = v3dRenderer.domElement.getBoundingClientRect();
+    var mx = ((e.clientX - rect.left)/rect.width)*2-1;
+    var my = -((e.clientY - rect.top)/rect.height)*2+1;
+    var raycaster = new THREE.Raycaster();
+    raycaster.setFromCamera(new THREE.Vector2(mx, my), v3dCamera);
+    var hits = raycaster.intersectObjects(v3dScene.children, true);
+    var found = false;
+    for(var i=0; i<hits.length; i++){
+      var obj = hits[i].object;
+      while(obj.parent && !obj.userData.name) obj = obj.parent;
+      if(obj.userData.name){
+        tooltip.style.display = 'block';
+        tooltip.style.left = (e.clientX + 15) + 'px';
+        tooltip.style.top = (e.clientY - 10) + 'px';
+        tooltip.querySelector('.tt-name').textContent = obj.userData.icon + ' ' + obj.userData.name;
+        tooltip.querySelector('.tt-bot').textContent = obj.userData.bot ? '\ud83e\udd16 ' + obj.userData.bot : '';
+        var desc = BUILDING_DESCRIPTIONS[obj.userData.name] || '';
+        tooltip.querySelector('.tt-desc').textContent = desc.substring(0, 60) + (desc.length > 60 ? '...' : '');
+        found = true;
+        break;
+      }
+    }
+    if(!found) tooltip.style.display = 'none';
+  }
+
+  // Show building info panel
+  function showBuildingInfo(data){
+    var panel = document.getElementById('infoPanel');
+    document.getElementById('infoPanelTitle').textContent = data.icon + ' ' + data.name;
+    document.getElementById('infoPanelBot').textContent = data.bot ? '\ud83e\udd16 Managed by ' + data.bot : 'No bot assigned';
+    document.getElementById('infoPanelDesc').textContent = BUILDING_DESCRIPTIONS[data.name] || 'A building in Realbotville.';
+    panel.classList.add('open');
+  }
+
+  // --- Animate ---
+  var time = 0;
+  function animate(){
+    v3dRAF = requestAnimationFrame(animate);
+    time += 0.016;
+
+    // Cinematic auto-orbit
+    if(v3dCinematic){
+      camAngle += cinematicSpeed;
+      updateCamPos();
+    }
+
+    // Animate bots walking
+    v3dBotMeshes.forEach(function(bm){
+      var d = bm.userData;
+      d.walkTimer--;
+      if(d.walkTimer <= 0){
+        if(Math.random() > 0.4){
+          d.targetX = d.homeX + (Math.random()-0.5)*6;
+          d.targetZ = d.homeZ + (Math.random()-0.5)*6;
+        } else {
+          d.targetX = (Math.random()-0.5)*24;
+          d.targetZ = (Math.random()-0.5)*24;
+        }
+        d.walkTimer = 200 + Math.random()*400;
+      }
+      var dx = d.targetX - bm.position.x;
+      var dz = d.targetZ - bm.position.z;
+      var dist = Math.sqrt(dx*dx + dz*dz);
+      if(dist > 0.3){
+        bm.position.x += dx * d.speed;
+        bm.position.z += dz * d.speed;
+        bm.rotation.y = Math.atan2(dx, dz);
+        bm.position.y = Math.abs(Math.sin(time*4 + bm.userData.speed*1000)) * 0.08;
+        if(bm.children[3] && bm.children[4]){
+          bm.children[3].rotation.x = Math.sin(time*6) * 0.4;
+          bm.children[4].rotation.x = -Math.sin(time*6) * 0.4;
+        }
+      }
+    });
+
+    // Update minimap
+    updateMinimap();
+
+    v3dRenderer.render(v3dScene, v3dCamera);
+  }
+  animate();
+
+  // Resize handler
+  window.addEventListener('resize', function(){
+    if(!v3dCamera || !v3dRenderer) return;
+    var w = window.innerWidth, h = window.innerHeight;
+    v3dCamera.aspect = w/h;
+    v3dCamera.updateProjectionMatrix();
+    v3dRenderer.setSize(w, h);
+  });
+
+  v3dReady = true;
+
+  // Hide loading screen
+  var ls = document.getElementById('loadingScreen');
+  if(ls){
+    ls.classList.add('fade-out');
+    setTimeout(function(){ ls.style.display = 'none'; }, 600);
+  }
+
+  console.log('[Realbotville 3D] Village loaded — ' + VILLAGE_BUILDINGS.length + ' buildings, ' + BOTS.length + ' bots');
+}
+
+// --- Minimap ---
+function updateMinimap(){
+  var wrap = document.getElementById('minimapWrap');
+  if(!wrap || !wrap.classList.contains('open')) return;
+  var canvas = document.getElementById('minimapCanvas');
+  if(!canvas) return;
+  var ctx = canvas.getContext('2d');
+  var w = canvas.width, h = canvas.height;
+  ctx.fillStyle = '#0a0e1a';
+  ctx.fillRect(0, 0, w, h);
+
+  // Scale: world coords -20..20 to canvas 0..w
+  var sx = w / 40, sy = h / 35;
+  var ox = w/2, oy = h/2;
+
+  // Draw buildings
+  VILLAGE_BUILDINGS.forEach(function(b){
+    var cx = ox + b.x * sx;
+    var cy = oy + b.z * sy;
+    var bw = b.w * sx * 0.8;
+    var bh = b.d * sy * 0.8;
+    ctx.fillStyle = '#' + b.color.toString(16).padStart(6,'0');
+    ctx.fillRect(cx - bw/2, cy - bh/2, bw, bh);
+  });
+
+  // Draw bots as dots
+  v3dBotMeshes.forEach(function(bm){
+    var cx = ox + bm.position.x * sx;
+    var cy = oy + bm.position.z * sy;
+    ctx.fillStyle = '#' + (bm.userData.color || 0x38bdf8).toString(16).padStart(6,'0');
+    ctx.beginPath();
+    ctx.arc(cx, cy, 2, 0, Math.PI*2);
+    ctx.fill();
+  });
+
+  // Draw camera direction indicator
+  ctx.fillStyle = '#ef4444';
+  var camCX = ox + (v3dCamera ? v3dCamera.position.x * sx * 0.3 : 0);
+  var camCY = oy + (v3dCamera ? v3dCamera.position.z * sy * 0.3 : 0);
+  ctx.beginPath();
+  ctx.arc(camCX, camCY, 3, 0, Math.PI*2);
+  ctx.fill();
+}
+
+// Color helpers
+function darken(hex, amt){
+  var r=(hex>>16)&0xff, g=(hex>>8)&0xff, b=hex&0xff;
+  r=Math.floor(r*(1-amt)); g=Math.floor(g*(1-amt)); b=Math.floor(b*(1-amt));
+  return (r<<16)|(g<<8)|b;
+}
+function lighten(hex, amt){
+  var r=(hex>>16)&0xff, g=(hex>>8)&0xff, b=hex&0xff;
+  r=Math.min(255,Math.floor(r+(255-r)*amt));
+  g=Math.min(255,Math.floor(g+(255-g)*amt));
+  b=Math.min(255,Math.floor(b+(255-b)*amt));
+  return (r<<16)|(g<<8)|b;
+}
+
+// --- Button Handlers (using addEventListener, no inline onclick) ---
+document.addEventListener('DOMContentLoaded', function(){
+  // Reset View
+  document.getElementById('btnReset').addEventListener('click', function(){
+    camAngle=0.6; camPitch=0.8; camDist=35; camTargetX=0; camTargetZ=0;
+    v3dCinematic = false;
+    updateCamPos();
+    showIndicator('View Reset');
+  });
+
+  // Day/Night
+  document.getElementById('btnDayNight').addEventListener('click', function(){
+    v3dNight = !v3dNight;
+    if(!v3dScene) return;
+    if(v3dNight){
+      v3dScene.background.set(0x020308);
+      v3dScene.fog.color.set(0x020308);
+      v3dControls.ambLight.intensity = 0.12;
+      v3dControls.sunLight.intensity = 0.08;
+      v3dControls.sunLight.color.set(0x4466aa);
+      v3dControls.stars.material.opacity = 1.0;
+      v3dControls.ground.material.color.set(0x0a150a);
+      showIndicator('\ud83c\udf19 Night Mode');
+    } else {
+      v3dScene.background.set(0x0a0e1a);
+      v3dScene.fog.color.set(0x0a0e1a);
+      v3dControls.ambLight.intensity = 0.6;
+      v3dControls.sunLight.intensity = 1.0;
+      v3dControls.sunLight.color.set(0xffeedd);
+      v3dControls.stars.material.opacity = 0.5;
+      v3dControls.ground.material.color.set(0x1a2e1a);
+      showIndicator('\u2600\ufe0f Day Mode');
+    }
+  });
+
+  // Labels
+  document.getElementById('btnLabels').addEventListener('click', function(){
+    v3dShowLabels = !v3dShowLabels;
+    showIndicator(v3dShowLabels ? 'Labels ON' : 'Labels OFF');
+  });
+
+  // ASCII overlay
+  var asciiOpen = false;
+  document.getElementById('btnAscii').addEventListener('click', function(){
+    asciiOpen = !asciiOpen;
+    document.getElementById('asciiOverlay').classList.toggle('open', asciiOpen);
+  });
+  document.getElementById('asciiClose').addEventListener('click', function(){
+    asciiOpen = false;
+    document.getElementById('asciiOverlay').classList.remove('open');
+  });
+
+  // Fullscreen
+  document.getElementById('btnFullscreen').addEventListener('click', function(){
+    if(!document.fullscreenElement){
+      document.documentElement.requestFullscreen().catch(function(){});
+      showIndicator('Fullscreen ON');
+    } else {
+      document.exitFullscreen();
+      showIndicator('Fullscreen OFF');
+    }
+  });
+
+  // Minimap
+  document.getElementById('btnMinimap').addEventListener('click', function(){
+    document.getElementById('minimapWrap').classList.toggle('open');
+  });
+
+  // Cinematic
+  document.getElementById('btnCinematic').addEventListener('click', function(){
+    v3dCinematic = !v3dCinematic;
+    var btn = document.getElementById('btnCinematic');
+    btn.classList.toggle('active', v3dCinematic);
+    showIndicator(v3dCinematic ? '\ud83c\udfa5 Cinematic ON' : 'Cinematic OFF');
+  });
+
+  // Info panel close
+  document.getElementById('infoPanelClose').addEventListener('click', function(){
+    document.getElementById('infoPanel').classList.remove('open');
+  });
+
+  // Keyboard shortcuts
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape'){
+      document.getElementById('infoPanel').classList.remove('open');
+      document.getElementById('asciiOverlay').classList.remove('open');
+      asciiOpen = false;
+    }
+    if(e.key === 'f' || e.key === 'F'){
+      if(!document.fullscreenElement){
+        document.documentElement.requestFullscreen().catch(function(){});
+      } else {
+        document.exitFullscreen();
+      }
+    }
+    if(e.key === 'c' || e.key === 'C'){
+      v3dCinematic = !v3dCinematic;
+      document.getElementById('btnCinematic').classList.toggle('active', v3dCinematic);
+    }
+    if(e.key === 'n' || e.key === 'N'){
+      document.getElementById('btnDayNight').click();
+    }
+    if(e.key === 'r' || e.key === 'R'){
+      document.getElementById('btnReset').click();
+    }
+  });
+});
+
+function showIndicator(text){
+  var ind = document.getElementById('fsIndicator');
+  ind.textContent = text;
+  ind.style.display = 'block';
+  setTimeout(function(){ ind.style.display = 'none'; }, 1200);
+}
+
+// Load Three.js and init
+loadThreeJS(initVillage3D);
+})();
+</script>
+
+<script>
+  window.FPCS_PAGE = {
+    name: 'Realbotville',
+    theme: 'theme-bots'
+  };
+  window.FPCS_NAV = {
+    active: 'village',
+    sections: []
+  };
+</script>
+<script src="js/auth.js"></script>
+<script src="js/nav.js"></script>
+</body>
+</html>
