@@ -395,11 +395,10 @@
     var prefs = getUserPrefs(user.uid);
 
     if (!prefs || !prefs.onboarded) {
-      // First guest login — show welcome
+      // First guest login — show welcome modal first, then boot
       var welcomeDiv = document.createElement('div');
       welcomeDiv.innerHTML = buildGuestWelcomeHTML(user.displayName || user.email.split('@')[0]);
       document.body.appendChild(welcomeDiv.firstElementChild);
-      injectBootScreen(BOOT_STEPS_GUEST);
       gate.style.display = 'none';
 
       document.getElementById('onboardConfirm').addEventListener('click', function () {
@@ -414,6 +413,7 @@
         console.log('[FPCS Auth] Guest onboarding complete');
 
         fadeRemove('onboardModal', function () {
+          injectBootScreen(BOOT_STEPS_GUEST);
           runBootSequence(BOOT_STEPS_GUEST, function () {
             dash.style.display = 'block';
             onComplete();
