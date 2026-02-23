@@ -76,6 +76,29 @@
   .sum-table tr:last-child td{border-bottom:none}
   .sum-table .total-row td{border-top:2px solid var(--accent);font-weight:700;font-size:15px}
   .sum-table .subtotal-row td{border-top:1px solid var(--border);font-weight:600;color:var(--muted)}
+
+  /* ALL RECORDS TABLE */
+  .records-controls{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;align-items:center}
+  .records-count{font-size:12px;color:var(--muted);margin-left:auto}
+  .loading-indicator{display:flex;align-items:center;gap:8px;padding:24px;color:var(--muted);font-size:14px}
+  .loading-spinner{width:20px;height:20px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .records-table{width:100%;border-collapse:collapse;font-size:12px}
+  .records-table th{text-align:left;padding:8px 10px;color:var(--accent);font-size:10px;text-transform:uppercase;letter-spacing:1px;background:rgba(15,23,42,.6);border-bottom:2px solid var(--border);cursor:pointer;user-select:none;white-space:nowrap}
+  .records-table th:hover{color:var(--text)}
+  .records-table th .sort-arrow{margin-left:4px;font-size:8px;opacity:0.4}
+  .records-table th.sorted .sort-arrow{opacity:1;color:var(--accent)}
+  .records-table td{padding:6px 10px;border-bottom:1px solid rgba(51,65,85,.3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px}
+  .records-table td.wrap{white-space:normal;max-width:300px}
+  .records-table tr:hover td{background:rgba(56,189,248,.03)}
+  .records-table .income-row{color:var(--green)}
+  .records-table .expense-row{color:var(--text)}
+  .records-pager{display:flex;gap:6px;margin-top:12px;align-items:center;justify-content:center}
+  .records-pager button{padding:4px 12px;border-radius:4px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;font-size:12px}
+  .records-pager button:hover{border-color:var(--accent);color:var(--accent)}
+  .records-pager button.active{background:rgba(56,189,248,.1);color:var(--accent);border-color:var(--accent)}
+  .records-pager button:disabled{opacity:0.3;cursor:default}
+  .records-pager .page-info{font-size:12px;color:var(--muted)}
 </style>
 </head>
 <body class="theme-income">
@@ -516,6 +539,41 @@
   </div>
 </div>
 
+<!-- ===== ALL RECORDS FROM SHEETS ===== -->
+<div class="section" id="sec-allrecords">
+  <h2>&#128202; All Income Records &mdash; Live from Google Sheets</h2>
+  <p style="color:var(--muted);font-size:13px;margin-bottom:16px">Every income transaction from FINAL_MASTER. Loaded live from the Google Sheet database. Click column headers to sort.</p>
+
+  <div class="records-controls">
+    <button class="filter-btn active" onclick="filterRecords('all',this)">All</button>
+    <button class="filter-btn f-green" onclick="filterRecords('income',this)">Income</button>
+    <button class="filter-btn f-red" onclick="filterRecords('expense',this)">Expense</button>
+    <button class="filter-btn f-yellow" onclick="filterRecords('transfer',this)">Transfer</button>
+    <input type="text" class="search-input" placeholder="Search all records..." oninput="searchRecords(this.value)" style="max-width:260px">
+    <span class="records-count" id="recordsCount">Loading...</span>
+  </div>
+
+  <div id="recordsLoading" class="loading-indicator">
+    <div class="loading-spinner"></div>
+    <span>Connecting to Google Sheets...</span>
+  </div>
+
+  <div id="recordsContainer" style="display:none;overflow-x:auto">
+    <table class="records-table">
+      <thead>
+        <tr id="recordsHeader"></tr>
+      </thead>
+      <tbody id="recordsBody"></tbody>
+    </table>
+    <div class="records-pager" id="recordsPager"></div>
+  </div>
+
+  <div id="recordsError" style="display:none;padding:24px;color:var(--red);font-size:14px;text-align:center">
+    <p>&#9888; Could not load data from Google Sheets.</p>
+    <p style="font-size:12px;color:var(--muted);margin-top:8px">Make sure you're signed in and the sheet is accessible. <button onclick="loadAllRecords()" style="color:var(--accent);background:none;border:none;cursor:pointer;text-decoration:underline">Retry</button></p>
+  </div>
+</div>
+
 <!-- ===== OPEN QUESTIONS ===== -->
 <div class="section">
   <h2>&#10067; Open Questions for Commander</h2>
@@ -581,9 +639,289 @@ function scrollToSection(id) {
       { icon: '&#128101;', label: 'By Client',      href: '#sec-clients' },
       { icon: '&#9888;',   label: 'Missing Income', href: '#sec-missing' },
       { icon: '&#128269;', label: 'Reconciliation',  href: '#sec-recon' },
-      { icon: '&#128197;', label: 'Timeline',       href: '#sec-timeline' }
+      { icon: '&#128197;', label: 'Timeline',       href: '#sec-timeline' },
+      { icon: '&#128202;', label: 'All Records',    href: '#sec-allrecords' }
     ]
   };
+</script>
+<script>
+// === LIVE DATA FROM GOOGLE SHEETS ===
+var allRecords = [];
+var filteredRecords = [];
+var currentPage = 0;
+var pageSize = 50;
+var sortCol = -1;
+var sortDir = 1;
+var activeFilter = 'all';
+var searchQuery = '';
+
+// Column config — map sheet columns to display
+var displayCols = [
+  { key: 0, label: 'Date', width: '80px' },
+  { key: 1, label: 'Type', width: '70px' },
+  { key: 2, label: 'Num', width: '60px' },
+  { key: 3, label: 'Name', width: '150px', wrap: true },
+  { key: 4, label: 'Memo/Description', width: '200px', wrap: true },
+  { key: 5, label: 'Account', width: '120px' },
+  { key: 6, label: 'Amount', width: '90px', numeric: true }
+];
+
+function loadAllRecords() {
+  var loading = document.getElementById('recordsLoading');
+  var container = document.getElementById('recordsContainer');
+  var errorDiv = document.getElementById('recordsError');
+
+  loading.style.display = 'flex';
+  container.style.display = 'none';
+  errorDiv.style.display = 'none';
+
+  // Wait for FPCSSheets to be ready
+  if (!window.FPCSSheets || !window.FPCSSheets.isReady()) {
+    setTimeout(loadAllRecords, 500);
+    return;
+  }
+
+  // Read from TAX_MASTER sheet — try common range names
+  window.FPCSSheets.read('TAX_MASTER', 'FINAL_MASTER!A1:Z').then(function(data) {
+    if (!data || !data.values || data.values.length < 2) {
+      // Try alternate sheet name
+      return window.FPCSSheets.read('TAX_MASTER', 'Sheet1!A1:Z');
+    }
+    return data;
+  }).then(function(data) {
+    loading.style.display = 'none';
+
+    if (!data || !data.values || data.values.length < 2) {
+      errorDiv.style.display = 'block';
+      errorDiv.querySelector('p').innerHTML = '&#9888; Sheet returned no data. The sheet may be empty or the tab name may differ.';
+      return;
+    }
+
+    var headers = data.values[0];
+    var rows = data.values.slice(1);
+
+    // Auto-detect column mapping based on headers
+    var colMap = {};
+    headers.forEach(function(h, i) {
+      var hl = (h || '').toLowerCase().trim();
+      if (hl.match(/date/)) colMap.date = i;
+      if (hl.match(/^type$|transaction.type/)) colMap.type = i;
+      if (hl.match(/^num$|number|ref|doc/)) colMap.num = i;
+      if (hl.match(/name|vendor|client|payee/)) colMap.name = i;
+      if (hl.match(/memo|desc|detail/)) colMap.memo = i;
+      if (hl.match(/account|category|class/)) colMap.account = i;
+      if (hl.match(/amount|total|sum/)) colMap.amount = i;
+      if (hl.match(/split/)) colMap.split = i;
+      if (hl.match(/deductible|deduct/)) colMap.deductible = i;
+    });
+
+    // Build display columns dynamically from actual headers
+    displayCols = [];
+    var colOrder = ['date', 'type', 'num', 'name', 'memo', 'account', 'amount'];
+    colOrder.forEach(function(key) {
+      if (colMap[key] !== undefined) {
+        var isWrap = key === 'name' || key === 'memo';
+        var isNum = key === 'amount';
+        displayCols.push({ key: colMap[key], label: headers[colMap[key]], wrap: isWrap, numeric: isNum });
+      }
+    });
+
+    // Add remaining columns not already mapped
+    headers.forEach(function(h, i) {
+      var alreadyMapped = false;
+      displayCols.forEach(function(dc) { if (dc.key === i) alreadyMapped = true; });
+      if (!alreadyMapped && h && h.trim()) {
+        displayCols.push({ key: i, label: h, wrap: false, numeric: false });
+      }
+    });
+
+    // Store all records
+    allRecords = rows;
+    applyFilters();
+    renderRecordsHeader();
+    container.style.display = 'block';
+
+    // Update summary stats from live data
+    updateLiveStats(rows, colMap);
+
+  }).catch(function(err) {
+    loading.style.display = 'none';
+    errorDiv.style.display = 'block';
+    console.warn('[Income] Sheets load error:', err);
+  });
+}
+
+function updateLiveStats(rows, colMap) {
+  if (!colMap.amount) return;
+  var totalIncome = 0;
+  var totalExpense = 0;
+  var count = rows.length;
+
+  rows.forEach(function(row) {
+    var amt = parseFloat((row[colMap.amount] || '0').replace(/[$,]/g, ''));
+    if (!isNaN(amt)) {
+      if (amt > 0) totalIncome += amt;
+      else totalExpense += Math.abs(amt);
+    }
+  });
+
+  // Update stat card for total if it exists
+  var summaryStats = document.getElementById('sec-summary');
+  if (summaryStats) {
+    // Add or update a live data stat card
+    var liveCard = document.getElementById('liveDataCard');
+    if (!liveCard) {
+      liveCard = document.createElement('div');
+      liveCard.id = 'liveDataCard';
+      liveCard.className = 'stat-card accent';
+      liveCard.onclick = function() { scrollToSection('sec-allrecords'); };
+      summaryStats.appendChild(liveCard);
+    }
+    liveCard.innerHTML = '<div class="label">Live Data (All Records)</div>' +
+      '<div class="value" style="font-size:18px">' + count + ' rows</div>' +
+      '<div class="sub">From Google Sheets &bull; Click to view all</div>';
+  }
+}
+
+function applyFilters() {
+  filteredRecords = allRecords.filter(function(row) {
+    // Type filter
+    if (activeFilter !== 'all') {
+      var type = (row[displayCols[1] ? displayCols[1].key : 1] || '').toLowerCase();
+      var amt = parseFloat((row[displayCols[displayCols.length > 6 ? 6 : displayCols.length - 1] ? row[displayCols[displayCols.length > 6 ? 6 : displayCols.length - 1].key] : '0').replace(/[$,]/g, ''));
+      if (activeFilter === 'income' && amt <= 0) return false;
+      if (activeFilter === 'expense' && amt >= 0) return false;
+      if (activeFilter === 'transfer' && !type.match(/transfer|xfer/i)) return false;
+    }
+    // Search filter
+    if (searchQuery) {
+      var text = row.join(' ').toLowerCase();
+      if (text.indexOf(searchQuery) === -1) return false;
+    }
+    return true;
+  });
+
+  // Sort if needed
+  if (sortCol >= 0 && sortCol < displayCols.length) {
+    var colKey = displayCols[sortCol].key;
+    var isNum = displayCols[sortCol].numeric;
+    filteredRecords.sort(function(a, b) {
+      var va = a[colKey] || '';
+      var vb = b[colKey] || '';
+      if (isNum) {
+        va = parseFloat(va.replace(/[$,]/g, '')) || 0;
+        vb = parseFloat(vb.replace(/[$,]/g, '')) || 0;
+      }
+      if (va < vb) return -1 * sortDir;
+      if (va > vb) return 1 * sortDir;
+      return 0;
+    });
+  }
+
+  currentPage = 0;
+  renderRecords();
+  document.getElementById('recordsCount').textContent = filteredRecords.length + ' of ' + allRecords.length + ' records';
+}
+
+function renderRecordsHeader() {
+  var thead = document.getElementById('recordsHeader');
+  var html = '';
+  displayCols.forEach(function(col, i) {
+    var arrow = sortCol === i ? (sortDir === 1 ? '\u25b2' : '\u25bc') : '\u25b2';
+    var sorted = sortCol === i ? ' sorted' : '';
+    html += '<th class="' + sorted + '" onclick="sortRecords(' + i + ')">' + col.label + ' <span class="sort-arrow">' + arrow + '</span></th>';
+  });
+  thead.innerHTML = html;
+}
+
+function renderRecords() {
+  var tbody = document.getElementById('recordsBody');
+  var start = currentPage * pageSize;
+  var end = Math.min(start + pageSize, filteredRecords.length);
+  var html = '';
+
+  for (var i = start; i < end; i++) {
+    var row = filteredRecords[i];
+    html += '<tr>';
+    displayCols.forEach(function(col) {
+      var val = row[col.key] || '';
+      var cls = col.wrap ? ' class="wrap"' : '';
+      var style = '';
+      if (col.numeric) {
+        var num = parseFloat(val.replace(/[$,]/g, ''));
+        if (!isNaN(num)) {
+          style = ' style="text-align:right;font-weight:600;color:' + (num >= 0 ? 'var(--green)' : 'var(--red)') + ';font-variant-numeric:tabular-nums"';
+          val = (num >= 0 ? '' : '-') + '$' + Math.abs(num).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+        }
+      }
+      html += '<td' + cls + style + '>' + escHtml(val) + '</td>';
+    });
+    html += '</tr>';
+  }
+
+  if (filteredRecords.length === 0) {
+    html = '<tr><td colspan="' + displayCols.length + '" style="text-align:center;padding:24px;color:var(--muted)">No matching records found</td></tr>';
+  }
+
+  tbody.innerHTML = html;
+  renderPager();
+}
+
+function renderPager() {
+  var pager = document.getElementById('recordsPager');
+  var totalPages = Math.ceil(filteredRecords.length / pageSize);
+  if (totalPages <= 1) { pager.innerHTML = ''; return; }
+
+  var html = '<button ' + (currentPage === 0 ? 'disabled' : '') + ' onclick="changePage(' + (currentPage - 1) + ')">&laquo; Prev</button>';
+  html += '<span class="page-info">Page ' + (currentPage + 1) + ' of ' + totalPages + '</span>';
+  html += '<button ' + (currentPage >= totalPages - 1 ? 'disabled' : '') + ' onclick="changePage(' + (currentPage + 1) + ')">&raquo; Next</button>';
+  pager.innerHTML = html;
+}
+
+function changePage(page) {
+  currentPage = page;
+  renderRecords();
+  document.getElementById('sec-allrecords').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function sortRecords(colIndex) {
+  if (sortCol === colIndex) {
+    sortDir *= -1;
+  } else {
+    sortCol = colIndex;
+    sortDir = 1;
+  }
+  renderRecordsHeader();
+  applyFilters();
+}
+
+function filterRecords(filter, btn) {
+  document.querySelectorAll('#sec-allrecords .filter-btn').forEach(function(b) { b.classList.remove('active'); });
+  btn.classList.add('active');
+  activeFilter = filter;
+  applyFilters();
+}
+
+function searchRecords(query) {
+  searchQuery = query.toLowerCase();
+  applyFilters();
+}
+
+function escHtml(s) {
+  if (!s) return '';
+  var d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+// Auto-load when auth completes
+document.addEventListener('fpcs-authed', function() {
+  setTimeout(loadAllRecords, 300);
+});
+// Fallback
+setTimeout(function() {
+  if (allRecords.length === 0) loadAllRecords();
+}, 4000);
 </script>
 <script src="js/sheets-api.js"></script>
 <script src="js/auth.js"></script>
