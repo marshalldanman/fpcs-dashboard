@@ -87,6 +87,14 @@
     });
   }
 
+  // --- Resolve sheet ID (registry key OR actual ID) ---
+  function resolveSheetId(idOrKey) {
+    // If it matches a known registry key, return the actual ID
+    if (SHEETS[idOrKey]) return SHEETS[idOrKey];
+    // Otherwise treat as actual spreadsheet ID
+    return idOrKey;
+  }
+
   // --- Core fetch wrapper ---
   function sheetsFetch(url, options) {
     options = options || {};
@@ -176,6 +184,7 @@
      * @returns {Promise<Array<Array>>} 2D array of cell values
      */
     read: function (spreadsheetId, range, opts) {
+      spreadsheetId = resolveSheetId(spreadsheetId);
       opts = opts || {};
       var key = cacheKey(spreadsheetId, range);
 
@@ -209,6 +218,7 @@
      * @returns {Promise<Array<Object>>}
      */
     readAsObjects: function (spreadsheetId, range, opts) {
+      spreadsheetId = resolveSheetId(spreadsheetId);
       return this.read(spreadsheetId, range, opts).then(function (rows) {
         if (rows.length < 2) return [];
         var headers = rows[0];
@@ -232,6 +242,7 @@
      * @returns {Promise<Object>} Map of range -> rows
      */
     batchRead: function (spreadsheetId, ranges) {
+      spreadsheetId = resolveSheetId(spreadsheetId);
       var params = ranges.map(function (r) {
         return 'ranges=' + encodeURIComponent(r);
       }).join('&');
@@ -254,6 +265,7 @@
      * @returns {Promise<Object>} { title, sheets: [{ id, title, rowCount, colCount }] }
      */
     getMetadata: function (spreadsheetId) {
+      spreadsheetId = resolveSheetId(spreadsheetId);
       var url = BASE_URL + '/' + encodeURIComponent(spreadsheetId) +
         '?fields=properties.title,sheets.properties';
 
@@ -295,6 +307,7 @@
      * @returns {Promise<Object>}
      */
     write: function (spreadsheetId, range, values) {
+      spreadsheetId = resolveSheetId(spreadsheetId);
       var url = BASE_URL + '/' + encodeURIComponent(spreadsheetId) +
         '/values/' + encodeURIComponent(range) +
         '?valueInputOption=USER_ENTERED';
@@ -323,6 +336,7 @@
      * @returns {Promise<Object>}
      */
     append: function (spreadsheetId, range, values) {
+      spreadsheetId = resolveSheetId(spreadsheetId);
       var url = BASE_URL + '/' + encodeURIComponent(spreadsheetId) +
         '/values/' + encodeURIComponent(range) + ':append' +
         '?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS';
@@ -361,6 +375,7 @@
      * @returns {Promise<Object>}
      */
     batchWrite: function (spreadsheetId, updates) {
+      spreadsheetId = resolveSheetId(spreadsheetId);
       var url = BASE_URL + '/' + encodeURIComponent(spreadsheetId) +
         '/values:batchUpdate';
 

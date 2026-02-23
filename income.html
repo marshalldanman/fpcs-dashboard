@@ -682,23 +682,24 @@ function loadAllRecords() {
   }
 
   // Read from TAX_MASTER sheet — try common range names
-  window.FPCSSheets.read('TAX_MASTER', 'FINAL_MASTER!A1:Z').then(function(data) {
-    if (!data || !data.values || data.values.length < 2) {
+  // FPCSSheets.read() returns rows directly (2D array), not raw API response
+  window.FPCSSheets.read('TAX_MASTER', 'FINAL_MASTER!A1:Z').then(function(rows) {
+    if (!rows || rows.length < 2) {
       // Try alternate sheet name
       return window.FPCSSheets.read('TAX_MASTER', 'Sheet1!A1:Z');
     }
-    return data;
-  }).then(function(data) {
+    return rows;
+  }).then(function(rows) {
     loading.style.display = 'none';
 
-    if (!data || !data.values || data.values.length < 2) {
+    if (!rows || rows.length < 2) {
       errorDiv.style.display = 'block';
       errorDiv.querySelector('p').innerHTML = '&#9888; Sheet returned no data. The sheet may be empty or the tab name may differ.';
       return;
     }
 
-    var headers = data.values[0];
-    var rows = data.values.slice(1);
+    var headers = rows[0];
+    var dataRows = rows.slice(1);
 
     // Auto-detect column mapping based on headers
     var colMap = {};
@@ -736,13 +737,13 @@ function loadAllRecords() {
     });
 
     // Store all records
-    allRecords = rows;
+    allRecords = dataRows;
     applyFilters();
     renderRecordsHeader();
     container.style.display = 'block';
 
     // Update summary stats from live data
-    updateLiveStats(rows, colMap);
+    updateLiveStats(dataRows, colMap);
 
   }).catch(function(err) {
     loading.style.display = 'none';
