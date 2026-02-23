@@ -52,12 +52,23 @@
       }
     }
 
-    // In-page section links
+    // In-page section links — handles multiple config formats:
+    //   { icon, label, href }    ← full format (admin, bots, deductions, japster, index)
+    //   { id, icon, label }      ← memory format (auto-generates href)
+    //   { id, label }            ← income format (auto-generates icon + href)
+    //   'section-id'             ← string shorthand (auto-generates everything)
     sections.forEach(function (sec) {
+      // Normalize: if sec is a plain string, wrap it
+      if (typeof sec === 'string') {
+        sec = { id: sec, label: sec.replace(/^sec-/, '').replace(/-/g, ' ').replace(/\b\w/g, function(c) { return c.toUpperCase(); }) };
+      }
+      var href = sec.href || (sec.id ? '#' + sec.id : '#');
+      var icon = sec.icon || '&#9654;';
+      var label = sec.label || sec.id || 'Section';
       html.push(
-        '<a class="nav-link" href="' + sec.href + '">' +
-        '<span class="nav-icon">' + sec.icon + '</span>' +
-        '<span class="nav-label">' + sec.label + '</span>' +
+        '<a class="nav-link" href="' + href + '">' +
+        '<span class="nav-icon">' + icon + '</span>' +
+        '<span class="nav-label">' + label + '</span>' +
         '</a>'
       );
     });

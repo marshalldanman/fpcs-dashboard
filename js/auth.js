@@ -239,6 +239,14 @@
 
   // --- Dispatch auth event for other scripts (designmode.js, etc.) ---
   function dispatchAuthedEvent() {
+    // Auto-init Google Sheets data service if loaded
+    if (window.FPCSSheets && !window.FPCSSheets.isReady()) {
+      window.FPCSSheets.init({ apiKey: FIREBASE_CONFIG.apiKey });
+      // Pass stored OAuth token if available (from signInWithPopup)
+      if (window._fpcsOAuthToken) {
+        window.FPCSSheets.setToken(window._fpcsOAuthToken);
+      }
+    }
     try {
       document.dispatchEvent(new CustomEvent('fpcs-authed', {
         detail: { user: window.FPCS_USER }
@@ -288,10 +296,13 @@
       log.push({
         email: user.email,
         name: user.displayName,
+        label: user.displayName || user.email.split('@')[0],
         uid: user.uid,
         role: role,
         ts: Date.now(),
-        page: pageConfig.name || 'unknown'
+        timestamp: Date.now(),
+        page: pageConfig.name || 'unknown',
+        device: navigator.userAgent.indexOf('Mobile') !== -1 ? 'Mobile' : 'Desktop'
       });
       // Keep last 100 entries
       if (log.length > 100) log = log.slice(-100);
@@ -706,9 +717,17 @@
       document.getElementById('googleSignIn').disabled = true;
 
       var provider = new firebase.auth.GoogleAuthProvider();
+      provider.addScope('https://www.googleapis.com/auth/spreadsheets');
       provider.setCustomParameters({ prompt: 'select_account' });
-      auth.signInWithPopup(provider).then(function () {
+      auth.signInWithPopup(provider).then(function (result) {
         loadEl.textContent = '';
+        // Capture Google OAuth token for Sheets API writes
+        if (result && result.credential) {
+          window._fpcsOAuthToken = result.credential.accessToken;
+          if (window.FPCSSheets) {
+            window.FPCSSheets.setToken(result.credential.accessToken);
+          }
+        }
       }).catch(function (error) {
         loadEl.textContent = '';
         document.getElementById('googleSignIn').disabled = false;

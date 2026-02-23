@@ -679,6 +679,18 @@
         </div>
 
         <div class="sys-card">
+          <h3>&#127915; Helpdesk</h3>
+          <div id="helpdeskSummary">
+            <div class="sys-item"><span class="sys-label">Total Tickets</span><span class="sys-val" id="hdTotal">--</span></div>
+            <div class="sys-item"><span class="sys-label">Open</span><span class="sys-val" id="hdOpen" style="color:var(--red)">--</span></div>
+            <div class="sys-item"><span class="sys-label">In Progress</span><span class="sys-val" id="hdProgress" style="color:var(--yellow)">--</span></div>
+            <div class="sys-item"><span class="sys-label">Done</span><span class="sys-val" id="hdDone" style="color:var(--green)">--</span></div>
+            <div class="sys-item"><span class="sys-label">Urgent/High</span><span class="sys-val" id="hdUrgent" style="color:var(--red)">--</span></div>
+          </div>
+          <a href="helpdesk.html" style="display:inline-block;margin-top:8px;font-size:12px;color:var(--admin);text-decoration:none;">View Helpdesk &rarr;</a>
+        </div>
+
+        <div class="sys-card">
           <h3>&#128197; Deadlines</h3>
           <div class="sys-item"><span class="sys-label">Mail By</span><span class="sys-val" style="color:var(--red)">Apr 10, 2026</span></div>
           <div class="sys-item"><span class="sys-label">OR Statute</span><span class="sys-val" style="color:var(--red)">Apr 15, 2026</span></div>
@@ -1602,12 +1614,29 @@
       if (logs.length === 0) return;
       var html = '';
       logs.slice().reverse().forEach(function(entry) {
+        // Handle both old format (ts) and new format (timestamp)
+        var time = entry.timestamp || entry.ts;
+        var timeStr = time ? new Date(time).toLocaleString() : 'Unknown';
+
+        // Get display name — handle old entries without label
+        var name = entry.label || entry.name || entry.email || 'Unknown';
+
+        // Clean up role display — handle 'guest-blocked' etc.
+        var role = (entry.role || 'guest').replace('-blocked', '');
+        var roleDisplay = role.toUpperCase();
+
+        // Page info
+        var action = 'Login' + (entry.page ? ' (' + entry.page + ')' : '');
+
+        // Device info — handle old entries without device
+        var device = entry.device || '-';
+
         html += '<tr>';
-        html += '<td>' + new Date(entry.timestamp).toLocaleString() + '</td>';
-        html += '<td>' + (entry.label || entry.email || 'Unknown') + '</td>';
-        html += '<td>Login</td>';
-        html += '<td style="font-size:11px;color:var(--muted)">' + (entry.device || '-') + '</td>';
-        html += '<td><span class="user-role-badge role-' + (entry.role || 'guest') + '">' + (entry.role || 'guest').toUpperCase() + '</span></td>';
+        html += '<td style="white-space:nowrap">' + timeStr + '</td>';
+        html += '<td>' + name + '</td>';
+        html += '<td>' + action + '</td>';
+        html += '<td style="font-size:11px;color:var(--muted)">' + device + '</td>';
+        html += '<td><span class="user-role-badge role-' + role + '">' + roleDisplay + '</span></td>';
         html += '</tr>';
       });
       tbody.innerHTML = html;
@@ -1680,13 +1709,306 @@
   var updateBtn = document.getElementById('updateBtn');
   if (updateBtn) {
     updateBtn.addEventListener('click', function() {
-      updateBtn.textContent = '&#9989; System up to date';
+      updateBtn.innerHTML = '\u2705 System up to date';
       updateBtn.style.background = 'var(--green)';
       setTimeout(function() {
-        updateBtn.innerHTML = '&#128260; Check for Updates';
+        updateBtn.innerHTML = '\ud83d\udd04 Check for Updates';
         updateBtn.style.background = 'var(--admin)';
       }, 2000);
     });
+  }
+
+  // --- Build Card: Add Comment ---
+  function addBuildComment(buildId, text) {
+    if (!text || !text.trim()) return;
+    var card = document.querySelector('[data-build="' + buildId + '"]');
+    if (!card) return;
+    var commentsDiv = card.querySelector('.build-comments');
+    if (!commentsDiv) {
+      // Create comments container if it doesn't exist
+      var detail = card.querySelector('.build-detail');
+      if (!detail) return;
+      commentsDiv = document.createElement('div');
+      commentsDiv.className = 'build-comments';
+      commentsDiv.style.marginTop = '10px';
+      detail.insertBefore(commentsDiv, detail.firstChild);
+    }
+    var user = window.FPCS_USER || {};
+    var name = user.role === 'admin' ? 'Commander' : (user.displayName || user.email || 'User');
+    var avatar = user.role === 'admin' ? '\ud83d\udc51' : '\ud83d\udc64';
+    var now = new Date();
+    var timeStr = now.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+
+    var div = document.createElement('div');
+    div.className = 'build-comment user-comment';
+    div.innerHTML = '<span class="build-comment-avatar">' + avatar + '</span>' +
+      '<div class="build-comment-body">' +
+      '<span class="build-comment-author">' + name + '<span class="build-comment-time">' + timeStr + '</span></span>' +
+      '<div class="build-comment-text">' + text.replace(/</g, '&lt;') + '</div>' +
+      '</div>';
+    commentsDiv.appendChild(div);
+    commentsDiv.scrollTop = commentsDiv.scrollHeight;
+
+    // Update comment count in build meta
+    var countEl = card.querySelector('.build-meta .build-meta-item:nth-child(2)');
+    if (countEl) {
+      var count = commentsDiv.querySelectorAll('.build-comment').length;
+      countEl.innerHTML = '\ud83d\udcac ' + count;
+    }
+
+    // Save to localStorage
+    saveBuildComments();
+  }
+
+  function saveBuildComments() {
+    try {
+      var data = {};
+      document.querySelectorAll('.build-card').forEach(function(card) {
+        var id = card.dataset.build;
+        var comments = [];
+        card.querySelectorAll('.build-comment').forEach(function(c) {
+          var author = c.querySelector('.build-comment-author');
+          var text = c.querySelector('.build-comment-text');
+          var time = c.querySelector('.build-comment-time');
+          if (author && text) {
+            comments.push({
+              type: c.classList.contains('bot-comment') ? 'bot' : 'user',
+              author: author.childNodes[0].textContent.trim(),
+              time: time ? time.textContent.trim() : '',
+              text: text.textContent.trim()
+            });
+          }
+        });
+        if (comments.length > 0) data[id] = comments;
+      });
+      localStorage.setItem('fpcs_build_comments', JSON.stringify(data));
+    } catch (e) { /* silent */ }
+  }
+
+  function loadBuildComments() {
+    try {
+      var data = JSON.parse(localStorage.getItem('fpcs_build_comments') || '{}');
+      Object.keys(data).forEach(function(buildId) {
+        var card = document.querySelector('[data-build="' + buildId + '"]');
+        if (!card) return;
+        var commentsDiv = card.querySelector('.build-comments');
+        if (!commentsDiv) return;
+        var existing = commentsDiv.querySelectorAll('.build-comment').length;
+        var stored = data[buildId];
+        // Only add comments beyond what's already in HTML
+        for (var i = existing; i < stored.length; i++) {
+          var c = stored[i];
+          var div = document.createElement('div');
+          div.className = 'build-comment ' + c.type + '-comment';
+          div.innerHTML = '<span class="build-comment-avatar">' + (c.type === 'bot' ? '\ud83e\udd16' : '\ud83d\udc51') + '</span>' +
+            '<div class="build-comment-body">' +
+            '<span class="build-comment-author">' + c.author + '<span class="build-comment-time">' + c.time + '</span></span>' +
+            '<div class="build-comment-text">' + c.text.replace(/</g, '&lt;') + '</div>' +
+            '</div>';
+          commentsDiv.appendChild(div);
+        }
+      });
+    } catch (e) { /* silent */ }
+  }
+
+  // Inject comment input fields into every build detail
+  document.querySelectorAll('.build-card').forEach(function(card) {
+    var buildId = card.dataset.build;
+    var detail = card.querySelector('.build-detail');
+    if (!detail) {
+      // Create a detail section if missing
+      detail = document.createElement('div');
+      detail.className = 'build-detail';
+      card.appendChild(detail);
+    }
+    // Add comment input at the bottom of detail
+    var inputDiv = document.createElement('div');
+    inputDiv.className = 'build-comment-input';
+    inputDiv.style.marginTop = '10px';
+    inputDiv.innerHTML = '<input type="text" placeholder="Add a comment..." data-build="' + buildId + '">' +
+      '<button onclick="var inp=this.previousElementSibling;addBuildComment(\'' + buildId + '\',inp.value);inp.value=\'\';">Post</button>';
+    detail.appendChild(inputDiv);
+    // Enter key to submit
+    inputDiv.querySelector('input').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        addBuildComment(buildId, this.value);
+        this.value = '';
+      }
+    });
+  });
+
+  // Load any saved comments
+  loadBuildComments();
+
+  // --- Build Card: Status Change Buttons ---
+  document.querySelectorAll('.build-action-btn').forEach(function(btn) {
+    var text = btn.textContent.trim();
+    var card = btn.closest('.build-card');
+    if (!card) return;
+
+    // Hold button
+    if (text.includes('Hold')) {
+      btn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        card.dataset.status = 'hold';
+        var statusEl = card.querySelector('.build-status');
+        if (statusEl) {
+          statusEl.className = 'build-status status-hold';
+          statusEl.innerHTML = '\u23f8 On Hold';
+        }
+        // Add system comment
+        addBuildComment(card.dataset.build, '[Status changed to ON HOLD]');
+        saveBuildStatuses();
+      });
+    }
+
+    // Complete button
+    if (text.includes('Complete')) {
+      btn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        card.dataset.status = 'done';
+        var statusEl = card.querySelector('.build-status');
+        if (statusEl) {
+          statusEl.className = 'build-status status-done';
+          statusEl.innerHTML = '\u2714 Done';
+        }
+        var progressFill = card.querySelector('.build-progress-fill');
+        if (progressFill) {
+          progressFill.style.width = '100%';
+          progressFill.style.background = 'linear-gradient(90deg,#10b981,#34d399)';
+        }
+        addBuildComment(card.dataset.build, '[Build marked COMPLETE]');
+        saveBuildStatuses();
+      });
+    }
+
+    // Start button
+    if (text.includes('Start')) {
+      btn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        card.dataset.status = 'progress';
+        var statusEl = card.querySelector('.build-status');
+        if (statusEl) {
+          statusEl.className = 'build-status status-progress';
+          statusEl.innerHTML = '\u25b6 In Progress';
+        }
+        var progressFill = card.querySelector('.build-progress-fill');
+        if (progressFill) {
+          progressFill.style.width = '5%';
+          progressFill.style.background = 'linear-gradient(90deg,#3b82f6,#60a5fa)';
+        }
+        addBuildComment(card.dataset.build, '[Build STARTED]');
+        saveBuildStatuses();
+      });
+    }
+
+    // View Log button
+    if (text.includes('View Log')) {
+      btn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        card.classList.toggle('expanded');
+      });
+    }
+  });
+
+  function saveBuildStatuses() {
+    try {
+      var statuses = {};
+      document.querySelectorAll('.build-card').forEach(function(card) {
+        statuses[card.dataset.build] = {
+          status: card.dataset.status,
+          progress: card.querySelector('.build-progress-fill') ? card.querySelector('.build-progress-fill').style.width : '0%'
+        };
+      });
+      localStorage.setItem('fpcs_build_statuses', JSON.stringify(statuses));
+    } catch (e) { /* silent */ }
+  }
+
+  function loadBuildStatuses() {
+    try {
+      var statuses = JSON.parse(localStorage.getItem('fpcs_build_statuses') || '{}');
+      Object.keys(statuses).forEach(function(buildId) {
+        var card = document.querySelector('[data-build="' + buildId + '"]');
+        if (!card) return;
+        var s = statuses[buildId];
+        card.dataset.status = s.status;
+        var statusEl = card.querySelector('.build-status');
+        if (statusEl) {
+          var statusMap = {
+            'done': { cls: 'status-done', label: '\u2714 Done' },
+            'progress': { cls: 'status-progress', label: '\u25b6 In Progress' },
+            'hold': { cls: 'status-hold', label: '\u23f8 On Hold' },
+            'planned': { cls: 'status-planned', label: '\u25cf Planned' },
+            'testing': { cls: 'status-testing', label: '\ud83e\uddea Testing' },
+            'failed': { cls: 'status-failed', label: '\u2716 Failed' }
+          };
+          var m = statusMap[s.status];
+          if (m) {
+            statusEl.className = 'build-status ' + m.cls;
+            statusEl.innerHTML = m.label;
+          }
+        }
+        var progressFill = card.querySelector('.build-progress-fill');
+        if (progressFill && s.progress) {
+          progressFill.style.width = s.progress;
+          if (s.status === 'done') progressFill.style.background = 'linear-gradient(90deg,#10b981,#34d399)';
+          else if (s.status === 'hold') progressFill.style.background = 'linear-gradient(90deg,#f59e0b,#fbbf24)';
+          else if (s.status === 'progress') progressFill.style.background = 'linear-gradient(90deg,#3b82f6,#60a5fa)';
+        }
+      });
+    } catch (e) { /* silent */ }
+  }
+
+  loadBuildStatuses();
+
+  // --- Helpdesk Summary Loader ---
+  function loadHelpdeskSummary() {
+    try {
+      var tickets = JSON.parse(localStorage.getItem('fpcs_helpdesk_tickets') || '[]');
+      if (tickets.length === 0) return;
+      var open = 0, progress = 0, done = 0, urgent = 0;
+      tickets.forEach(function(t) {
+        var s = (t.status || '').toLowerCase();
+        if (s === 'open') open++;
+        else if (s === 'in progress') progress++;
+        else if (s === 'done') done++;
+        var p = (t.priority || '').toLowerCase();
+        if (p === 'urgent' || p === 'high') urgent++;
+      });
+      var el = function(id, val) { var e = document.getElementById(id); if (e) e.textContent = val; };
+      el('hdTotal', tickets.length);
+      el('hdOpen', open);
+      el('hdProgress', progress);
+      el('hdDone', done);
+      el('hdUrgent', urgent);
+    } catch (e) { /* silent */ }
+  }
+  loadHelpdeskSummary();
+
+  // --- Guest Log Loader ---
+  function loadGuestLog() {
+    var guestDiv = document.getElementById('guestLog');
+    if (!guestDiv) return;
+    try {
+      var logs = JSON.parse(localStorage.getItem('fpcs_login_log') || '[]');
+      var guests = logs.filter(function(e) { return e.role === 'guest' || e.role === 'guest-blocked'; });
+      if (guests.length === 0) {
+        guestDiv.innerHTML = '<span style="font-style:italic;">No guest logins recorded yet.</span>';
+        return;
+      }
+      var html = '<table class="audit-table" style="margin-top:8px;"><thead><tr><th>Time</th><th>Email</th><th>Device</th></tr></thead><tbody>';
+      guests.slice().reverse().forEach(function(g) {
+        var time = g.timestamp || g.ts;
+        var timeStr = time ? new Date(time).toLocaleString() : 'Unknown';
+        html += '<tr>';
+        html += '<td style="white-space:nowrap">' + timeStr + '</td>';
+        html += '<td>' + (g.email || 'Unknown') + '</td>';
+        html += '<td style="font-size:11px;color:var(--muted)">' + (g.device || '-') + '</td>';
+        html += '</tr>';
+      });
+      html += '</tbody></table>';
+      guestDiv.innerHTML = html;
+    } catch (e) { /* silent */ }
   }
 
   // --- Admin Access Gate ---
@@ -1699,6 +2021,7 @@
       if (adminContent) adminContent.style.display = '';
       if (adminLocked) adminLocked.style.display = 'none';
       loadAuditLog();
+      loadGuestLog();
     } else {
       if (adminContent) adminContent.style.display = 'none';
       if (adminLocked) adminLocked.style.display = '';
@@ -1714,6 +2037,7 @@
       if (adminContent) adminContent.style.display = '';
       if (adminLocked) adminLocked.style.display = 'none';
       loadAuditLog();
+      loadGuestLog();
     } else if (user.email) {
       if (adminContent) adminContent.style.display = 'none';
       if (adminLocked) adminLocked.style.display = '';
@@ -1747,7 +2071,8 @@
   };
 </script>
 
-<!-- AUTH & NAV -->
+<!-- AUTH, DATA & NAV -->
+<script src="js/sheets-api.js"></script>
 <script src="js/auth.js"></script>
 <script src="js/nav.js"></script>
 <script src="js/chiligbot.js"></script>

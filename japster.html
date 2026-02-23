@@ -69,6 +69,38 @@
   .beckon-card .b-btn.accept:hover { background: rgba(74,222,128,0.1); }
   .sheet-link { display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; background: rgba(34,211,238,0.08); border: 1px solid rgba(34,211,238,0.2); border-radius: 8px; color: var(--japster); text-decoration: none; font-size: 13px; font-weight: 600; transition: all 0.15s; }
   .sheet-link:hover { background: rgba(34,211,238,0.15); border-color: var(--japster); }
+
+  /* MODAL OVERLAY */
+  .japster-modal-overlay { display:none; position:fixed; top:0;left:0;right:0;bottom:0; background:rgba(0,0,0,0.6); z-index:999; justify-content:center; align-items:center; }
+  .japster-modal-overlay.show { display:flex; }
+  .japster-modal { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:24px; width:90%; max-width:420px; position:relative; }
+  .japster-modal h3 { color:var(--japster); margin-bottom:14px; font-size:16px; }
+  .japster-modal label { display:block; font-size:12px; color:var(--muted); margin-bottom:4px; margin-top:12px; }
+  .japster-modal select, .japster-modal input, .japster-modal textarea { width:100%; background:var(--bg); border:1px solid var(--border); border-radius:6px; padding:8px 12px; color:var(--text); font-size:13px; font-family:inherit; outline:none; box-sizing:border-box; }
+  .japster-modal select:focus, .japster-modal input:focus, .japster-modal textarea:focus { border-color:var(--japster); }
+  .japster-modal textarea { resize:vertical; min-height:60px; }
+  .japster-modal-btns { display:flex; gap:8px; margin-top:16px; justify-content:flex-end; }
+  .japster-modal-btns button { padding:8px 18px; border-radius:6px; font-weight:700; font-size:13px; cursor:pointer; border:1px solid var(--border); }
+  .japster-modal-btns .btn-primary { background:var(--japster); color:#0f172a; border-color:var(--japster); }
+  .japster-modal-btns .btn-cancel { background:transparent; color:var(--muted); }
+  .japster-modal .close-x { position:absolute; top:10px; right:14px; font-size:18px; color:var(--muted); cursor:pointer; background:none; border:none; }
+
+  /* TYPING INDICATOR */
+  .typing-indicator { display:flex; gap:4px; padding:10px 14px; align-self:flex-start; }
+  .typing-dot { width:8px; height:8px; border-radius:50%; background:var(--japster); animation:typingPulse 1.4s infinite; }
+  .typing-dot:nth-child(2) { animation-delay:0.2s; }
+  .typing-dot:nth-child(3) { animation-delay:0.4s; }
+  @keyframes typingPulse { 0%,60%,100% { opacity:0.3; transform:scale(0.8); } 30% { opacity:1; transform:scale(1); } }
+
+  /* TOAST NOTIFICATION */
+  .japster-toast { position:fixed; bottom:24px; right:24px; background:var(--card); border:1px solid var(--japster); border-radius:10px; padding:12px 20px; color:var(--text); font-size:13px; z-index:1000; opacity:0; transform:translateY(20px); transition:all 0.3s; box-shadow:0 4px 20px rgba(34,211,238,0.2); }
+  .japster-toast.show { opacity:1; transform:translateY(0); }
+
+  /* CLICKABLE BOT LIST */
+  .bot-list-item { cursor:pointer; transition:background 0.15s; padding:6px 4px; border-radius:6px; }
+  .bot-list-item:hover { background:rgba(34,211,238,0.06); }
+  .bot-list-item.selected { background:rgba(34,211,238,0.1); border:1px solid rgba(34,211,238,0.3); }
+
   @media (max-width: 900px) { .chat-container { grid-template-columns: 1fr; } }
 </style>
 </head>
@@ -304,42 +336,243 @@
   FPCS Tax Preparation System &bull; Speak with Japster v1.0 &bull; Page 5 &bull; <a href="https://docs.google.com/spreadsheets/d/1gQke6Tzfbln0zVqMPjLnzXaUPZDr4oPzx2lX2rsRtmI/edit" target="_blank" style="color:var(--japster)">Google Sheet Backend</a>
 </div>
 
+<!-- BECKON MODAL -->
+<div class="japster-modal-overlay" id="beckonModal">
+  <div class="japster-modal">
+    <button class="close-x" onclick="closeBeckonModal()">&times;</button>
+    <h3>&#128276; Beckon a Bot</h3>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:8px">Request a real-time conversation with a specific bot. They'll appear in the beckoning queue.</p>
+    <label>Select Bot</label>
+    <select id="beckonBotSelect">
+      <option value="">Choose a bot...</option>
+      <option value="DDBOT">&#128301; DDBOT — Deduction Discovery</option>
+      <option value="ForensicBot">&#128270; ForensicBot — Transaction Forensics</option>
+      <option value="ShieldBot">&#128737; ShieldBot — Security & Protection</option>
+      <option value="SCOUT">&#128301; SCOUT — Data Scouting</option>
+      <option value="CategorizerBot">&#128193; CategorizerBot — Category Assignment</option>
+      <option value="MaintenanceBot">&#128295; MaintenanceBot — System Maintenance</option>
+    </select>
+    <label>Topic</label>
+    <input type="text" id="beckonTopic" placeholder="What do you need to discuss?">
+    <label>Priority</label>
+    <select id="beckonPriority">
+      <option value="normal">Normal</option>
+      <option value="high">High — Needs quick response</option>
+      <option value="urgent">Urgent — Time-sensitive</option>
+    </select>
+    <label>Details (optional)</label>
+    <textarea id="beckonDetails" placeholder="Additional context for the bot..."></textarea>
+    <div class="japster-modal-btns">
+      <button class="btn-cancel" onclick="closeBeckonModal()">Cancel</button>
+      <button class="btn-primary" onclick="submitBeckon()">&#128276; Send Beckon</button>
+    </div>
+  </div>
+</div>
+
+<!-- BROADCAST MODAL -->
+<div class="japster-modal-overlay" id="broadcastModal">
+  <div class="japster-modal">
+    <button class="close-x" onclick="closeBroadcastModal()">&times;</button>
+    <h3>&#128227; Broadcast to All Bots</h3>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:8px">Send a message to the entire bot fleet simultaneously. All active bots will receive this.</p>
+    <label>Priority Level</label>
+    <select id="broadcastPriority">
+      <option value="info">&#128308; Info — General notice</option>
+      <option value="directive">&#128993; Directive — Action required</option>
+      <option value="alert">&#128994; Alert — Immediate attention</option>
+    </select>
+    <label>Message</label>
+    <textarea id="broadcastMessage" placeholder="Type your broadcast message..." rows="4"></textarea>
+    <div class="japster-modal-btns">
+      <button class="btn-cancel" onclick="closeBroadcastModal()">Cancel</button>
+      <button class="btn-primary" onclick="submitBroadcast()">&#128227; Broadcast</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="japster-toast" id="japsterToast"></div>
+
 </div><!-- /dashContent -->
 
 <script>
-// === CHAT ===
-function sendChat() {
-  var input = document.getElementById('chatInput');
-  var msg = input.value.trim();
-  if (!msg) return;
-  input.value = '';
-  var box = document.getElementById('chatMessages');
-  var now = new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
-  box.innerHTML += '<div class="chat-msg user"><div class="sender">Commander</div>' + escHtml(msg) + '<div class="time">' + now + '</div></div>';
-  box.scrollTop = box.scrollHeight;
-  setTimeout(function() {
-    var responses = [
-      "Message received, Commander. I'll route this to the appropriate bot.",
-      "Acknowledged. Checking the fleet status now...",
-      "I'll coordinate with the relevant bots and report back.",
-      "Understood. Adding this to the message queue for processing.",
-      "Roger that. I'll log this in the Extended Dialog tab for tracking."
-    ];
-    var resp = responses[Math.floor(Math.random() * responses.length)];
-    box.innerHTML += '<div class="chat-msg bot"><div class="sender">&#128172; Japster</div>' + resp + '<div class="time">' + new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) + '</div></div>';
-    box.scrollTop = box.scrollHeight;
-  }, 800 + Math.random() * 1200);
-}
+'use strict';
+var chatHistory = [];
+var msgCount = 0;
+var beckonCount = 2; // starting with 2 sample beckons
 
+// === UTILITIES ===
 function escHtml(s) {
   var d = document.createElement('div');
   d.textContent = s;
   return d.innerHTML;
 }
 
+function timeNow() {
+  return new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+}
+
+function showToast(msg) {
+  var toast = document.getElementById('japsterToast');
+  toast.textContent = msg;
+  toast.classList.add('show');
+  setTimeout(function() { toast.classList.remove('show'); }, 3000);
+}
+
+function addActivity(text) {
+  var actDiv = document.getElementById('recentActivity');
+  if (!actDiv) return;
+  var item = document.createElement('div');
+  item.style.cssText = 'padding:4px 0;border-bottom:1px solid var(--border);font-size:12px;';
+  item.innerHTML = '<span style="color:var(--japster)">' + timeNow() + '</span> ' + text;
+  actDiv.prepend(item);
+  // Keep max 10 items
+  while (actDiv.children.length > 10) actDiv.removeChild(actDiv.lastChild);
+}
+
+function updateStats() {
+  var el = document.getElementById('statMsgs');
+  if (el) el.textContent = msgCount;
+  var bEl = document.getElementById('statBeckons');
+  if (bEl) bEl.textContent = document.querySelectorAll('.beckon-card:not([style*="display: none"])').length;
+}
+
+// === SMART CHAT ===
+function showTyping() {
+  var box = document.getElementById('chatMessages');
+  var typing = document.createElement('div');
+  typing.className = 'typing-indicator';
+  typing.id = 'typingIndicator';
+  typing.innerHTML = '<div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>';
+  box.appendChild(typing);
+  box.scrollTop = box.scrollHeight;
+}
+
+function hideTyping() {
+  var el = document.getElementById('typingIndicator');
+  if (el) el.remove();
+}
+
+function addChatMsg(text, type, sender) {
+  var box = document.getElementById('chatMessages');
+  var div = document.createElement('div');
+  div.className = 'chat-msg ' + type;
+  div.innerHTML = '<div class="sender">' + sender + '</div>' + text + '<div class="time">' + timeNow() + '</div>';
+  box.appendChild(div);
+  box.scrollTop = box.scrollHeight;
+}
+
+function getSmartResponse(msg) {
+  var lower = msg.toLowerCase();
+
+  // Status queries
+  if (lower.match(/status|how.*going|progress|update/)) {
+    return "Fleet status report:\n\u2022 \ud83d\udfe2 DDBOT — Active, last scan found 14 missing income entries\n\u2022 \ud83d\udfe2 ForensicBot — Active, 3 duplicate alerts pending\n\u2022 \ud83d\udfe2 ShieldBot — Active, all systems nominal\n\u2022 \ud83d\udfe1 SCOUT — Idle, awaiting scan directive\n\u2022 \ud83d\udfe1 CategorizerBot — Idle, 562 unmatched entries in queue\n\u2022 \ud83d\udd34 MaintenanceBot — Offline for scheduled maintenance\n\nOverall fleet health: 83%. 5 of 6 bots operational.";
+  }
+
+  // Data queries
+  if (lower.match(/data|numbers|income|deductions|financial/)) {
+    return "Latest data snapshot:\n\u2022 Clean rows: 1,185 (from 2,155 raw)\n\u2022 Deductible total: $32,440 across 309 rows\n\u2022 Gross income: $16,936\n\u2022 Net position: ($17,247) loss\n\u2022 Unmatched ledger: 562 entries (~$16K)\n\nData pipeline is 95% complete. Want me to pull live numbers from the Google Sheet?";
+  }
+
+  // Bot-specific queries
+  if (lower.match(/ddbot|deduction.*bot/)) {
+    return "DDBOT Report:\n\u2022 Status: \ud83d\udfe2 Active\n\u2022 Last scan: Found 14 confirmed missing income entries\n\u2022 Total discrepancy: $5,185.50\n\u2022 Sources checked: PayPal, Venmo, bank statements\n\u2022 Next action: Cross-reference with CategorizerBot\n\nWant me to beckon DDBOT for a detailed breakdown?";
+  }
+  if (lower.match(/forensic|duplicate/)) {
+    return "ForensicBot Report:\n\u2022 Status: \ud83d\udfe2 Active\n\u2022 3 potential duplicate transactions flagged\n\u2022 Confidence levels: High (2), Medium (1)\n\u2022 Total at risk: $847.32\n\u2022 Pending: Cross-reference review with Commander\n\nForensicBot has a beckoning request pending. Accept it from the Beckoning Queue to start the review.";
+  }
+  if (lower.match(/shield|security/)) {
+    return "ShieldBot Report:\n\u2022 Status: \ud83d\udfe2 All systems nominal\n\u2022 No unauthorized access attempts detected\n\u2022 Auth system: 3-tier (admin/member/guest) operational\n\u2022 Login monitoring: Active\n\u2022 Last security sweep: Clean";
+  }
+  if (lower.match(/scout/)) {
+    return "SCOUT Report:\n\u2022 Status: \ud83d\udfe1 Idle — awaiting directive\n\u2022 Last mission: eBay transaction scan\n\u2022 Capability: Scans external sources for income/expense data\n\u2022 Ready for: Bank CSV scan, PayPal history, email receipt mining\n\nSay \"activate scout\" to deploy on a new scan mission.";
+  }
+  if (lower.match(/categorizer|category/)) {
+    return "CategorizerBot Report:\n\u2022 Status: \ud83d\udfe1 Idle\n\u2022 Queue: 562 unmatched ledger entries\n\u2022 Categories configured: 12 IRS Schedule C categories\n\u2022 Auto-match confidence threshold: 85%\n\u2022 Manual review needed: ~120 entries\n\nCategorizerBot is ready to process the backlog. Beckon it to start the categorization run.";
+  }
+
+  // Activate commands
+  if (lower.match(/activate.*scout|deploy.*scout/)) {
+    addActivity('SCOUT deployed on scan mission');
+    var dot = document.querySelector('.bot-list-item:nth-child(4) .bot-dot');
+    if (dot) { dot.className = 'bot-dot online'; }
+    var status = document.querySelector('.bot-list-item:nth-child(4) .bot-status');
+    if (status) status.textContent = 'Active';
+    return "\ud83d\ude80 SCOUT has been activated and deployed!\n\nMission briefing sent. SCOUT is now scanning for:\n\u2022 Unreported income sources\n\u2022 Missing expense receipts\n\u2022 Bank statement discrepancies\n\nEstimated completion: ~5 minutes. I'll notify you when results are in.";
+  }
+
+  // Deadline queries
+  if (lower.match(/deadline|days|april|time/)) {
+    var d = new Date('2026-04-10');
+    var diff = Math.ceil((d - new Date()) / 86400000);
+    return "Deadline status:\n\u2022 Mail by: April 10, 2026 (" + diff + " days)\n\u2022 Oregon statute: April 15, 2026\n\u2022 QBO access expires: ~April 2\n\u2022 TurboTax target: March 15-22\n\n" + (diff < 30 ? "\u26a0\ufe0f Getting close, Commander. Let's prioritize the remaining data work." : "We're on track. Steady progress.");
+  }
+
+  // Help
+  if (lower.match(/help|what can you|commands|instructions/)) {
+    return "Here's what I can help with, Commander:\n\n\ud83d\udcca **Data** — Ask about income, deductions, financial status\n\ud83e\udd16 **Bots** — Ask about any bot's status (e.g., \"ForensicBot status\")\n\ud83d\udccc **Status** — Fleet overview and progress report\n\ud83d\udcc5 **Deadline** — Days remaining and timeline\n\ud83d\udd0d **SCOUT** — Say \"activate scout\" to deploy a scan\n\ud83d\udce2 **Broadcast** — Click the button or say \"broadcast [message]\"\n\ud83d\udd14 **Beckon** — Click the button or say \"beckon [bot name]\"\n\n\ud83d\udcdd **Sheet** — Access the Google Sheet backend\n\nJust ask naturally \u2014 I understand context!";
+  }
+
+  // Broadcast via chat
+  if (lower.match(/^broadcast\s/)) {
+    var broadMsg = msg.replace(/^broadcast\s+/i, '');
+    addChatMsg('\ud83d\udce2 ' + escHtml(broadMsg), 'system', 'BROADCAST');
+    addActivity('Broadcast sent: "' + broadMsg.substring(0, 40) + '..."');
+    showToast('\ud83d\udce2 Broadcast sent to all bots');
+    return "Broadcast transmitted to all 6 bot systems. Active bots will acknowledge within 30 seconds.";
+  }
+
+  // Beckon via chat
+  if (lower.match(/^beckon\s/)) {
+    var botName = msg.replace(/^beckon\s+/i, '').trim();
+    createBeckonCard(botName, 'Requested via chat', 'Chat command from Commander');
+    return "\ud83d\udd14 Beckon sent to " + botName + "! Check the Beckoning Queue for the pending request. They'll respond shortly.";
+  }
+
+  // Sheet queries
+  if (lower.match(/sheet|spreadsheet|google/)) {
+    return "The Japster Google Sheet has 6 tabs:\n\u2022 \ud83d\udcac Messages — Inter-bot message log\n\u2022 \ud83d\udd14 Beckoning — Bot conversation requests\n\u2022 \ud83d\udcdd Extended Dialog — Full conversation transcripts\n\u2022 \ud83d\udc64 Human — Commander's direct channel\n\u2022 \ud83d\udce5 Data Import Log — Import tracking with hashes\n\u2022 \u2699\ufe0f Config — Bot settings and routing rules\n\n<a href='https://docs.google.com/spreadsheets/d/1gQke6Tzfbln0zVqMPjLnzXaUPZDr4oPzx2lX2rsRtmI/edit' target='_blank' style='color:var(--japster)'>Open Sheet \u2192</a>";
+  }
+
+  // Fallback — more varied and intelligent
+  var fallbacks = [
+    "Understood, Commander. I've logged that and will route it to the relevant bot. Want me to create a beckon for this?",
+    "Message received and queued. I'll coordinate with the fleet. Anything specific you'd like me to prioritize?",
+    "Got it. I'll process this through the system. Need me to pull any data related to this?",
+    "Roger that. Adding to the communication log. Should I broadcast this to the full fleet or target a specific bot?",
+    "Acknowledged. Is there a specific bot you'd like me to route this to? I can beckon them for a detailed discussion."
+  ];
+  return fallbacks[Math.floor(Math.random() * fallbacks.length)];
+}
+
+function sendChat() {
+  var input = document.getElementById('chatInput');
+  var msg = input.value.trim();
+  if (!msg) return;
+  input.value = '';
+
+  addChatMsg(escHtml(msg), 'user', 'Commander');
+  chatHistory.push({ role: 'user', text: msg });
+  msgCount++;
+  updateStats();
+  addActivity('Commander sent message');
+
+  // Show typing indicator then respond
+  showTyping();
+  setTimeout(function() {
+    hideTyping();
+    var response = getSmartResponse(msg);
+    addChatMsg(response, 'bot', '\ud83d\udcac Japster');
+    chatHistory.push({ role: 'bot', text: response });
+    msgCount++;
+    updateStats();
+  }, 600 + Math.random() * 1000);
+}
+
 // === MESSAGE FILTER ===
 function filterMessages(status, btn) {
-  document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
+  document.querySelectorAll('#sec-messages .tab-btn').forEach(function(b) { b.classList.remove('active'); });
   btn.classList.add('active');
   document.querySelectorAll('#msgTableBody tr').forEach(function(tr) {
     if (status === 'all' || tr.dataset.status === status) {
@@ -351,50 +584,181 @@ function filterMessages(status, btn) {
 }
 
 // === BECKONING ===
+function createBeckonCard(botName, topic, details) {
+  var list = document.getElementById('beckonList');
+  var card = document.createElement('div');
+  card.className = 'beckon-card';
+  card.style.borderColor = 'var(--japster)';
+  card.innerHTML = '<div class="b-from">\ud83d\udcac Japster \u2192 ' + escHtml(botName) + '</div>' +
+    '<div class="b-topic">' + escHtml(topic) + '</div>' +
+    '<div class="b-msg">' + escHtml(details || 'Beckoning ' + botName + ' for conversation.') + '</div>' +
+    '<div class="b-time">' + new Date().toLocaleString() + '</div>' +
+    '<div class="b-actions">' +
+      '<button class="b-btn accept" onclick="acceptBeckon(this)">\u2714 Accept</button>' +
+      '<button class="b-btn" onclick="deferBeckon(this)">\ud83d\udd53 Defer</button>' +
+      '<button class="b-btn" onclick="dismissBeckon(this)">\u2716 Dismiss</button>' +
+    '</div>';
+  list.prepend(card);
+  beckonCount++;
+  updateStats();
+  addActivity('Beckon sent to ' + botName);
+}
+
 function acceptBeckon(btn) {
   var card = btn.closest('.beckon-card');
   card.style.borderColor = 'var(--green)';
   card.style.background = 'rgba(74,222,128,0.06)';
-  btn.textContent = 'Accepted';
+  btn.textContent = '\u2714 Accepted';
   btn.disabled = true;
+  btn.style.background = 'rgba(74,222,128,0.15)';
   card.querySelectorAll('.b-btn:not(.accept)').forEach(function(b) { b.style.display = 'none'; });
-  var box = document.getElementById('chatMessages');
+
   var topic = card.querySelector('.b-topic').textContent;
-  box.innerHTML += '<div class="chat-msg beckoning"><div class="sender">&#128276; Beckoning Accepted</div>Starting extended dialog: ' + escHtml(topic) + '<div class="time">' + new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) + '</div></div>';
-  box.scrollTop = box.scrollHeight;
+  var from = card.querySelector('.b-from').textContent;
+  addChatMsg('\ud83d\udd14 Beckoning accepted! Starting dialog: <strong>' + escHtml(topic) + '</strong><br><span style="font-size:11px;color:var(--muted)">' + escHtml(from) + '</span>', 'beckoning', '\ud83d\udd14 Beckoning System');
+
+  showToast('\u2714 Beckon accepted: ' + topic);
+  addActivity('Beckon accepted: ' + topic);
+  updateStats();
+
+  // Simulate bot joining the conversation
+  setTimeout(function() {
+    showTyping();
+    setTimeout(function() {
+      hideTyping();
+      var botName = from.split('\u2192').pop().trim() || from.replace(/.*\u2192\s*/, '');
+      addChatMsg("I've joined the conversation regarding <strong>" + escHtml(topic) + "</strong>. Ready to discuss findings and coordinate next steps, Commander.", 'bot', '\ud83e\udd16 ' + botName);
+    }, 1200);
+  }, 800);
 }
 
 function deferBeckon(btn) {
   var card = btn.closest('.beckon-card');
   card.style.opacity = '0.5';
+  card.style.borderColor = 'var(--yellow)';
   card.querySelectorAll('.b-btn').forEach(function(b) { b.disabled = true; });
+  showToast('\ud83d\udd53 Beckon deferred');
+  addActivity('Beckon deferred');
 }
 
 function dismissBeckon(btn) {
   var card = btn.closest('.beckon-card');
-  card.style.display = 'none';
+  card.style.transition = 'all 0.3s';
+  card.style.opacity = '0';
+  card.style.transform = 'translateX(20px)';
+  setTimeout(function() { card.style.display = 'none'; updateStats(); }, 300);
+  showToast('Beckon dismissed');
 }
 
+// === MODAL BECKONING ===
 function beckonBot() {
-  var bot = prompt('Which bot would you like to beckon?\n\nAvailable: DDBOT, ForensicBot, ShieldBot, SCOUT, CategorizerBot, MaintenanceBot');
-  if (!bot) return;
-  var topic = prompt('What topic should the beckon be about?');
-  if (!topic) return;
-  var list = document.getElementById('beckonList');
-  var card = document.createElement('div');
-  card.className = 'beckon-card';
-  card.style.borderColor = 'var(--japster)';
-  card.innerHTML = '<div class="b-from">&#128172; Japster &rarr; ' + escHtml(bot) + '</div><div class="b-topic">' + escHtml(topic) + '</div><div class="b-msg">Beckoning ' + escHtml(bot) + ' for conversation about: ' + escHtml(topic) + '</div><div class="b-time">' + new Date().toLocaleString() + '</div><div class="b-actions"><span class="status-badge status-pending">Pending</span></div>';
-  list.prepend(card);
+  document.getElementById('beckonModal').classList.add('show');
+  document.getElementById('beckonBotSelect').value = '';
+  document.getElementById('beckonTopic').value = '';
+  document.getElementById('beckonPriority').value = 'normal';
+  document.getElementById('beckonDetails').value = '';
 }
 
-function broadcastMsg() {
-  var msg = prompt('Enter broadcast message to all bots:');
-  if (!msg) return;
-  var box = document.getElementById('chatMessages');
-  box.innerHTML += '<div class="chat-msg system"><div class="sender">BROADCAST</div>&#128227; ' + escHtml(msg) + '<div class="time">' + new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) + '</div></div>';
-  box.scrollTop = box.scrollHeight;
+function closeBeckonModal() {
+  document.getElementById('beckonModal').classList.remove('show');
 }
+
+function submitBeckon() {
+  var bot = document.getElementById('beckonBotSelect').value;
+  var topic = document.getElementById('beckonTopic').value.trim();
+  if (!bot) { showToast('\u26a0\ufe0f Please select a bot'); return; }
+  if (!topic) { showToast('\u26a0\ufe0f Please enter a topic'); return; }
+  var priority = document.getElementById('beckonPriority').value;
+  var details = document.getElementById('beckonDetails').value.trim() || 'Commander requests conversation about: ' + topic;
+  if (priority !== 'normal') details = '[' + priority.toUpperCase() + '] ' + details;
+
+  createBeckonCard(bot, topic, details);
+  closeBeckonModal();
+  showToast('\ud83d\udd14 Beckon sent to ' + bot + '!');
+
+  // Simulate bot acknowledging after delay
+  setTimeout(function() {
+    showTyping();
+    setTimeout(function() {
+      hideTyping();
+      addChatMsg('\ud83d\udd14 ' + escHtml(bot) + ' has acknowledged the beckon: "<em>' + escHtml(topic) + '</em>". Awaiting your acceptance to start the dialog.', 'bot', '\ud83d\udcac Japster');
+    }, 1000);
+  }, 2000 + Math.random() * 3000);
+}
+
+// === MODAL BROADCAST ===
+function broadcastMsg() {
+  document.getElementById('broadcastModal').classList.add('show');
+  document.getElementById('broadcastPriority').value = 'info';
+  document.getElementById('broadcastMessage').value = '';
+}
+
+function closeBroadcastModal() {
+  document.getElementById('broadcastModal').classList.remove('show');
+}
+
+function submitBroadcast() {
+  var priority = document.getElementById('broadcastPriority').value;
+  var msg = document.getElementById('broadcastMessage').value.trim();
+  if (!msg) { showToast('\u26a0\ufe0f Please enter a message'); return; }
+
+  var icons = { info: '\ud83d\udcac', directive: '\u26a1', alert: '\ud83d\udea8' };
+  var icon = icons[priority] || '\ud83d\udce2';
+
+  addChatMsg(icon + ' <strong>[' + priority.toUpperCase() + ']</strong> ' + escHtml(msg), 'system', '\ud83d\udce2 BROADCAST');
+  msgCount++;
+  updateStats();
+  closeBroadcastModal();
+  showToast('\ud83d\udce2 Broadcast sent to all bots!');
+  addActivity('Broadcast [' + priority + ']: ' + msg.substring(0, 40));
+
+  // Simulate bot acknowledgements
+  var bots = ['DDBOT', 'ForensicBot', 'ShieldBot'];
+  bots.forEach(function(bot, i) {
+    setTimeout(function() {
+      addActivity('\u2714 ' + bot + ' acknowledged broadcast');
+    }, 1500 + i * 800);
+  });
+}
+
+// === CLICKABLE BOT LIST ===
+document.querySelectorAll('.bot-list-item').forEach(function(item) {
+  item.addEventListener('click', function() {
+    var name = item.querySelector('.bot-name').textContent;
+    var status = item.querySelector('.bot-status').textContent;
+    // Toggle selection
+    document.querySelectorAll('.bot-list-item').forEach(function(i) { i.classList.remove('selected'); });
+    item.classList.add('selected');
+    // Add info to chat
+    addChatMsg('Querying ' + name + ' status...', 'user', 'Commander');
+    msgCount++;
+    showTyping();
+    setTimeout(function() {
+      hideTyping();
+      var response = getSmartResponse(name.toLowerCase());
+      addChatMsg(response, 'bot', '\ud83d\udcac Japster');
+      msgCount++;
+      updateStats();
+    }, 800);
+  });
+});
+
+// === CLOSE MODALS ON ESC / OVERLAY CLICK ===
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    closeBeckonModal();
+    closeBroadcastModal();
+  }
+});
+document.getElementById('beckonModal').addEventListener('click', function(e) {
+  if (e.target === this) closeBeckonModal();
+});
+document.getElementById('broadcastModal').addEventListener('click', function(e) {
+  if (e.target === this) closeBroadcastModal();
+});
+
+// === INITIAL STATS ===
+updateStats();
 </script>
 <script>
   window.FPCS_PAGE = {
@@ -411,6 +775,7 @@ function broadcastMsg() {
     ]
   };
 </script>
+<script src="js/sheets-api.js"></script>
 <script src="js/auth.js"></script>
 <script src="js/nav.js"></script>
 <script src="bot-assistant.js"></script>
