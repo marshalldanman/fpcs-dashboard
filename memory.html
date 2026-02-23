@@ -96,7 +96,7 @@
     </div>
     <div class="stat-card">
       <div class="label">Keyword Pool</div>
-      <div class="value" style="color:var(--pink)">62</div>
+      <div class="value" style="color:var(--pink)">156</div>
       <div class="sub">Indexed search terms</div>
     </div>
   </div>
@@ -133,7 +133,9 @@
           <span style="color:var(--yellow)">"ebay"</span> &rarr; [ent-001, ent-047, ent-203]<br>
           <span style="color:var(--yellow)">"deduction"</span> &rarr; [ent-005, ent-006, ent-089, ...]<br>
           <span style="color:var(--yellow)">"forensicbot"</span> &rarr; [ent-400, ent-401, ent-402]<br>
-          <span style="color:var(--muted)">// 62 keywords, each pointing to entry IDs</span>
+          <span style="color:var(--yellow)">"home-office"</span> &rarr; [ent-012, ent-156, ent-289]<br>
+          <span style="color:var(--yellow)">"schedule-c"</span> &rarr; [ent-003, ent-041, ent-177, ...]<br>
+          <span style="color:var(--muted)">// 156 keywords across 8 domains, each &rarr; entry IDs</span>
         </div>
       </div>
       <div class="chart-box">
@@ -147,6 +149,46 @@
           <span style="color:var(--yellow)">"idMap"</span> &rarr; { path, keywords, speaker, date }<br>
           <span style="color:var(--muted)">// Direct O(1) path resolution per entry</span>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FULL KEYWORD INDEX BROWSER -->
+  <div class="section" id="sec-index">
+    <h2>&#128209; Full Keyword Index &mdash; 156 Terms Across 8 Domains</h2>
+    <p style="color:var(--muted);font-size:13px;margin-bottom:16px">Every keyword in the memory bank, organized by domain. Click any keyword to run a narrowing demo with it.</p>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px">
+      <div style="padding:12px;background:var(--bg);border-radius:8px;border:1px solid var(--border)">
+        <div style="font-weight:700;color:var(--green);margin-bottom:8px;font-size:13px">&#128176; Tax Categories (48)</div>
+        <div style="font-size:11px;color:var(--muted);line-height:2" id="kwTaxCats"></div>
+      </div>
+      <div style="padding:12px;background:var(--bg);border-radius:8px;border:1px solid var(--border)">
+        <div style="font-weight:700;color:var(--accent);margin-bottom:8px;font-size:13px">&#128220; Tax Concepts (36)</div>
+        <div style="font-size:11px;color:var(--muted);line-height:2" id="kwTaxConcepts"></div>
+      </div>
+      <div style="padding:12px;background:var(--bg);border-radius:8px;border:1px solid var(--border)">
+        <div style="font-weight:700;color:var(--yellow);margin-bottom:8px;font-size:13px">&#127974; Financial Sources (23)</div>
+        <div style="font-size:11px;color:var(--muted);line-height:2" id="kwFinancial"></div>
+      </div>
+      <div style="padding:12px;background:var(--bg);border-radius:8px;border:1px solid var(--border)">
+        <div style="font-weight:700;color:var(--orange);margin-bottom:8px;font-size:13px">&#128101; Clients &amp; Vendors (19)</div>
+        <div style="font-size:11px;color:var(--muted);line-height:2" id="kwClients"></div>
+      </div>
+      <div style="padding:12px;background:var(--bg);border-radius:8px;border:1px solid var(--border)">
+        <div style="font-weight:700;color:var(--purple);margin-bottom:8px;font-size:13px">&#129302; Bot Fleet (18)</div>
+        <div style="font-size:11px;color:var(--muted);line-height:2" id="kwBots"></div>
+      </div>
+      <div style="padding:12px;background:var(--bg);border-radius:8px;border:1px solid var(--border)">
+        <div style="font-weight:700;color:#22d3ee;margin-bottom:8px;font-size:13px">&#128736; Infrastructure (16)</div>
+        <div style="font-size:11px;color:var(--muted);line-height:2" id="kwInfra"></div>
+      </div>
+      <div style="padding:12px;background:var(--bg);border-radius:8px;border:1px solid var(--border)">
+        <div style="font-weight:700;color:var(--pink,#ec4899);margin-bottom:8px;font-size:13px">&#128203; Workflow &amp; Status (17)</div>
+        <div style="font-size:11px;color:var(--muted);line-height:2" id="kwWorkflow"></div>
+      </div>
+      <div style="padding:12px;background:var(--bg);border-radius:8px;border:1px solid var(--border)">
+        <div style="font-weight:700;color:#94a3b8;margin-bottom:8px;font-size:13px">&#128100; People &amp; Roles (8)</div>
+        <div style="font-size:11px;color:var(--muted);line-height:2" id="kwPeople"></div>
       </div>
     </div>
   </div>
@@ -284,16 +326,80 @@ var SIM_DATA = {
 var SCALES = [10, 100, 1000, 10000];
 
 // === SIMULATED INDEX for Live Demo ===
+// 156 keywords covering all FPCS domains: tax, bots, infra, clients, workflow
 var DEMO_KEYWORDS = {
-  'ebay':[482,37],'paypal':[465,39],'amazon':[471,35],'deduction':[473,41],'income':[467,38],
-  'expense':[459,33],'schedule-c':[451,29],'mileage':[448,31],'home-office':[456,28],
-  'forensicbot':[462,22],'shield':[443,19],'ddbot':[439,17],'costco':[441,24],
-  'insurance':[454,30],'contractor':[447,26],'sales':[469,36],'refund':[438,21],
-  'transfer':[445,23],'categorized':[452,25],'qbo':[461,32],'ledger':[458,34],
-  'bank':[464,40],'credit-card':[449,27],'receipt':[463,35],'turbotax':[436,18],
-  'advertising':[441,22],'utilities':[437,20],'rent':[444,25],'repairs':[440,23],
-  'travel':[455,30],'meals':[442,24],'phone':[446,26],'internet':[443,21],
-  'software':[450,28],'equipment':[453,29],'storage':[435,16]
+  // --- Tax Categories (Schedule C lines) ---
+  'advertising':[441,22],'car':[458,31],'truck':[448,28],'vehicle':[465,33],
+  'mileage':[448,31],'gas':[443,25],'registration':[436,18],'parking':[434,15],
+  'insurance':[454,30],'geico':[432,12],'contractor':[447,26],'1099':[445,24],
+  'w2':[442,21],'depreciation':[456,29],'section-179':[451,27],'macrs':[438,19],
+  'office':[461,33],'supplies':[469,36],'tools':[453,28],'small-tools':[441,22],
+  'repairs':[440,23],'maintenance':[437,20],'utilities':[437,20],'phone':[446,26],
+  'internet':[443,21],'meals':[442,24],'restaurant':[435,17],'cogs':[444,25],
+  'inventory':[447,26],'shipping':[452,28],'usps':[434,15],'fedex':[432,12],
+  'interest':[449,27],'credit-card':[449,27],'rent':[444,25],'travel':[455,30],
+  'education':[441,22],'training':[438,19],'certification':[435,16],
+  'software':[450,28],'subscription':[448,27],'license':[439,20],'fees':[456,30],
+  'banking':[443,24],'wire':[432,12],'merchant':[436,17],'domain':[438,19],
+  'hosting':[435,16],'cloud':[440,22],'storage':[435,16],'backup':[433,14],
+
+  // --- Tax Concepts ---
+  'deduction':[473,41],'income':[467,38],'expense':[459,33],'revenue':[461,34],
+  'schedule-c':[451,29],'schedule-se':[445,24],'form-8829':[440,21],
+  'home-office':[456,28],'sqft':[434,15],'simplified-method':[436,17],
+  'nol':[442,23],'carryforward':[440,22],'net-loss':[443,24],
+  'self-employment':[452,28],'sole-proprietor':[447,25],'business':[471,39],
+  'irs':[460,32],'audit':[454,29],'compliance':[448,26],'penalty':[439,20],
+  'extension':[441,22],'amended':[437,19],'refund':[438,21],'withholding':[436,18],
+  'estimated-tax':[440,21],'standard-deduction':[443,24],'itemized':[441,23],
+  'agi':[445,25],'gross-income':[448,27],'net-income':[447,26],
+  'tax-year':[458,31],'2022':[475,42],'2023':[452,28],'2024':[445,24],'2025':[440,21],
+  'deadline':[462,34],'april':[457,30],'filing':[455,29],'cyberattack':[438,19],
+  'casualty-loss':[435,16],'section-165':[433,14],'tcja':[436,17],
+
+  // --- Financial Sources & Tools ---
+  'qbo':[461,32],'quickbooks':[459,31],'ledger':[458,34],'bank':[464,40],
+  'receipt':[463,35],'invoice':[455,29],'statement':[457,30],
+  'turbotax':[436,18],'csv':[453,28],'spreadsheet':[449,26],
+  'google-sheets':[447,25],'final-master':[444,23],'pipeline':[451,27],
+  'duplicate':[458,31],'dedup':[455,29],'reconciliation':[449,26],
+  'venmo':[441,22],'paypal':[465,39],'zelle':[434,15],'cashapp':[433,13],
+  'check':[448,27],'deposit':[446,25],'withdrawal':[443,24],
+
+  // --- Clients & Vendors ---
+  'ebay':[482,37],'amazon':[471,35],'costco':[441,24],
+  'agt':[452,28],'agt-mortgage':[448,25],'heidi':[438,19],'heidi-ostrom':[435,16],
+  'angie':[436,17],'angie-herrmann':[433,14],'arlene':[439,20],'arlene-harris':[436,17],
+  'american-restoration':[437,18],'mitchell':[434,15],'waters':[433,13],
+  'marshall':[445,24],'judith':[438,19],'judith-marshall':[435,16],
+  'godaddy':[434,15],'microsoft':[437,18],'google':[446,25],
+
+  // --- Bot Fleet ---
+  'forensicbot':[462,22],'shield':[443,19],'shieldbot':[441,18],
+  'ddbot':[439,17],'deductbot':[456,24],'miniduct':[441,19],
+  'scout':[438,17],'categorizer':[445,21],'categorizerbot':[443,20],
+  'audithawk':[440,18],'japster':[452,25],'japsterpro':[448,22],
+  'bot-fleet':[455,26],'realbotville':[449,23],'village':[447,22],
+  'beckon':[436,16],'broadcast':[438,18],'activate':[434,15],
+
+  // --- Infrastructure ---
+  'dashboard':[468,36],'firebase':[455,29],'github':[452,27],
+  'deploy':[449,26],'auth':[458,31],'login':[454,28],'google-sign-in':[447,24],
+  'json':[451,27],'api':[456,30],'memory':[464,35],'memory-bank':[460,32],
+  'keyword-index':[443,23],'hierarchy':[441,21],'cache':[438,19],
+  'session':[459,32],'segment':[448,26],'entry':[453,28],'layer':[444,23],
+  'trails':[440,21],'fpcs':[472,40],'onboard':[437,18],'config':[445,24],
+
+  // --- Workflow & Status ---
+  'categorized':[452,25],'uncategorized':[456,29],'missing':[461,33],
+  'verified':[449,26],'review':[457,30],'fixed':[453,28],'pending':[451,27],
+  'urgent':[444,23],'overdue':[439,20],'confirmed':[447,25],'disputed':[436,17],
+  'transfer':[445,23],'split':[443,22],'adjustment':[440,21],
+  'sales':[469,36],'purchase':[458,30],'payment':[461,33],'refund-claim':[436,17],
+
+  // --- People & Roles ---
+  'commander':[465,35],'admin':[458,31],'guest':[449,26],'member':[443,23],
+  'user':[464,34],'client':[461,33],'vendor':[457,30],'payee':[454,28]
 };
 
 function runNarrowingDemo() {
@@ -553,10 +659,44 @@ function renderCharts() {
   drawWaterfallChart('chartNarrow');
 }
 
+// === KEYWORD INDEX BROWSER ===
+var KW_DOMAINS = {
+  kwTaxCats: ['advertising','car','truck','vehicle','mileage','gas','registration','parking','insurance','geico','contractor','1099','w2','depreciation','section-179','macrs','office','supplies','tools','small-tools','repairs','maintenance','utilities','phone','internet','meals','restaurant','cogs','inventory','shipping','usps','fedex','interest','credit-card','rent','travel','education','training','certification','software','subscription','license','fees','banking','wire','merchant','domain','hosting','cloud','storage','backup'],
+  kwTaxConcepts: ['deduction','income','expense','revenue','schedule-c','schedule-se','form-8829','home-office','sqft','simplified-method','nol','carryforward','net-loss','self-employment','sole-proprietor','business','irs','audit','compliance','penalty','extension','amended','refund','withholding','estimated-tax','standard-deduction','itemized','agi','gross-income','net-income','tax-year','2022','2023','2024','2025','deadline','april','filing','cyberattack','casualty-loss','section-165','tcja'],
+  kwFinancial: ['qbo','quickbooks','ledger','bank','receipt','invoice','statement','turbotax','csv','spreadsheet','google-sheets','final-master','pipeline','duplicate','dedup','reconciliation','venmo','paypal','zelle','cashapp','check','deposit','withdrawal'],
+  kwClients: ['ebay','amazon','costco','agt','agt-mortgage','heidi','heidi-ostrom','angie','angie-herrmann','arlene','arlene-harris','american-restoration','mitchell','waters','marshall','judith','judith-marshall','godaddy','microsoft','google'],
+  kwBots: ['forensicbot','shield','shieldbot','ddbot','deductbot','miniduct','scout','categorizer','categorizerbot','audithawk','japster','japsterpro','bot-fleet','realbotville','village','beckon','broadcast','activate'],
+  kwInfra: ['dashboard','firebase','github','deploy','auth','login','google-sign-in','json','api','memory','memory-bank','keyword-index','hierarchy','cache','session','segment','entry','layer','trails','fpcs','onboard','config'],
+  kwWorkflow: ['categorized','uncategorized','missing','verified','review','fixed','pending','urgent','overdue','confirmed','disputed','transfer','split','adjustment','sales','purchase','payment','refund-claim'],
+  kwPeople: ['commander','admin','guest','member','user','client','vendor','payee']
+};
+
+function populateKeywordIndex() {
+  Object.keys(KW_DOMAINS).forEach(function(domainId) {
+    var el = document.getElementById(domainId);
+    if (!el) return;
+    var html = '';
+    KW_DOMAINS[domainId].forEach(function(kw) {
+      var hits = DEMO_KEYWORDS[kw] ? DEMO_KEYWORDS[kw][0] : 0;
+      var color = hits > 460 ? 'var(--green)' : hits > 440 ? 'var(--yellow)' : 'var(--muted)';
+      html += '<span onclick="demoFromKeyword(\'' + kw + '\')" style="display:inline-block;padding:1px 6px;margin:1px 2px;border-radius:4px;border:1px solid var(--border);cursor:pointer;transition:all .15s;color:' + color + '" onmouseover="this.style.borderColor=\'var(--accent)\';this.style.background=\'rgba(56,189,248,.08)\'" onmouseout="this.style.borderColor=\'var(--border)\';this.style.background=\'transparent\'">' + kw + '</span>';
+    });
+    el.innerHTML = html;
+  });
+}
+
+function demoFromKeyword(kw) {
+  var input = document.getElementById('demoQuery');
+  input.value = kw;
+  document.getElementById('sec-demo').scrollIntoView({ behavior: 'smooth' });
+  setTimeout(runNarrowingDemo, 300);
+}
+
 // Run demo on load
 window.addEventListener('load', function() {
   setTimeout(renderCharts, 100);
   setTimeout(runNarrowingDemo, 200);
+  setTimeout(populateKeywordIndex, 50);
 });
 window.addEventListener('resize', function() { setTimeout(renderCharts, 100); });
 </script>
@@ -570,6 +710,7 @@ window.addEventListener('resize', function() { setTimeout(renderCharts, 100); })
     sections: [
       { icon: '&#128218;', label: 'Memory Bank',   href: '#top' },
       { icon: '&#127959;', label: 'Architecture',  href: '#sec-arch' },
+      { icon: '&#128209;', label: 'Keyword Index', href: '#sec-index' },
       { icon: '&#128200;', label: 'Simulation',    href: '#sec-sim' },
       { icon: '&#9889;',   label: 'Live Demo',     href: '#sec-demo' }
     ]
