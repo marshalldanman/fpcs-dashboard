@@ -561,6 +561,33 @@
     <!-- Categories container -->
     <div id="dedCategoriesContainer" style="display:none"></div>
 
+    <!-- NOTES PANEL — Slide-out panel for category notes + bot replies -->
+    <div id="notesPanel" style="display:none;position:fixed;top:0;right:0;width:420px;height:100vh;background:#0f172a;border-left:2px solid #334155;z-index:9990;flex-direction:column;box-shadow:-4px 0 24px rgba(0,0,0,.5);font-family:'Segoe UI',system-ui,sans-serif">
+      <div style="padding:16px 20px;background:linear-gradient(135deg,#1e3a5f,#0f172a);border-bottom:1px solid #334155;display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <div style="color:#f59e0b;font-size:15px;font-weight:700" id="notesPanelTitle">Notes</div>
+          <div style="color:#94a3b8;font-size:11px" id="notesPanelSub">Category notes &amp; bot replies</div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <span id="notesWriteStatus" style="font-size:10px;padding:2px 6px;border-radius:4px"></span>
+          <button onclick="closeNotesPanel()" style="background:none;border:none;color:#94a3b8;font-size:22px;cursor:pointer;line-height:1">&times;</button>
+        </div>
+      </div>
+      <div id="notesList" style="flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px">
+        <div style="color:#64748b;text-align:center;padding:32px 0;font-size:13px">No notes yet. Add one below!</div>
+      </div>
+      <div style="padding:12px 16px;border-top:1px solid #334155;display:flex;flex-direction:column;gap:8px">
+        <div style="display:flex;gap:8px">
+          <input type="text" id="noteInput" placeholder="Add a note about this category..." style="flex:1;padding:8px 12px;border-radius:8px;border:1px solid #334155;background:#1e293b;color:#e2e8f0;font-size:13px;outline:none" onkeydown="if(event.key==='Enter')addNoteFromPanel()">
+          <button onclick="addNoteFromPanel()" style="padding:8px 14px;border-radius:8px;border:none;background:#f59e0b;color:#000;font-weight:700;font-size:13px;cursor:pointer">Add</button>
+        </div>
+        <div style="display:flex;gap:6px">
+          <button onclick="askBotAboutCategory()" style="padding:5px 10px;border-radius:6px;border:1px solid #334155;background:rgba(56,189,248,.1);color:#38bdf8;font-size:11px;cursor:pointer">&#129302; Ask Bot</button>
+          <button onclick="grantSheetsFromPanel()" id="notesSheetsBtn" style="padding:5px 10px;border-radius:6px;border:1px solid #334155;background:rgba(74,222,128,.1);color:#4ade80;font-size:11px;cursor:pointer;display:none">&#128274; Grant Sheets Write</button>
+        </div>
+      </div>
+    </div>
+
     <!-- Error state -->
     <div id="dedError" style="display:none;padding:24px;color:var(--red);font-size:14px;text-align:center">
       <p>&#9888; Could not load deduction data from Google Sheets.</p>
@@ -757,6 +784,7 @@ function renderCategories() {
     html += '<span class="cat-name">' + escDed(cat) + reviewBadge + '</span>';
     html += '<span class="cat-count">' + count + ' txn' + (count !== 1 ? 's' : '') + '</span>';
     html += '<span class="cat-amount">$' + total.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}) + '</span>';
+    html += '<button onclick="event.stopPropagation();openNotesPanel(\'' + escDed(cat).replace(/'/g, "\\'") + '\')" style="margin-left:8px;padding:3px 8px;border-radius:6px;border:1px solid #334155;background:rgba(245,158,11,.08);color:#f59e0b;font-size:10px;cursor:pointer;white-space:nowrap" title="Notes for ' + escDed(cat) + '">&#128221; Notes</button>';
     html += '</div>';
 
     // Transaction table (hidden by default)
@@ -935,13 +963,209 @@ document.addEventListener('fpcs-authed', function() {
 setTimeout(function() {
   if (dedRecords.length === 0) loadDeductionRecords();
 }, 4000);
+
+// ============================================================
+//  NOTES PANEL — Category notes with bot replies
+// ============================================================
+var _notesPanelCategory = '';
+
+function openNotesPanel(category) {
+  _notesPanelCategory = category;
+  var panel = document.getElementById('notesPanel');
+  panel.style.display = 'flex';
+  document.getElementById('notesPanelTitle').textContent = '📝 ' + category;
+  document.getElementById('notesPanelSub').textContent = 'Notes & bot replies for ' + category;
+
+  // Show/hide Sheets write button
+  var sheetsBtn = document.getElementById('notesSheetsBtn');
+  if (window.FPCSSheets && window.FPCSSheets.canWrite()) {
+    sheetsBtn.style.display = 'none';
+    document.getElementById('notesWriteStatus').textContent = '● Synced';
+    document.getElementById('notesWriteStatus').style.background = 'rgba(74,222,128,.15)';
+    document.getElementById('notesWriteStatus').style.color = '#4ade80';
+  } else {
+    sheetsBtn.style.display = '';
+    document.getElementById('notesWriteStatus').textContent = '● Local Only';
+    document.getElementById('notesWriteStatus').style.background = 'rgba(251,191,36,.15)';
+    document.getElementById('notesWriteStatus').style.color = '#fbbf24';
+  }
+
+  renderNotes();
+  document.getElementById('noteInput').focus();
+}
+
+function closeNotesPanel() {
+  document.getElementById('notesPanel').style.display = 'none';
+  _notesPanelCategory = '';
+}
+
+function renderNotes() {
+  var list = document.getElementById('notesList');
+  if (!window.FPCSNotes || !window.FPCSNotes.isLoaded()) {
+    list.innerHTML = '<div style="color:#64748b;text-align:center;padding:32px 0;font-size:13px">Loading notes...</div>';
+    // Retry after notes load
+    if (window.FPCSNotes) {
+      window.FPCSNotes.on('loaded', function () { if (_notesPanelCategory) renderNotes(); });
+    }
+    return;
+  }
+
+  var notes = window.FPCSNotes.getByCategory(_notesPanelCategory);
+  if (notes.length === 0) {
+    list.innerHTML = '<div style="color:#64748b;text-align:center;padding:32px 0;font-size:13px">No notes yet for <strong>' + escDed(_notesPanelCategory) + '</strong>. Add one below!</div>';
+    return;
+  }
+
+  var html = '';
+  notes.forEach(function (note) {
+    var statusColor = note.status === 'closed' ? '#64748b' : (note.botReply ? '#4ade80' : '#f59e0b');
+    var statusLabel = note.status === 'closed' ? 'Closed' : (note.botReply ? 'Answered' : 'Open');
+
+    html += '<div style="background:#1e293b;border-radius:10px;padding:12px 14px;border-left:3px solid ' + statusColor + '">';
+    html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">';
+    html += '<span style="color:#e2e8f0;font-size:13px;font-weight:600">' + escDed(note.author) + '</span>';
+    html += '<span style="font-size:10px;color:#64748b">' + escDed(note.date) + ' · <span style="color:' + statusColor + '">' + statusLabel + '</span></span>';
+    html += '</div>';
+    html += '<div style="color:#cbd5e1;font-size:13px;line-height:1.5">' + escDed(note.text) + '</div>';
+
+    // Bot reply
+    if (note.botReply) {
+      html += '<div style="margin-top:8px;padding:8px 10px;background:rgba(56,189,248,.08);border-radius:6px;border-left:2px solid #38bdf8">';
+      html += '<div style="font-size:10px;color:#38bdf8;font-weight:600;margin-bottom:3px">🤖 Bot Reply · ' + escDed(note.replyDate) + '</div>';
+      html += '<div style="color:#e2e8f0;font-size:12px;line-height:1.5">' + escDed(note.botReply) + '</div>';
+      html += '</div>';
+    }
+
+    // Actions
+    html += '<div style="margin-top:6px;display:flex;gap:6px">';
+    if (!note.botReply && note.status !== 'closed') {
+      html += '<button onclick="requestBotReply(\'' + note.id + '\')" style="font-size:10px;color:#38bdf8;background:none;border:1px solid #334155;padding:2px 8px;border-radius:4px;cursor:pointer">Ask Bot</button>';
+    }
+    if (note.status !== 'closed') {
+      html += '<button onclick="closeNote(\'' + note.id + '\')" style="font-size:10px;color:#64748b;background:none;border:1px solid #334155;padding:2px 8px;border-radius:4px;cursor:pointer">Close</button>';
+    }
+    html += '</div>';
+    html += '</div>';
+  });
+
+  list.innerHTML = html;
+  list.scrollTop = list.scrollHeight;
+}
+
+function addNoteFromPanel() {
+  var input = document.getElementById('noteInput');
+  var text = (input.value || '').trim();
+  if (!text || !_notesPanelCategory) return;
+
+  if (!window.FPCSNotes) {
+    alert('Notes module not loaded. Please refresh.');
+    return;
+  }
+
+  window.FPCSNotes.add({
+    category: _notesPanelCategory,
+    text: text
+  });
+
+  input.value = '';
+  renderNotes();
+}
+
+function closeNote(noteId) {
+  if (window.FPCSNotes) {
+    window.FPCSNotes.close(noteId);
+    renderNotes();
+  }
+}
+
+function requestBotReply(noteId) {
+  if (!window.FPCSNotes) return;
+  var note = window.FPCSNotes.all().find(function (n) { return n.id === noteId; });
+  if (!note) return;
+
+  // Use the Sheets data to generate a bot reply
+  var category = note.category;
+  var catData = dedGrouped[category] || [];
+  var catTotal = dedCatTotals[category] || 0;
+
+  var reply = 'Category "' + category + '": ' + catData.length + ' transactions totaling $' +
+    catTotal.toLocaleString('en-US', {minimumFractionDigits:2}) + '. ';
+
+  if (catTotal > 5000) {
+    reply += 'This is a high-value category — review individual items for accuracy. ';
+  }
+  if (catData.length > 20) {
+    reply += 'High transaction count — consider grouping or summarizing for Schedule C. ';
+  }
+
+  // Try to answer the specific note
+  var noteText = note.text.toLowerCase();
+  if (noteText.indexOf('status') !== -1 || noteText.indexOf('how') !== -1) {
+    reply += 'Data is loaded from the master sheet. All amounts pulled live from FINAL_MASTER.';
+  } else if (noteText.indexOf('miss') !== -1 || noteText.indexOf('need') !== -1) {
+    reply += 'Check the unmatched ledger entries — 562 rows (~$16K) may contain additional items for this category.';
+  } else if (noteText.indexOf('sqft') !== -1 || noteText.indexOf('square') !== -1 || noteText.indexOf('office') !== -1) {
+    reply += 'Home office: Simplified = $5/sqft x sqft (max 300sqft = $1,500). Regular method needs mortgage, insurance, utilities prorated by office %.';
+  }
+
+  window.FPCSNotes.botReply(noteId, reply);
+  renderNotes();
+}
+
+function askBotAboutCategory() {
+  if (!_notesPanelCategory) return;
+  var catData = dedGrouped[_notesPanelCategory] || [];
+  var catTotal = dedCatTotals[_notesPanelCategory] || 0;
+
+  // Auto-create a note with the bot's analysis
+  if (window.FPCSNotes) {
+    var note = window.FPCSNotes.add({
+      category: _notesPanelCategory,
+      text: 'Auto-analysis requested',
+      author: 'System'
+    });
+
+    var reply = 'Category: ' + _notesPanelCategory + '\n' +
+      'Transactions: ' + catData.length + '\n' +
+      'Total: $' + catTotal.toLocaleString('en-US', {minimumFractionDigits:2}) + '\n';
+
+    // Top vendors in category
+    if (catData.length > 0 && dedColMap.name !== undefined) {
+      var vendors = {};
+      catData.forEach(function(row) {
+        var v = (row[dedColMap.name] || 'Unknown').trim();
+        var amt = Math.abs(parseFloat((row[dedColMap.amount] || '0').replace(/[$,]/g, '')));
+        vendors[v] = (vendors[v] || 0) + amt;
+      });
+      var topVendors = Object.keys(vendors).sort(function(a,b) { return vendors[b] - vendors[a]; }).slice(0, 5);
+      reply += 'Top vendors: ' + topVendors.map(function(v) { return v + ' ($' + vendors[v].toFixed(0) + ')'; }).join(', ');
+    }
+
+    window.FPCSNotes.botReply(note.id, reply);
+    renderNotes();
+  }
+}
+
+function grantSheetsFromPanel() {
+  if (window.fpcsGrantSheetsAccess) {
+    window.fpcsGrantSheetsAccess().then(function() {
+      // Update panel status
+      document.getElementById('notesSheetsBtn').style.display = 'none';
+      document.getElementById('notesWriteStatus').textContent = '● Synced';
+      document.getElementById('notesWriteStatus').style.background = 'rgba(74,222,128,.15)';
+      document.getElementById('notesWriteStatus').style.color = '#4ade80';
+    });
+  }
+}
 </script>
 
 <!-- Shared Modules (load after page config) -->
 <script src="js/sheets-api.js"></script>
 <script src="js/auth.js"></script>
 <script src="js/nav.js"></script>
+<script src="js/sheets-notes.js"></script>
 <script src="js/memory-blocks.js"></script>
+<script src="js/offline.js"></script>
 <script src="bot-assistant.js"></script>
 </body>
 </html>

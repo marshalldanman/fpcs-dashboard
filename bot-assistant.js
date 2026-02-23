@@ -27,7 +27,8 @@
     'memory.html':     { name: 'Sarge', greeting: "Memory banks online.", context: 'Memory Bank' },
     'japster.html':    { name: 'Japster', greeting: "Inter-AI comms ready!", context: 'Japster Hub' },
     'helpdesk.html':   { name: 'Sarge', greeting: "Tickets are my thing!", context: 'Helpdesk' },
-    'income.html':     { name: 'Cruncher', greeting: "Numbers don't lie. Let's drill down!", context: 'Income' }
+    'income.html':     { name: 'Cruncher', greeting: "Numbers don't lie. Let's drill down!", context: 'Income' },
+    'library.html':    { name: 'Sarge', greeting: "Welcome to the library, Commander.", context: 'Library' }
   };
 
   var page = location.pathname.split('/').pop() || 'index.html';
@@ -35,13 +36,14 @@
 
   // Quick replies per context
   var QUICK_REPLIES = {
-    'Tax HQ': ['Show progress', 'What\'s next?', 'Deadline status', 'Missing items'],
+    'Tax HQ': ['Show progress', 'What\'s next?', 'Deadline status', '/sheets'],
     'Bot HQ': ['Bot status', 'Deploy a bot', 'Run DDBOT', 'Fleet report'],
-    'Deductions': ['Top deductions', 'Unmatched items', 'Review needed', 'COGS breakdown'],
-    'Memory Bank': ['Memory stats', 'Key numbers', 'Data gaps', 'Session log'],
+    'Deductions': ['/lookup supplies', '/notes', 'Home office', '/sheets'],
+    'Memory Bank': ['Memory stats', 'Key numbers', 'Data gaps', '/offline'],
     'Japster Hub': ['Start chat', 'AI status', 'Sheet link', 'New topic'],
     'Helpdesk': ['Open tickets', 'New ticket', 'Priority list', 'Overdue items'],
-    'Income': ['Missing income', 'Client list', 'QBO status', 'Reconciliation']
+    'Income': ['Missing income', 'Client list', 'QBO status', '/lookup income'],
+    'Library': ['/memory', '/stats', 'Key numbers', '/help']
   };
 
   // ============================================================
@@ -164,7 +166,56 @@
         '/forget - Clear user info memory<br>' +
         '/think - Show inner monologue<br>' +
         '/export - Dump memory to console<br>' +
+        '<br><strong>Data Commands</strong><br>' +
+        '/lookup [category] - Query Sheets for category data<br>' +
+        '/notes [category] - View notes for a category<br>' +
+        '/addnote [category] | [text] - Add a note<br>' +
+        '/sheets - Sheets connection status<br>' +
+        '/offline - Offline/cache status<br>' +
         '/help - This list';
+    }
+
+    // /lookup [category] — Query Sheets data for a deduction category
+    if (lower.indexOf('/lookup ') === 0 || lower.indexOf('/look ') === 0) {
+      var lookupQuery = msg.substring(msg.indexOf(' ') + 1).trim();
+      return _sheetsLookup(lookupQuery);
+    }
+
+    // /notes [category] — View notes for a category
+    if (lower.indexOf('/notes') === 0) {
+      var notesCat = msg.substring(6).trim();
+      return _notesLookup(notesCat);
+    }
+
+    // /addnote [category] | [text]
+    if (lower.indexOf('/addnote ') === 0) {
+      var parts = msg.substring(9).split('|');
+      if (parts.length < 2) return 'Usage: /addnote Category Name | Your note text here';
+      var cat = parts[0].trim();
+      var noteText = parts.slice(1).join('|').trim();
+      return _addNote(cat, noteText);
+    }
+
+    // /sheets — Connection status
+    if (lower === '/sheets' || lower === '/sheet') {
+      return _sheetsStatus();
+    }
+
+    // /offline — Offline/cache status
+    if (lower === '/offline' || lower === '/cache') {
+      var online = navigator.onLine ? 'Online' : '<span style="color:#fbbf24">Offline</span>';
+      var cacheInfo = '';
+      if (window.FPCSSheets) {
+        var cs = window.FPCSSheets.cacheStats();
+        cacheInfo = ' | API cache: ' + cs.entries + ' entries';
+      }
+      var notesInfo = '';
+      if (window.FPCSNotes) {
+        var ns = window.FPCSNotes.stats();
+        notesInfo = ' | Notes: ' + ns.total + ' (' + ns.queuedWrites + ' queued)';
+      }
+      return '<strong>Offline Status</strong><br>Network: ' + online + cacheInfo + notesInfo +
+        '<br><span style="color:#64748b;font-size:11px">Service worker caches all pages for offline use</span>';
     }
 
     return null; // Not a command
@@ -229,6 +280,18 @@
     if (lower.indexOf('deduct') !== -1) return RESPONSES['top deductions'];
     if (lower.indexOf('number') !== -1 || lower.indexOf('stats') !== -1) return RESPONSES['key numbers'];
 
+    // 4b. Sheets-aware: detect tax category questions and auto-lookup
+    if (_sheetData && _sheetColMap && _sheetColMap.account !== undefined) {
+      var categoryKeywords = ['home office', 'supplies', 'equipment', 'cogs', 'car', 'truck',
+        'utilities', 'insurance', 'rent', 'advertising', 'meals', 'travel', 'repairs',
+        'professional', 'software', 'internet', 'phone', 'shipping', 'postage', 'bank'];
+      for (var ck = 0; ck < categoryKeywords.length; ck++) {
+        if (lower.indexOf(categoryKeywords[ck]) !== -1) {
+          return _doLookup(categoryKeywords[ck]);
+        }
+      }
+    }
+
     // 5. Memory-based context-aware fallback
     if (hasMemory()) {
       // Search recall memory for relevant past answers
@@ -255,6 +318,157 @@
       if (days === 0) return 'TODAY!';
       return Math.abs(days) + ' days overdue';
     } catch (e) { return null; }
+  }
+
+  // ============================================================
+  //  SHEETS + NOTES DATA QUERIES
+  // ============================================================
+
+  // Cached sheet data for bot queries (loaded once on first query)
+  var _sheetData = null;
+  var _sheetHeaders = null;
+  var _sheetColMap = null;
+
+  function _ensureSheetData() {
+    if (_sheetData) return Promise.resolve(_sheetData);
+    if (!window.FPCSSheets || !window.FPCSSheets.isReady()) {
+      return Promise.reject(new Error('Sheets not ready'));
+    }
+    return window.FPCSSheets.read('TAX_MASTER', 'FINAL_MASTER!A1:Z')
+      .catch(function () { return window.FPCSSheets.read('TAX_MASTER', 'Sheet1!A1:Z'); })
+      .then(function (rows) {
+        if (!rows || rows.length < 2) throw new Error('No data');
+        _sheetHeaders = rows[0];
+        _sheetColMap = {};
+        _sheetHeaders.forEach(function (h, i) {
+          var hl = (h || '').toLowerCase().trim();
+          if (hl.match(/account|category|class/)) _sheetColMap.account = i;
+          if (hl.match(/amount|total|sum/)) _sheetColMap.amount = i;
+          if (hl.match(/name|vendor|client|payee/)) _sheetColMap.name = i;
+          if (hl.match(/memo|desc|detail/)) _sheetColMap.memo = i;
+          if (hl.match(/date/)) _sheetColMap.date = i;
+        });
+        _sheetData = rows.slice(1);
+        return _sheetData;
+      });
+  }
+
+  function _sheetsLookup(query) {
+    if (!window.FPCSSheets || !window.FPCSSheets.isReady()) {
+      return 'Sheets not connected. Sign in first, then try again.';
+    }
+
+    // Try sync lookup from cached data
+    if (_sheetData && _sheetColMap) {
+      return _doLookup(query);
+    }
+
+    // Need to load first — return a loading message, then update async
+    _ensureSheetData().then(function () {
+      var result = _doLookup(query);
+      addBotMessage(result);
+      if (hasMemory()) {
+        window.FPCSMemory.recall.add('bot', result.replace(/<[^>]+>/g, ''), { page: cfg.context, botName: cfg.name });
+      }
+    }).catch(function () {
+      addBotMessage('Could not load sheet data. Check your connection and try again.');
+    });
+
+    return 'Looking up "' + query + '" in the master sheet...';
+  }
+
+  function _doLookup(query) {
+    var q = query.toLowerCase();
+    var catCol = _sheetColMap.account;
+    var amtCol = _sheetColMap.amount;
+    var nameCol = _sheetColMap.name;
+
+    if (catCol === undefined || amtCol === undefined) {
+      return 'Could not identify Account/Amount columns in the sheet.';
+    }
+
+    // Find matching categories
+    var matches = {};
+    var matchCount = 0;
+    _sheetData.forEach(function (row) {
+      var cat = (row[catCol] || '').trim();
+      var catLower = cat.toLowerCase();
+      if (catLower.indexOf(q) === -1) return;
+      var amt = parseFloat((row[amtCol] || '0').replace(/[$,]/g, ''));
+      if (isNaN(amt)) return;
+      if (!matches[cat]) matches[cat] = { total: 0, count: 0, vendors: {} };
+      matches[cat].total += Math.abs(amt);
+      matches[cat].count++;
+      matchCount++;
+      if (nameCol !== undefined) {
+        var vendor = (row[nameCol] || 'Unknown').trim();
+        matches[cat].vendors[vendor] = (matches[cat].vendors[vendor] || 0) + Math.abs(amt);
+      }
+    });
+
+    var cats = Object.keys(matches);
+    if (cats.length === 0) return 'No categories matching "' + query + '" found in the sheet.';
+
+    var html = '<strong>Lookup: "' + query + '"</strong><br>';
+    cats.forEach(function (cat) {
+      var m = matches[cat];
+      html += '<br><span style="color:#f59e0b">' + cat + '</span>: ' +
+        m.count + ' txns, $' + m.total.toFixed(2) + '<br>';
+      // Top 3 vendors
+      var vendorKeys = Object.keys(m.vendors).sort(function (a, b) { return m.vendors[b] - m.vendors[a]; }).slice(0, 3);
+      if (vendorKeys.length > 0) {
+        html += '<span style="color:#64748b;font-size:11px">Top: ' +
+          vendorKeys.map(function (v) { return v + ' ($' + m.vendors[v].toFixed(0) + ')'; }).join(', ') +
+          '</span><br>';
+      }
+    });
+    html += '<br><span style="color:#94a3b8;font-size:11px">' + matchCount + ' total records across ' + cats.length + ' categories</span>';
+    return html;
+  }
+
+  function _notesLookup(category) {
+    if (!window.FPCSNotes) return 'Notes module not loaded.';
+    if (!window.FPCSNotes.isLoaded()) return 'Notes still loading...';
+
+    if (!category) {
+      var stats = window.FPCSNotes.stats();
+      return '<strong>Notes Summary</strong><br>' +
+        'Total: ' + stats.total + ' | Open: ' + stats.open + ' | Answered: ' + stats.answered + '<br>' +
+        'Categories: ' + Object.keys(stats.categories).join(', ') +
+        (stats.queuedWrites > 0 ? '<br><span style="color:#fbbf24">' + stats.queuedWrites + ' writes queued (offline)</span>' : '');
+    }
+
+    var notes = window.FPCSNotes.getByCategory(category);
+    if (notes.length === 0) return 'No notes for "' + category + '". Use /addnote ' + category + ' | Your note here';
+
+    var html = '<strong>Notes: ' + category + '</strong> (' + notes.length + ')<br>';
+    notes.slice(-5).forEach(function (n) {
+      html += '<br>• <span style="color:#e2e8f0">' + n.text + '</span>';
+      html += ' <span style="color:#64748b;font-size:10px">(' + n.author + ', ' + n.date.split(' ')[0] + ')</span>';
+      if (n.botReply) {
+        html += '<br>  <span style="color:#38bdf8;font-size:11px">↳ ' + n.botReply.substring(0, 100) + (n.botReply.length > 100 ? '...' : '') + '</span>';
+      }
+    });
+    return html;
+  }
+
+  function _addNote(category, text) {
+    if (!window.FPCSNotes) return 'Notes module not loaded.';
+    window.FPCSNotes.add({ category: category, text: text });
+    return 'Note added to "' + category + '": ' + text;
+  }
+
+  function _sheetsStatus() {
+    var ready = window.FPCSSheets && window.FPCSSheets.isReady();
+    var canW = window.FPCSSheets && window.FPCSSheets.canWrite();
+    var notesReady = window.FPCSNotes && window.FPCSNotes.isLoaded();
+    var html = '<strong>Sheets Connection</strong><br>';
+    html += 'API: ' + (ready ? '<span style="color:#4ade80">Connected</span>' : '<span style="color:#f87171">Not ready</span>') + '<br>';
+    html += 'Write access: ' + (canW ? '<span style="color:#4ade80">Granted</span>' : '<span style="color:#fbbf24">Read-only</span> (use /grant for write)') + '<br>';
+    html += 'Notes: ' + (notesReady ? '<span style="color:#4ade80">Loaded</span>' : 'Not loaded') + '<br>';
+    html += 'Offline: ' + (navigator.onLine ? 'Online' : '<span style="color:#fbbf24">Offline mode</span>');
+    if (_sheetData) html += '<br>Cached rows: ' + _sheetData.length;
+    return html;
   }
 
   // ============================================================
