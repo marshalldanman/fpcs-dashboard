@@ -150,6 +150,16 @@
   .comment-input-row{display:flex;gap:6px;margin-top:6px}
   .comment-input-row input{flex:1;background:var(--card);color:var(--text);border:1px solid var(--border);padding:4px 8px;border-radius:4px;font-size:11px}
   .comment-input-row button{background:var(--accent);color:#000;border:none;padding:4px 10px;border-radius:4px;font-size:11px;font-weight:700;cursor:pointer}
+
+  /* === Drill-Down Interactive States === */
+  .stat-link{cursor:pointer;transition:transform .15s,border-color .2s,box-shadow .2s}
+  .stat-link:hover{transform:translateY(-2px);border-color:rgba(56,189,248,.4);box-shadow:0 4px 20px rgba(56,189,248,.1)}
+  .drill-arrow{font-size:14px;opacity:0;transition:opacity .15s;margin-left:4px}
+  .stat-link:hover .drill-arrow{opacity:.6}
+  .drill-row{cursor:pointer;transition:background .15s}
+  .drill-row:hover{background:rgba(56,189,248,.06) !important}
+  .drill-row:hover .drill-amount{text-shadow:0 0 8px currentColor}
+  .drill-amount{transition:text-shadow .15s}
 </style>
 </head>
 <body class="theme-tax">
@@ -370,31 +380,31 @@
     <div id="rulesContainer"></div>
   </div>
 
-  <!-- STATS ROW -->
+  <!-- STATS ROW (clickable drill-down) -->
   <div class="grid" id="sec-stats">
-    <div class="stat-card">
+    <div class="stat-card stat-link" onclick="location.href='income.html'" title="View detailed income breakdown">
       <div class="label">QBO Gross Income (2022)</div>
-      <div class="value" style="color:var(--green)">$17,097.15</div>
+      <div class="value" style="color:var(--green)">$17,097.15 <span class="drill-arrow">&#8599;</span></div>
       <div class="sub">Services $14,727 + Sales $13,052 - AR $10,725 + Other $44</div>
     </div>
-    <div class="stat-card">
+    <div class="stat-card stat-link" onclick="location.href='deductions.html'" title="View detailed deduction categories">
       <div class="label">Total Business Deductions</div>
-      <div class="value" style="color:var(--yellow)">$42,024.74</div>
+      <div class="value" style="color:var(--yellow)">$42,024.74 <span class="drill-arrow">&#8599;</span></div>
       <div class="sub">Down from $67,439 after dedup fix (925 dupes removed)</div>
     </div>
-    <div class="stat-card">
+    <div class="stat-card stat-link" onclick="document.getElementById('sec-income').scrollIntoView({behavior:'smooth'})" title="See income vs deductions breakdown">
       <div class="label">Net Business Loss</div>
-      <div class="value" style="color:var(--red)">-$24,927.59</div>
+      <div class="value" style="color:var(--red)">-$24,927.59 <span class="drill-arrow">&#8599;</span></div>
       <div class="sub">Income $17,097 - Deductions $42,025</div>
     </div>
-    <div class="stat-card">
+    <div class="stat-card stat-link" onclick="document.getElementById('ddbotFindings').scrollIntoView({behavior:'smooth'})" title="View DDBOT findings detail">
       <div class="label">DDBOT Findings</div>
-      <div class="value" style="color:var(--green)">5 Resolved</div>
+      <div class="value" style="color:var(--green)">5 Resolved <span class="drill-arrow">&#8599;</span></div>
       <div class="sub">5 critical fixed, 5 warnings, 1 info remain</div>
     </div>
-    <div class="stat-card">
+    <div class="stat-card stat-link" onclick="document.getElementById('sec-data-sources').scrollIntoView({behavior:'smooth'})" title="View data source inventory">
       <div class="label">Data Sources Processed</div>
-      <div class="value" style="color:var(--accent)">9 / 12</div>
+      <div class="value" style="color:var(--accent)">9 / 12 <span class="drill-arrow">&#8599;</span></div>
       <div class="sub">QBO, Ledger, Email, FPCS, Expenses done</div>
     </div>
   </div>
@@ -504,20 +514,20 @@
     <table class="income-table">
       <thead><tr><th>Line</th><th>Category</th><th>Amount</th><th class="amount">Txns</th><th class="amount">Status</th></tr></thead>
       <tbody>
-        <tr><td>8</td><td>Advertising</td><td class="amount" style="color:var(--green)">$23.18</td><td class="amount">1</td><td class="amount" style="color:var(--green)">OK</td></tr>
-        <tr><td>9</td><td>Car/Truck (Gas + Reg + Repairs)</td><td class="amount" style="color:var(--green)">$3,239.62</td><td class="amount">41</td><td class="amount" style="color:var(--green)">Fixed (was $4,840)</td></tr>
-        <tr><td>11</td><td>Contract Labor</td><td class="amount" style="color:var(--yellow)">$10.00</td><td class="amount">1</td><td class="amount" style="color:var(--yellow)">Check Venmo/bank</td></tr>
-        <tr><td>15</td><td>Insurance (Vehicle)</td><td class="amount" style="color:var(--green)">$422.54</td><td class="amount">1</td><td class="amount" style="color:var(--green)">Fixed (was $845)</td></tr>
-        <tr><td>16b</td><td>CC Interest</td><td class="amount" style="color:var(--green)">$248.90</td><td class="amount">17</td><td class="amount" style="color:var(--green)">Fixed (was $1,618)</td></tr>
-        <tr><td>18</td><td>Office Expense</td><td class="amount" style="color:var(--green)">$1,024.14</td><td class="amount">13</td><td class="amount" style="color:var(--green)">OK</td></tr>
-        <tr><td>21</td><td>Repairs</td><td class="amount" style="color:var(--green)">$39.98</td><td class="amount">1</td><td class="amount" style="color:var(--green)">OK</td></tr>
-        <tr><td>22</td><td>Supplies + Small Tools + Costco</td><td class="amount" style="color:var(--green)">$12,731.70</td><td class="amount">125</td><td class="amount" style="color:var(--green)">Fixed (was $33,933)</td></tr>
-        <tr><td>--</td><td>Equipment/Depreciation (Furniture)</td><td class="amount" style="color:var(--green)">$12,654.39</td><td class="amount">26</td><td class="amount" style="color:var(--yellow)">Review: 100% biz?</td></tr>
-        <tr><td>25</td><td>Utilities (Phone + Internet)</td><td class="amount" style="color:var(--green)">$1,066.34</td><td class="amount">11</td><td class="amount" style="color:var(--green)">Fixed (was $1,811)</td></tr>
-        <tr><td>27a</td><td>Other Expenses (Fees/Subs/Ship)</td><td class="amount" style="color:var(--green)">$7,919.51</td><td class="amount">232</td><td class="amount" style="color:var(--green)">Fixed (was $7,134)</td></tr>
-        <tr><td>--</td><td>Meals (50% deductible)</td><td class="amount">$97.39</td><td class="amount">15</td><td class="amount" style="color:var(--green)">Fixed (was $630)</td></tr>
-        <tr><td>--</td><td>COGS/Inventory</td><td class="amount">$2,595.75</td><td class="amount">11</td><td class="amount" style="color:var(--green)">OK</td></tr>
-        <tr style="border-top:2px solid var(--accent)"><td colspan="2"><strong>Total Business Deductions</strong></td><td class="amount" style="color:var(--accent);font-size:16px"><strong>$42,024.74</strong></td><td></td><td class="amount" style="color:var(--green)"><strong>-37% from $67K</strong></td></tr>
+        <tr class="drill-row" onclick="drillExpense('Advertising')"><td>8</td><td>Advertising</td><td class="amount drill-amount" style="color:var(--green)">$23.18 &#8599;</td><td class="amount">1</td><td class="amount" style="color:var(--green)">OK</td></tr>
+        <tr class="drill-row" onclick="drillExpense('Car/Truck')"><td>9</td><td>Car/Truck (Gas + Reg + Repairs)</td><td class="amount drill-amount" style="color:var(--green)">$3,239.62 &#8599;</td><td class="amount">41</td><td class="amount" style="color:var(--green)">Fixed (was $4,840)</td></tr>
+        <tr class="drill-row" onclick="drillExpense('Contract Labor')"><td>11</td><td>Contract Labor</td><td class="amount drill-amount" style="color:var(--yellow)">$10.00 &#8599;</td><td class="amount">1</td><td class="amount" style="color:var(--yellow)">Check Venmo/bank</td></tr>
+        <tr class="drill-row" onclick="drillExpense('Insurance')"><td>15</td><td>Insurance (Vehicle)</td><td class="amount drill-amount" style="color:var(--green)">$422.54 &#8599;</td><td class="amount">1</td><td class="amount" style="color:var(--green)">Fixed (was $845)</td></tr>
+        <tr class="drill-row" onclick="drillExpense('Interest')"><td>16b</td><td>CC Interest</td><td class="amount drill-amount" style="color:var(--green)">$248.90 &#8599;</td><td class="amount">17</td><td class="amount" style="color:var(--green)">Fixed (was $1,618)</td></tr>
+        <tr class="drill-row" onclick="drillExpense('Office')"><td>18</td><td>Office Expense</td><td class="amount drill-amount" style="color:var(--green)">$1,024.14 &#8599;</td><td class="amount">13</td><td class="amount" style="color:var(--green)">OK</td></tr>
+        <tr class="drill-row" onclick="drillExpense('Repairs')"><td>21</td><td>Repairs</td><td class="amount drill-amount" style="color:var(--green)">$39.98 &#8599;</td><td class="amount">1</td><td class="amount" style="color:var(--green)">OK</td></tr>
+        <tr class="drill-row" onclick="drillExpense('Supplies')"><td>22</td><td>Supplies + Small Tools + Costco</td><td class="amount drill-amount" style="color:var(--green)">$12,731.70 &#8599;</td><td class="amount">125</td><td class="amount" style="color:var(--green)">Fixed (was $33,933)</td></tr>
+        <tr class="drill-row" onclick="drillExpense('Equipment')"><td>--</td><td>Equipment/Depreciation (Furniture)</td><td class="amount drill-amount" style="color:var(--green)">$12,654.39 &#8599;</td><td class="amount">26</td><td class="amount" style="color:var(--yellow)">Review: 100% biz?</td></tr>
+        <tr class="drill-row" onclick="drillExpense('Utilities')"><td>25</td><td>Utilities (Phone + Internet)</td><td class="amount drill-amount" style="color:var(--green)">$1,066.34 &#8599;</td><td class="amount">11</td><td class="amount" style="color:var(--green)">Fixed (was $1,811)</td></tr>
+        <tr class="drill-row" onclick="drillExpense('Other')"><td>27a</td><td>Other Expenses (Fees/Subs/Ship)</td><td class="amount drill-amount" style="color:var(--green)">$7,919.51 &#8599;</td><td class="amount">232</td><td class="amount" style="color:var(--green)">Fixed (was $7,134)</td></tr>
+        <tr class="drill-row" onclick="drillExpense('Meals')"><td>--</td><td>Meals (50% deductible)</td><td class="amount drill-amount">$97.39 &#8599;</td><td class="amount">15</td><td class="amount" style="color:var(--green)">Fixed (was $630)</td></tr>
+        <tr class="drill-row" onclick="drillExpense('COGS')"><td>--</td><td>COGS/Inventory</td><td class="amount drill-amount">$2,595.75 &#8599;</td><td class="amount">11</td><td class="amount" style="color:var(--green)">OK</td></tr>
+        <tr class="drill-row" style="border-top:2px solid var(--accent)" onclick="location.href='deductions.html'"><td colspan="2"><strong>Total Business Deductions</strong></td><td class="amount drill-amount" style="color:var(--accent);font-size:16px"><strong>$42,024.74 &#8599;</strong></td><td></td><td class="amount" style="color:var(--green)"><strong>-37% from $67K</strong></td></tr>
       </tbody>
     </table>
     <div style="margin-top:12px;padding:12px;background:rgba(74,222,128,0.08);border-radius:8px;border:1px solid rgba(74,222,128,0.2);">
@@ -532,14 +542,14 @@
     <table class="income-table">
       <thead><tr><th>Source</th><th>Category</th><th>Details</th><th class="amount">Amount</th></tr></thead>
       <tbody>
-        <tr><td>QBO</td><td>Tech Services</td><td>21 invoices</td><td class="amount" style="color:var(--green)">$14,726.50</td></tr>
-        <tr><td>QBO</td><td>eBay Product Sales</td><td>42 txns</td><td class="amount" style="color:var(--green)">$13,051.65</td></tr>
-        <tr><td>QBO</td><td>Accounts Receivable (offset)</td><td>19 entries</td><td class="amount" style="color:var(--red)">-$10,725.00</td></tr>
-        <tr><td>QBO</td><td>Client Deposits (offset)</td><td>7 entries</td><td class="amount" style="color:var(--red)">-$180.00</td></tr>
-        <tr><td>QBO</td><td>Tip Revenue</td><td>1 txn</td><td class="amount" style="color:var(--green)">$174.00</td></tr>
-        <tr><td>QBO</td><td>Late Fee Income</td><td>1 txn</td><td class="amount" style="color:var(--green)">$50.00</td></tr>
-        <tr style="border-top:2px solid var(--accent)"><td colspan="3"><strong>Gross Income (Schedule C)</strong></td><td class="amount" style="color:var(--green);font-size:16px"><strong>$17,097.15</strong></td></tr>
-        <tr><td colspan="3"><em style="color:var(--muted)">Less: Business Deductions</em></td><td class="amount" style="color:var(--yellow)">-$42,024.74</td></tr>
+        <tr class="drill-row" onclick="drillIncome('Tech Services')"><td>QBO</td><td>Tech Services</td><td>21 invoices</td><td class="amount drill-amount" style="color:var(--green)">$14,726.50 &#8599;</td></tr>
+        <tr class="drill-row" onclick="drillIncome('eBay')"><td>QBO</td><td>eBay Product Sales</td><td>42 txns</td><td class="amount drill-amount" style="color:var(--green)">$13,051.65 &#8599;</td></tr>
+        <tr class="drill-row" onclick="drillIncome('AR')"><td>QBO</td><td>Accounts Receivable (offset)</td><td>19 entries</td><td class="amount drill-amount" style="color:var(--red)">-$10,725.00 &#8599;</td></tr>
+        <tr class="drill-row" onclick="drillIncome('Deposits')"><td>QBO</td><td>Client Deposits (offset)</td><td>7 entries</td><td class="amount drill-amount" style="color:var(--red)">-$180.00 &#8599;</td></tr>
+        <tr class="drill-row" onclick="drillIncome('Tips')"><td>QBO</td><td>Tip Revenue</td><td>1 txn</td><td class="amount drill-amount" style="color:var(--green)">$174.00 &#8599;</td></tr>
+        <tr class="drill-row" onclick="drillIncome('Late Fee')"><td>QBO</td><td>Late Fee Income</td><td>1 txn</td><td class="amount drill-amount" style="color:var(--green)">$50.00 &#8599;</td></tr>
+        <tr class="drill-row" style="border-top:2px solid var(--accent)" onclick="location.href='income.html'"><td colspan="3"><strong>Gross Income (Schedule C) &#8599;</strong></td><td class="amount" style="color:var(--green);font-size:16px"><strong>$17,097.15</strong></td></tr>
+        <tr class="drill-row" style="" onclick="location.href='deductions.html'"><td colspan="3"><em style="color:var(--muted)">Less: Business Deductions &#8599;</em></td><td class="amount drill-amount" style="color:var(--yellow)">-$42,024.74 &#8599;</td></tr>
         <tr style="border-top:2px solid var(--red)"><td colspan="3"><strong>Estimated Net Business Income</strong></td><td class="amount" style="color:var(--red);font-size:16px"><strong>-$24,927.59</strong></td></tr>
       </tbody>
     </table>
@@ -1502,6 +1512,35 @@
     box.classList.toggle('minimized', !chatOpen);
     document.getElementById('chatToggle').innerHTML = chatOpen ? '&#9660;' : '&#9650;';
     if (chatOpen) document.getElementById('chatInput').focus();
+  }
+
+  // === DRILL-DOWN FUNCTIONS ===
+  // Maps index.html expense categories → deductions.html search terms
+  var EXPENSE_CAT_MAP = {
+    'Advertising': 'Advertising',
+    'Car/Truck': 'Car',
+    'Contract Labor': 'Contract',
+    'Insurance': 'Insurance',
+    'Interest': 'Interest',
+    'Office': 'Office',
+    'Repairs': 'Repairs',
+    'Supplies': 'Supplies',
+    'Equipment': 'Equipment',
+    'Utilities': 'Utilities',
+    'Other': 'Other',
+    'Meals': 'Meals',
+    'COGS': 'COGS'
+  };
+
+  function drillExpense(category) {
+    // Navigate to deductions.html with pre-selected category for drill-down
+    var search = EXPENSE_CAT_MAP[category] || category;
+    location.href = 'deductions.html?search=' + encodeURIComponent(search);
+  }
+
+  function drillIncome(category) {
+    // Navigate to income.html with a hash for the relevant section
+    location.href = 'income.html#' + encodeURIComponent(category.toLowerCase().replace(/\s+/g, '-'));
   }
 
   // Tax knowledge base for Sarge's local intelligence

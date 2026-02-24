@@ -688,6 +688,21 @@ function loadDeductionRecords() {
     container.style.display = 'block';
     summary.style.display = 'flex';
 
+    // Support drill-down from index.html: ?search=Category pre-fills search
+    var urlSearch = new URLSearchParams(window.location.search).get('search');
+    if (urlSearch) {
+      var searchInput = document.getElementById('dedSearchInput');
+      if (searchInput) { searchInput.value = urlSearch; }
+      searchDeductions(urlSearch);
+      // Auto-expand matching categories
+      setTimeout(function() {
+        var groups = document.querySelectorAll('.cat-group');
+        if (groups.length > 0 && groups.length <= 5) {
+          groups.forEach(function(g) { g.classList.add('open'); });
+        }
+      }, 100);
+    }
+
   }).catch(function(err) {
     loading.style.display = 'none';
     errorDiv.style.display = 'block';
