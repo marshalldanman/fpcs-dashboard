@@ -534,6 +534,154 @@
         keys: keys,
         totalAge: keys.reduce(function (sum, k) { return sum + (Date.now() - _cache[k].time); }, 0)
       };
+    },
+
+    // ==========================================
+    //  BATCH UPDATE (for filter views, formatting, etc.)
+    // ==========================================
+
+    /**
+     * Execute a batch update request (requires OAuth token)
+     * @param {string} spreadsheetId
+     * @param {Array<Object>} requests - array of Sheets API request objects
+     * @returns {Promise<Object>}
+     */
+    batchUpdate: function (spreadsheetId, requests) {
+      spreadsheetId = resolveSheetId(spreadsheetId);
+      var url = BASE_URL + '/' + encodeURIComponent(spreadsheetId) + ':batchUpdate';
+
+      return sheetsFetch(url, {
+        method: 'POST',
+        body: JSON.stringify({ requests: requests })
+      }).then(function (data) {
+        log('batchUpdate: ' + requests.length + ' request(s) applied');
+        return data;
+      });
+    },
+
+    // ==========================================
+    //  FILTER VIEW MANAGER — Open Sheets filtered to a category
+    // ==========================================
+
+    /**
+     * Internal cache for filter view IDs: { "sheetId::catName": filterViewId }
+     */
+    _filterViewCache: {},
+
+    /**
+     * Load all existing filter views from a spreadsheet and cache them.
+     * Call once on page load or first drill-down.
+     * @param {string} spreadsheetId
+     * @returns {Promise<Object>} - map of title → filterViewId
+     */
+    loadFilterViews: function (spreadsheetId) {
+      spreadsheetId = resolveSheetId(spreadsheetId);
+      var self = this;
+      var url = BASE_URL + '/' + encodeURIComponent(spreadsheetId) +
+        '?fields=sheets.filterViews';
+
+      return sheetsFetch(url).then(function (data) {
+        var map = {};
+        (data.sheets || []).forEach(function (s) {
+          (s.filterViews || []).forEach(function (fv) {
+            var key = spreadsheetId + '::' + fv.title;
+            self._filterViewCache[key] = fv.filterViewId;
+            map[fv.title] = fv.filterViewId;
+          });
+        });
+        log('Loaded ' + Object.keys(map).length + ' filter views');
+        return map;
+      });
+    },
+
+    /**
+     * Create a filter view for a category column.
+     * @param {string} spreadsheetId
+     * @param {string} category - value to filter on
+     * @param {number} columnIndex - 0-based column index for the category
+     * @param {number} sheetGid - the sheet/tab gid (default 0)
+     * @param {number} endCol - end column index for the range
+     * @returns {Promise<number>} - the new filterViewId
+     */
+    createFilterView: function (spreadsheetId, category, columnIndex, sheetGid, endCol) {
+      spreadsheetId = resolveSheetId(spreadsheetId);
+      var self = this;
+      sheetGid = sheetGid || 0;
+      endCol = endCol || 26;
+
+      var body = [{
+        addFilterView: {
+          filter: {
+            title: 'Drill: ' + category,
+            range: {
+              sheetId: sheetGid,
+              startRowIndex: 0,
+              startColumnIndex: 0,
+              endColumnIndex: endCol
+            },
+            criteria: {}
+          }
+        }
+      }];
+      body[0].addFilterView.filter.criteria[String(columnIndex)] = {
+        condition: {
+          type: 'TEXT_EQ',
+          values: [{ userEnteredValue: category }]
+        }
+      };
+
+      return this.batchUpdate(spreadsheetId, body).then(function (data) {
+        var fvid = data.replies[0].addFilterView.filter.filterViewId;
+        self._filterViewCache[spreadsheetId + '::' + category] = fvid;
+        log('Created filter view for "' + category + '" → fvid=' + fvid);
+        return fvid;
+      });
+    },
+
+    /**
+     * Open Google Sheets filtered to a specific category.
+     * Uses cached filter view if available, creates one if not.
+     * @param {string} spreadsheetId
+     * @param {string} category - category name to filter
+     * @param {number} columnIndex - 0-based column index
+     * @param {number} sheetGid - tab gid (default 0)
+     * @param {number} endCol - total columns (default 26)
+     */
+    openFiltered: function (spreadsheetId, category, columnIndex, sheetGid, endCol) {
+      spreadsheetId = resolveSheetId(spreadsheetId);
+      sheetGid = sheetGid || 0;
+      var cacheKey = spreadsheetId + '::' + category;
+      var self = this;
+
+      // Check if we need the write token
+      if (!_oauthToken) {
+        // Fall back to opening the full sheet (no filter)
+        var fallbackUrl = 'https://docs.google.com/spreadsheets/d/' + spreadsheetId + '/edit#gid=' + sheetGid;
+        window.open(fallbackUrl, '_blank');
+        warn('No OAuth token — opened sheet without filter. Grant Sheets access for filtered views.');
+        return Promise.resolve();
+      }
+
+      var cached = self._filterViewCache[cacheKey];
+      if (cached) {
+        var url = 'https://docs.google.com/spreadsheets/d/' + spreadsheetId + '/edit#gid=' + sheetGid + '&fvid=' + cached;
+        window.open(url, '_blank');
+        return Promise.resolve(cached);
+      }
+
+      // Create on demand, then open
+      return self.createFilterView(spreadsheetId, category, columnIndex, sheetGid, endCol)
+        .then(function (fvid) {
+          var url = 'https://docs.google.com/spreadsheets/d/' + spreadsheetId + '/edit#gid=' + sheetGid + '&fvid=' + fvid;
+          window.open(url, '_blank');
+          return fvid;
+        })
+        .catch(function (err) {
+          // If filter view creation fails (e.g., already exists with same name), open unfiltered
+          warn('Filter view creation failed, opening unfiltered:', err.message);
+          var fallbackUrl = 'https://docs.google.com/spreadsheets/d/' + spreadsheetId + '/edit#gid=' + sheetGid;
+          window.open(fallbackUrl, '_blank');
+        });
     }
   };
 
