@@ -415,7 +415,7 @@
             <span class="shaper-date">Feb 2026</span>
             <span class="shaper-tag arch">ARCH</span>
           </div>
-          <div class="shaper-cmd">Add Judith to the login. Her email is judithmarshall80@gmail.com. She's a member, not admin. Add friendlysales22@gmail.com too.</div>
+          <div class="shaper-cmd">Add Judith to the login. Her email is <span data-e="anVkaXRobWFyc2hhbGw4MEBnbWFpbC5jb20="></span>. She's a member, not admin. Add <span data-e="ZnJpZW5kbHlzYWxlczIyQGdtYWlsLmNvbQ=="></span> too.</div>
           <div class="shaper-response">
             <ul>
               <li>Generated SHA-256 hashes for both emails</li>
@@ -486,7 +486,7 @@
             <span class="shaper-date">Feb 22, 2026</span>
             <span class="shaper-tag data">DATA</span>
           </div>
-          <div class="shaper-cmd">Judith Marshall — judithmarshall80@gmail.com. Bookkeeper mentality, detail-oriented. Transaction coordinator for a prestigious real estate company in Salem OR, Willamette Valley. Hourly ~$19/hr (W-2) plus per-deal bonus (possibly 1099 / sole proprietor). May not have a formal business name for the bonus work. Dual income needs proper tax classification.</div>
+          <div class="shaper-cmd">Judith Marshall — <span data-e="anVkaXRobWFyc2hhbGw4MEBnbWFpbC5jb20="></span>. Bookkeeper mentality, detail-oriented. Transaction coordinator for a prestigious real estate company in Salem OR, Willamette Valley. Hourly ~$19/hr (W-2) plus per-deal bonus (possibly 1099 / sole proprietor). May not have a formal business name for the bonus work. Dual income needs proper tax classification.</div>
           <div class="shaper-response">
             <ul>
               <li>Profile captured in plan file with role, income structure, communication style</li>
@@ -2070,6 +2070,9 @@
     ]
   };
 </script>
+
+<!-- Email obfuscation decoder (prevents scraping from public repo) -->
+<script>document.querySelectorAll('[data-e]').forEach(function(el){el.textContent=atob(el.getAttribute('data-e'))});</script>
 
 <!-- AUTH, DATA & NAV -->
 <script src="js/sheets-api.js"></script>

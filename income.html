@@ -256,7 +256,7 @@
         </tr>
       </table>
       <div style="padding:12px 14px;font-size:12px;color:var(--muted);background:rgba(15,23,42,.3)">
-        Tech ledger shows $120 gross (with $25 discount + $5 fee line in QBO = $130 invoiced). CC'd to myfriendlypcsupport@gmail.com.
+        Tech ledger shows $120 gross (with $25 discount + $5 fee line in QBO = $130 invoiced). CC'd to <span data-e="bXlmcmllbmRseXBjc3VwcG9ydEBnbWFpbC5jb20="></span>.
       </div>
     </div>
   </div>
@@ -342,7 +342,7 @@
         </tr>
       </table>
       <div style="padding:12px 14px;font-size:12px;color:var(--muted);background:rgba(15,23,42,.3)">
-        Address: 3646 Candlewood CT NE. "Able to pay yet?" reminder sent to americanrestoration@gmail.com on 10/16/2023.
+        Address: 3646 Candlewood CT NE. "Able to pay yet?" reminder sent to <span data-e="YW1lcmljYW5yZXN0b3JhdGlvbkBnbWFpbC5jb20="></span> on 10/16/2023.
         Cash basis: No income recognized until payment received. This is NOT 2022 income.
         Potential bad debt write-off if uncollectable (must have been previously reported as income to deduct).
       </div>
@@ -924,6 +924,9 @@ setTimeout(function() {
   if (allRecords.length === 0) loadAllRecords();
 }, 4000);
 </script>
+<!-- Email obfuscation decoder (prevents scraping from public repo) -->
+<script>document.querySelectorAll('[data-e]').forEach(function(el){el.textContent=atob(el.getAttribute('data-e'))});</script>
+
 <script src="js/sheets-api.js"></script>
 <script src="js/auth.js"></script>
 <script src="js/nav.js"></script>
