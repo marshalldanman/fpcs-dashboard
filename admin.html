@@ -234,6 +234,14 @@
   .rpt-k { color: var(--muted); }
   .rpt-v { color: var(--text); font-weight: 600; text-align: right; max-width: 60%; }
 
+  /* DRILL-DOWN INTERACTIVITY */
+  .stat-link{cursor:pointer;transition:transform .15s,border-color .2s,box-shadow .2s}
+  .stat-link:hover{transform:translateY(-2px);border-color:rgba(167,139,250,.4);box-shadow:0 4px 20px rgba(167,139,250,.1)}
+  .drill-arrow{font-size:14px;opacity:0;transition:opacity .15s;margin-left:4px}
+  .stat-link:hover .drill-arrow{opacity:.6}
+  .drill-row{cursor:pointer;transition:background .15s}
+  .drill-row:hover{background:rgba(167,139,250,.06) !important}
+
   @media (max-width: 768px) {
     .admin-tabs { gap: 2px; }
     .admin-tab { padding: 8px 12px; font-size: 12px; }
@@ -259,12 +267,12 @@
 
   <!-- STAT CARDS -->
   <div class="grid" id="sec-overview">
-    <div class="stat-card"><div class="stat-number" style="color:var(--admin)">8</div><div class="stat-label">Dashboard Pages</div></div>
-    <div class="stat-card"><div class="stat-number" style="color:var(--green)">3</div><div class="stat-label">Authorized Users</div></div>
-    <div class="stat-card"><div class="stat-number" style="color:#38bdf8">16</div><div class="stat-label">Active Bots</div></div>
-    <div class="stat-card"><div class="stat-number" style="color:var(--yellow)">80%</div><div class="stat-label">Project Progress</div></div>
-    <div class="stat-card"><div class="stat-number" style="color:var(--orange)">16</div><div class="stat-label">Jira Tickets</div></div>
-    <div class="stat-card"><div class="stat-number" style="color:var(--green)">1,185</div><div class="stat-label">Clean Data Rows</div></div>
+    <div class="stat-card stat-link" onclick="document.querySelector('.admin-tab[data-panel=system]').click()" title="View System Info"><div class="stat-number" style="color:var(--admin)">8 <span class="drill-arrow">&#8599;</span></div><div class="stat-label">Dashboard Pages</div></div>
+    <div class="stat-card stat-link" onclick="document.querySelector('.admin-tab[data-panel=users]').click()" title="Manage Users"><div class="stat-number" style="color:var(--green)">3 <span class="drill-arrow">&#8599;</span></div><div class="stat-label">Authorized Users</div></div>
+    <div class="stat-card stat-link" onclick="window.location.href='bots.html'" title="Open Bot HQ"><div class="stat-number" style="color:#38bdf8">16 <span class="drill-arrow">&#8599;</span></div><div class="stat-label">Active Bots</div></div>
+    <div class="stat-card stat-link" onclick="document.querySelector('.admin-tab[data-panel=builds]').click()" title="View Build Progress"><div class="stat-number" style="color:var(--yellow)">80% <span class="drill-arrow">&#8599;</span></div><div class="stat-label">Project Progress</div></div>
+    <div class="stat-card stat-link" onclick="document.querySelector('.admin-tab[data-panel=builds]').click()" title="View Build Tickets"><div class="stat-number" style="color:var(--orange)">16 <span class="drill-arrow">&#8599;</span></div><div class="stat-label">Jira Tickets</div></div>
+    <div class="stat-card stat-link" onclick="document.querySelector('.admin-tab[data-panel=reports]').click()" title="View Reports"><div class="stat-number" style="color:var(--green)">1,185 <span class="drill-arrow">&#8599;</span></div><div class="stat-label">Clean Data Rows</div></div>
   </div>
 
   <!-- TAB SYSTEM -->

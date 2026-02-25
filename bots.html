@@ -90,6 +90,14 @@
   .chat-input-row input { flex: 1; background: var(--bg); color: var(--text); border: 1px solid var(--border); padding: 8px 12px; border-radius: 8px; font-size: 13px; }
   .chat-input-row button { background: var(--purple); color: #fff; border: none; padding: 8px 14px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 13px; }
   .chat-status { font-size: 10px; padding: 4px 12px; color: var(--muted); text-align: center; background: var(--bg); }
+  /* DRILL-DOWN INTERACTIVITY */
+  .stat-link{cursor:pointer;transition:transform .15s,border-color .2s,box-shadow .2s}
+  .stat-link:hover{transform:translateY(-2px);border-color:rgba(167,139,250,.4);box-shadow:0 4px 20px rgba(167,139,250,.1)}
+  .drill-arrow{font-size:14px;opacity:0;transition:opacity .15s;margin-left:4px}
+  .stat-link:hover .drill-arrow{opacity:.6}
+  .drill-row{cursor:pointer;transition:background .15s}
+  .drill-row:hover{background:rgba(167,139,250,.06) !important}
+
   @media (max-width: 768px) { .bot-profiles { grid-template-columns: 1fr; } .chat-box { width: 95%; right: 2.5%; } }
 </style>
 </head>
@@ -391,10 +399,10 @@ function renderFleetStats() {
   var avgLevel = Math.round(bots.reduce(function(s,b){return s+getLevel(b.xp)},0)/bots.length*10)/10;
   var missions = bots.reduce(function(s,b){return s+(b.missions?b.missions.filter(function(m){return m.status==='active'}).length:0)},0);
   document.getElementById('fleetStats').innerHTML =
-    '<div class="stat-card"><div class="label">Fleet Size</div><div class="value" style="color:var(--purple)">' + bots.length + '</div><div class="sub">' + active + ' active, ' + (bots.length - active) + ' pending/idle</div></div>' +
-    '<div class="stat-card"><div class="label">Total Fleet XP</div><div class="value" style="color:var(--yellow)">' + totalXP.toLocaleString() + '</div><div class="sub">Avg Level: ' + avgLevel + '</div></div>' +
-    '<div class="stat-card"><div class="label">Active Missions</div><div class="value" style="color:var(--accent)">' + missions + '</div><div class="sub">Across all bots</div></div>' +
-    '<div class="stat-card"><div class="label">Village Population</div><div class="value" style="color:var(--green)">' + bots.length + '</div><div class="sub">0 children, 0 pets</div></div>';
+    '<div class="stat-card stat-link" onclick="document.getElementById(\'sec-roster\').scrollIntoView({behavior:\'smooth\'})" title="View Bot Roster"><div class="label">Fleet Size</div><div class="value" style="color:var(--purple)">' + bots.length + ' <span class="drill-arrow">&#8599;</span></div><div class="sub">' + active + ' active, ' + (bots.length - active) + ' pending/idle</div></div>' +
+    '<div class="stat-card stat-link" onclick="document.getElementById(\'sec-arena\').scrollIntoView({behavior:\'smooth\'})" title="View Arena & XP"><div class="label">Total Fleet XP</div><div class="value" style="color:var(--yellow)">' + totalXP.toLocaleString() + ' <span class="drill-arrow">&#8599;</span></div><div class="sub">Avg Level: ' + avgLevel + '</div></div>' +
+    '<div class="stat-card stat-link" onclick="document.getElementById(\'sec-bounty-full\').scrollIntoView({behavior:\'smooth\'})" title="View Bounty Board"><div class="label">Active Missions</div><div class="value" style="color:var(--accent)">' + missions + ' <span class="drill-arrow">&#8599;</span></div><div class="sub">Across all bots</div></div>' +
+    '<div class="stat-card stat-link" onclick="document.getElementById(\'sec-village\').scrollIntoView({behavior:\'smooth\'})" title="View Realbotville"><div class="label">Village Population</div><div class="value" style="color:var(--green)">' + bots.length + ' <span class="drill-arrow">&#8599;</span></div><div class="sub">0 children, 0 pets</div></div>';
   document.getElementById('villPop').textContent = bots.length;
   document.getElementById('villTreasury').textContent = totalXP.toLocaleString();
 }

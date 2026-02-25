@@ -101,6 +101,14 @@
   .bot-list-item:hover { background:rgba(34,211,238,0.06); }
   .bot-list-item.selected { background:rgba(34,211,238,0.1); border:1px solid rgba(34,211,238,0.3); }
 
+  /* DRILL-DOWN INTERACTIVITY */
+  .stat-link{cursor:pointer;transition:transform .15s,border-color .2s,box-shadow .2s}
+  .stat-link:hover{transform:translateY(-2px);border-color:rgba(34,211,238,.4);box-shadow:0 4px 20px rgba(34,211,238,.1)}
+  .drill-arrow{font-size:14px;opacity:0;transition:opacity .15s;margin-left:4px}
+  .stat-link:hover .drill-arrow{opacity:.6}
+  .drill-row{cursor:pointer;transition:background .15s}
+  .drill-row:hover{background:rgba(34,211,238,.06) !important}
+
   @media (max-width: 900px) { .chat-container { grid-template-columns: 1fr; } }
 </style>
 </head>
@@ -117,24 +125,24 @@
 
   <!-- OVERVIEW STATS -->
   <div class="grid">
-    <div class="stat-card">
+    <div class="stat-card stat-link" onclick="document.getElementById('sec-chat').scrollIntoView({behavior:'smooth'})" title="View Live Chat">
       <div class="label">Connected Systems</div>
-      <div class="value" style="color:var(--japster)" id="statSystems">6</div>
+      <div class="value" style="color:var(--japster)" id="statSystems">6 <span class="drill-arrow">&#8599;</span></div>
       <div class="sub">Bots + AI agents linked</div>
     </div>
-    <div class="stat-card">
+    <div class="stat-card stat-link" onclick="document.getElementById('sec-messages').scrollIntoView({behavior:'smooth'})" title="View Message Inbox">
       <div class="label">Messages Today</div>
-      <div class="value" style="color:var(--green)" id="statMsgs">0</div>
+      <div class="value" style="color:var(--green)" id="statMsgs">0 <span class="drill-arrow">&#8599;</span></div>
       <div class="sub">Inter-AI communications</div>
     </div>
-    <div class="stat-card">
+    <div class="stat-card stat-link" onclick="document.getElementById('sec-beckoning').scrollIntoView({behavior:'smooth'})" title="View Beckoning Queue">
       <div class="label">Active Beckons</div>
-      <div class="value" style="color:var(--orange)" id="statBeckons">0</div>
+      <div class="value" style="color:var(--orange)" id="statBeckons">0 <span class="drill-arrow">&#8599;</span></div>
       <div class="sub">Awaiting response</div>
     </div>
-    <div class="stat-card">
+    <div class="stat-card stat-link" onclick="document.getElementById('sec-imports').scrollIntoView({behavior:'smooth'})" title="View Data Imports">
       <div class="label">Data Imports</div>
-      <div class="value" style="color:var(--purple)" id="statImports">0</div>
+      <div class="value" style="color:var(--purple)" id="statImports">0 <span class="drill-arrow">&#8599;</span></div>
       <div class="sub">Batches processed</div>
     </div>
     <div class="stat-card">
@@ -432,9 +440,9 @@ function addActivity(text) {
 
 function updateStats() {
   var el = document.getElementById('statMsgs');
-  if (el) el.textContent = msgCount;
+  if (el) el.innerHTML = msgCount + ' <span class="drill-arrow">&#8599;</span>';
   var bEl = document.getElementById('statBeckons');
-  if (bEl) bEl.textContent = document.querySelectorAll('.beckon-card:not([style*="display: none"])').length;
+  if (bEl) bEl.innerHTML = document.querySelectorAll('.beckon-card:not([style*="display: none"])').length + ' <span class="drill-arrow">&#8599;</span>';
 }
 
 // === SMART CHAT ===

@@ -78,6 +78,14 @@
   .demo-input button { background: var(--green); color: #000; border: none; border-radius: 8px; padding: 10px 20px; font-weight: 700; cursor: pointer; }
   .demo-input button:hover { opacity: 0.85; }
   .connector { width: 2px; height: 12px; background: var(--border); margin-left: 15px; }
+  /* DRILL-DOWN INTERACTIVITY */
+  .stat-link{cursor:pointer;transition:transform .15s,border-color .2s,box-shadow .2s}
+  .stat-link:hover{transform:translateY(-2px);border-color:rgba(56,189,248,.4);box-shadow:0 4px 20px rgba(56,189,248,.1)}
+  .drill-arrow{font-size:14px;opacity:0;transition:opacity .15s;margin-left:4px}
+  .stat-link:hover .drill-arrow{opacity:.6}
+  .drill-row{cursor:pointer;transition:background .15s}
+  .drill-row:hover{background:rgba(56,189,248,.06) !important}
+
   @media (max-width: 900px) { .chart-row { grid-template-columns: 1fr; } }
 </style>
 </head>
@@ -94,34 +102,34 @@
 
   <!-- OVERVIEW STATS -->
   <div class="grid">
-    <div class="stat-card">
+    <div class="stat-card stat-link" onclick="document.getElementById('sec-arch').scrollIntoView({behavior:'smooth'})" title="View 7-Layer Architecture">
       <div class="label">Architecture</div>
-      <div class="value" style="color:var(--green)">7</div>
+      <div class="value" style="color:var(--green)">7 <span class="drill-arrow">&#8599;</span></div>
       <div class="sub">Hierarchical Layers</div>
     </div>
-    <div class="stat-card">
+    <div class="stat-card stat-link" onclick="document.getElementById('sec-sim').scrollIntoView({behavior:'smooth'})" title="View Simulation Results">
       <div class="label">Max Speedup</div>
-      <div class="value" style="color:var(--yellow)">41x</div>
+      <div class="value" style="color:var(--yellow)">41x <span class="drill-arrow">&#8599;</span></div>
       <div class="sub">Operations at 10K scale</div>
     </div>
-    <div class="stat-card">
+    <div class="stat-card stat-link" onclick="document.getElementById('sec-demo').scrollIntoView({behavior:'smooth'})" title="Run Live Narrowing Demo">
       <div class="label">Narrowing Ratio</div>
-      <div class="value" style="color:var(--purple)">2,193x</div>
+      <div class="value" style="color:var(--purple)">2,193x <span class="drill-arrow">&#8599;</span></div>
       <div class="sub">Search space reduction @ 10K</div>
     </div>
-    <div class="stat-card">
+    <div class="stat-card stat-link" onclick="document.getElementById('sec-sim').scrollIntoView({behavior:'smooth'})" title="View Simulation Results">
       <div class="label">Simulation Trials</div>
-      <div class="value" style="color:var(--accent)">4,000</div>
+      <div class="value" style="color:var(--accent)">4,000 <span class="drill-arrow">&#8599;</span></div>
       <div class="sub">1,000 per scale level</div>
     </div>
-    <div class="stat-card">
+    <div class="stat-card stat-link" onclick="document.getElementById('sec-sim').scrollIntoView({behavior:'smooth'})" title="View Simulation Data">
       <div class="label">Cache Hit Rate</div>
-      <div class="value" style="color:var(--orange)">19.2%</div>
+      <div class="value" style="color:var(--orange)">19.2% <span class="drill-arrow">&#8599;</span></div>
       <div class="sub">At 10K entries</div>
     </div>
-    <div class="stat-card">
+    <div class="stat-card stat-link" onclick="document.getElementById('sec-index').scrollIntoView({behavior:'smooth'})" title="Browse Keyword Index">
       <div class="label">Keyword Pool</div>
-      <div class="value" style="color:var(--pink)">156</div>
+      <div class="value" style="color:var(--pink)">156 <span class="drill-arrow">&#8599;</span></div>
       <div class="sub">Indexed search terms</div>
     </div>
   </div>
