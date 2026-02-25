@@ -29,7 +29,8 @@
     { key: 'helpdesk',   icon: '&#127915;', label: 'Helpdesk (Page 7)',  href: 'helpdesk.html',   color: 'var(--orange)' },
     { key: 'admin',      icon: '&#128274;', label: 'Admin HQ (Page 8)', href: 'admin.html',      color: 'var(--purple)' },
     { key: 'village',    icon: '&#127968;', label: 'Realbotville (Page 9)', href: 'realbotville.html', color: '#38bdf8' },
-    { key: 'library',   icon: '&#128218;', label: 'Library (Page 10)',     href: 'library.html',      color: '#f59e0b' }
+    { key: 'library',   icon: '&#128218;', label: 'Library (Page 10)',     href: 'library.html',      color: '#f59e0b' },
+    { key: 'stats-board', icon: '&#127942;', label: 'Stats Board',         href: 'stats-board.html',  color: 'var(--purple)' }
   ];
 
   // --- Read page config ---

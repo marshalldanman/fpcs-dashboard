@@ -132,6 +132,14 @@
   /* TICKET SPLIT INDICATOR */
   .split-btn { padding: 4px 10px; border-radius: 6px; border: 1px solid var(--border); background: transparent; color: var(--muted); font-size: 11px; cursor: pointer; transition: all .15s; }
   .split-btn:hover { border-color: var(--orange); color: var(--orange); }
+
+  /* Drill-Down Interactive States */
+  .stat-link{cursor:pointer;transition:transform .15s,border-color .2s,box-shadow .2s}
+  .stat-link:hover{transform:translateY(-2px);border-color:rgba(251,146,60,.4);box-shadow:0 4px 20px rgba(251,146,60,.1)}
+  .drill-arrow{font-size:14px;opacity:0;transition:opacity .15s;margin-left:4px}
+  .stat-link:hover .drill-arrow{opacity:.6}
+  .drill-row{cursor:pointer;transition:background .15s}
+  .drill-row:hover{background:rgba(251,146,60,.06) !important}
 </style>
 </head>
 <body class="theme-helpdesk">
@@ -150,36 +158,36 @@
 
 <div class="container">
 
-  <!-- OVERVIEW STATS -->
+  <!-- OVERVIEW STATS (clickable — filters tickets by status) -->
   <div class="grid">
-    <div class="stat-card">
+    <div class="stat-card stat-link" onclick="document.getElementById('filterStatus').value='New';renderTickets();document.getElementById('sec-tickets').scrollIntoView({behavior:'smooth'})" title="Filter: Open tickets" style="cursor:pointer">
       <div class="label">Open Tickets</div>
-      <div class="value" style="color:var(--accent)" id="statOpen">0</div>
+      <div class="value" style="color:var(--accent)" id="statOpen">0 <span class="drill-arrow">&#8599;</span></div>
       <div class="sub">Active issues</div>
     </div>
-    <div class="stat-card">
+    <div class="stat-card stat-link" onclick="document.getElementById('filterStatus').value='In Progress';renderTickets();document.getElementById('sec-tickets').scrollIntoView({behavior:'smooth'})" title="Filter: In progress" style="cursor:pointer">
       <div class="label">In Progress</div>
-      <div class="value" style="color:var(--yellow)" id="statProgress">0</div>
+      <div class="value" style="color:var(--yellow)" id="statProgress">0 <span class="drill-arrow">&#8599;</span></div>
       <div class="sub">Being worked on</div>
     </div>
-    <div class="stat-card">
+    <div class="stat-card stat-link" onclick="document.getElementById('filterStatus').value='Awaiting Information';renderTickets();document.getElementById('sec-tickets').scrollIntoView({behavior:'smooth'})" title="Filter: Awaiting info" style="cursor:pointer">
       <div class="label">Awaiting Info</div>
-      <div class="value" style="color:var(--orange)" id="statAwaiting">0</div>
+      <div class="value" style="color:var(--orange)" id="statAwaiting">0 <span class="drill-arrow">&#8599;</span></div>
       <div class="sub">Need input</div>
     </div>
-    <div class="stat-card">
+    <div class="stat-card stat-link" onclick="document.getElementById('filterStatus').value='Needs Approval';renderTickets();document.getElementById('sec-tickets').scrollIntoView({behavior:'smooth'})" title="Filter: Needs approval" style="cursor:pointer">
       <div class="label">Needs Approval</div>
-      <div class="value" style="color:var(--purple)" id="statApproval">0</div>
+      <div class="value" style="color:var(--purple)" id="statApproval">0 <span class="drill-arrow">&#8599;</span></div>
       <div class="sub">Review required</div>
     </div>
-    <div class="stat-card">
+    <div class="stat-card stat-link" onclick="document.getElementById('filterStatus').value='On Hold';renderTickets();document.getElementById('sec-tickets').scrollIntoView({behavior:'smooth'})" title="Filter: On hold" style="cursor:pointer">
       <div class="label">On Hold</div>
-      <div class="value" style="color:var(--pink)" id="statHold">0</div>
+      <div class="value" style="color:var(--pink)" id="statHold">0 <span class="drill-arrow">&#8599;</span></div>
       <div class="sub">Paused</div>
     </div>
-    <div class="stat-card">
+    <div class="stat-card stat-link" onclick="document.getElementById('filterStatus').value='Done';renderTickets();document.getElementById('sec-tickets').scrollIntoView({behavior:'smooth'})" title="Filter: Completed" style="cursor:pointer">
       <div class="label">Completed</div>
-      <div class="value" style="color:var(--green)" id="statDone">0</div>
+      <div class="value" style="color:var(--green)" id="statDone">0 <span class="drill-arrow">&#8599;</span></div>
       <div class="sub">Resolved</div>
     </div>
   </div>

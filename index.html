@@ -221,34 +221,34 @@
     </div>
 
     <div class="token-grid">
-      <div class="token-metric">
+      <div class="token-metric stat-link" onclick="document.getElementById('heartbeatCanvas').scrollIntoView({behavior:'smooth'})" title="View heartbeat monitor">
         <div class="t-label">Last Minute</div>
-        <div class="t-value" id="tok-1m">--</div>
+        <div class="t-value" id="tok-1m">-- <span class="drill-arrow">&#8599;</span></div>
         <div class="t-sub">tokens</div>
       </div>
-      <div class="token-metric">
+      <div class="token-metric stat-link" onclick="document.getElementById('heartbeatCanvas').scrollIntoView({behavior:'smooth'})" title="View heartbeat monitor">
         <div class="t-label">Last 10 Min</div>
-        <div class="t-value" id="tok-10m">--</div>
+        <div class="t-value" id="tok-10m">-- <span class="drill-arrow">&#8599;</span></div>
         <div class="t-sub">tokens</div>
       </div>
-      <div class="token-metric">
+      <div class="token-metric stat-link" onclick="document.getElementById('heartbeatCanvas').scrollIntoView({behavior:'smooth'})" title="View heartbeat monitor">
         <div class="t-label">This Hour</div>
-        <div class="t-value" id="tok-1h">--</div>
+        <div class="t-value" id="tok-1h">-- <span class="drill-arrow">&#8599;</span></div>
         <div class="t-sub">tokens</div>
       </div>
-      <div class="token-metric">
+      <div class="token-metric stat-link" onclick="document.getElementById('heartbeatCanvas').scrollIntoView({behavior:'smooth'})" title="View heartbeat monitor">
         <div class="t-label">Today Total</div>
-        <div class="t-value" id="tok-day">--</div>
+        <div class="t-value" id="tok-day">-- <span class="drill-arrow">&#8599;</span></div>
         <div class="t-sub">tokens</div>
       </div>
-      <div class="token-metric">
+      <div class="token-metric stat-link" onclick="openSettings()" title="Open token settings">
         <div class="t-label">Est. $/Hour</div>
-        <div class="t-value" id="tok-rate" style="color:var(--green)">--</div>
+        <div class="t-value" id="tok-rate" style="color:var(--green)">-- <span class="drill-arrow">&#9881;</span></div>
         <div class="t-sub">at current pace</div>
       </div>
-      <div class="token-metric">
+      <div class="token-metric stat-link" onclick="document.getElementById('usageLog').parentElement.open=true;document.getElementById('usageLog').scrollIntoView({behavior:'smooth'})" title="View usage log">
         <div class="t-label">Session Usage</div>
-        <div class="t-value" id="tok-session" style="color:var(--accent)">11%</div>
+        <div class="t-value" id="tok-session" style="color:var(--accent)">11% <span class="drill-arrow">&#8599;</span></div>
         <div class="t-sub">of 5hr window</div>
       </div>
     </div>
@@ -289,67 +289,67 @@
         <tr><th>Agent</th><th>Model</th><th>Status</th><th>Mission</th><th>Est. Cost</th></tr>
       </thead>
       <tbody id="agentTableBody">
-        <tr style="background:rgba(56,189,248,0.05)">
+        <tr class="drill-row" style="background:rgba(56,189,248,0.05)" onclick="location.href='stats-board.html'" title="View bot rankings">
           <td><span class="agent-status active"></span><strong>Opus</strong> <span class="coc-badge coc-commander">CMD</span></td>
           <td>claude-opus-4-6</td>
           <td style="color:var(--green)">Active</td>
-          <td>Commander. Talks to James. Issues orders to The Sarge only.</td>
+          <td>Commander. Talks to James. Issues orders to The Sarge only. <span class="drill-arrow">&#8599;</span></td>
           <td style="color:var(--yellow)">$0 (Max)</td>
         </tr>
-        <tr style="background:rgba(251,146,60,0.05)">
+        <tr class="drill-row" style="background:rgba(251,146,60,0.05)" onclick="location.href='stats-board.html'" title="View bot rankings">
           <td><span class="agent-status active"></span><strong>The Sarge</strong> <span class="coc-badge coc-supervisor">SUP</span></td>
           <td>claude-opus-4-6</td>
           <td style="color:var(--green)">Active</td>
-          <td>Supervisor. Dispatches to staff. Injection firewall.</td>
+          <td>Supervisor. Dispatches to staff. Injection firewall. <span class="drill-arrow">&#8599;</span></td>
           <td style="color:var(--yellow)">Low budget</td>
         </tr>
-        <tr>
+        <tr class="drill-row" onclick="location.href='bots.html'" title="View full bot roster">
           <td><span class="agent-status active"></span><strong>Penny Pincher</strong> <span class="coc-badge coc-staff">S1</span></td>
           <td>claude-sonnet-4-6</td>
           <td style="color:var(--green)">Active</td>
-          <td>UX &amp; aesthetics. Visual polish, layout review.</td>
+          <td>UX &amp; aesthetics. Visual polish, layout review. <span class="drill-arrow">&#8599;</span></td>
           <td style="color:var(--green)">Minimal</td>
         </tr>
-        <tr>
+        <tr class="drill-row" onclick="location.href='bots.html'" title="View full bot roster">
           <td><span class="agent-status active"></span><strong>SHIELD</strong> <span class="coc-badge coc-staff">S2</span></td>
           <td>claude-sonnet-4-6</td>
           <td style="color:var(--green)">Active</td>
-          <td>Security sentinel. Injection hunting, machine security.</td>
+          <td>Security sentinel. Injection hunting, machine security. <span class="drill-arrow">&#8599;</span></td>
           <td style="color:var(--yellow)">Low (research)</td>
         </tr>
-        <tr>
+        <tr class="drill-row" onclick="location.href='deductions.html#sec-deductbot'" title="View DeductBot team">
           <td><span class="agent-status sleeping"></span><strong>DeductBot</strong> <span class="coc-badge coc-staff">S3</span></td>
           <td>claude-sonnet-4-6</td>
           <td style="color:var(--yellow)">Awaiting</td>
-          <td>Tax deductions + Ollama sub-agents (miniDuct 1 &amp; 2)</td>
+          <td>Tax deductions + Ollama sub-agents (miniDuct 1 &amp; 2) <span class="drill-arrow">&#8599;</span></td>
           <td style="color:var(--green)">~$0.08/hr</td>
         </tr>
-        <tr>
+        <tr class="drill-row" onclick="location.href='bots.html'" title="View full bot roster">
           <td><span class="agent-status active"></span><strong>Cruncher</strong> <span class="coc-badge coc-staff">S4</span></td>
           <td>claude-sonnet-4-6</td>
           <td style="color:var(--green)">Active</td>
-          <td>Data analyst. Bank reconciliation, CSV cross-ref.</td>
+          <td>Data analyst. Bank reconciliation, CSV cross-ref. <span class="drill-arrow">&#8599;</span></td>
           <td style="color:var(--green)">Minimal</td>
         </tr>
-        <tr>
+        <tr class="drill-row" onclick="location.href='bots.html'" title="View full bot roster">
           <td><span class="agent-status active"></span><strong>Scribbles</strong> <span class="coc-badge coc-staff">S5</span></td>
           <td>claude-sonnet-4-6</td>
           <td style="color:var(--green)">Active</td>
-          <td>Documentation, reports, TurboTax input sheets.</td>
+          <td>Documentation, reports, TurboTax input sheets. <span class="drill-arrow">&#8599;</span></td>
           <td style="color:var(--green)">Minimal</td>
         </tr>
-        <tr>
+        <tr class="drill-row" onclick="document.getElementById('sec-ddbot').scrollIntoView({behavior:'smooth'})" title="View DDBOT findings">
           <td><span class="agent-status active"></span><strong>DDBOT</strong> <span class="coc-badge coc-local">LOC</span></td>
           <td>Python (local)</td>
           <td style="color:var(--green)">5/5 Fixed</td>
-          <td>Discrepancy detector. 2-pass fingerprint dedup.</td>
+          <td>Discrepancy detector. 2-pass fingerprint dedup. <span class="drill-arrow">&#8599;</span></td>
           <td style="color:var(--green)">$0.00</td>
         </tr>
-        <tr>
+        <tr class="drill-row" onclick="document.getElementById('heartbeatCanvas').scrollIntoView({behavior:'smooth'})" title="View heartbeat monitor">
           <td><span class="agent-status sleeping"></span><strong>TokenWatchBot</strong> <span class="coc-badge coc-special">DOG</span></td>
           <td>claude-haiku-4-5</td>
           <td style="color:var(--yellow)">Initialized</td>
-          <td>Hourly efficiency audit. Feeds Heartbeat Monitor.</td>
+          <td>Hourly efficiency audit. Feeds Heartbeat Monitor. <span class="drill-arrow">&#8599;</span></td>
           <td style="color:var(--green)">~$0.01/hr</td>
         </tr>
       </tbody>
@@ -412,14 +412,14 @@
   <!-- OVERALL PROGRESS -->
   <div class="section" id="sec-progress">
     <h2>&#9889; Overall Progress</h2>
-    <div style="display:flex;align-items:center;gap:16px;">
-      <div style="position:relative;width:80px;height:80px;">
+    <div style="display:flex;align-items:center;gap:16px;cursor:pointer" onclick="document.getElementById('sec-milestones').scrollIntoView({behavior:'smooth'})" title="Jump to milestones">
+      <div style="position:relative;width:80px;height:80px;" class="stat-link">
         <svg width="80" height="80" style="transform:rotate(-90deg)"><circle cx="40" cy="40" r="34" fill="none" stroke="#334155" stroke-width="8"/><circle cx="40" cy="40" r="34" fill="none" stroke="#38bdf8" stroke-width="8" stroke-dasharray="213.6" stroke-dashoffset="38.4" stroke-linecap="round"/></svg>
         <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:18px;font-weight:700;color:var(--accent);">82%</div>
       </div>
       <div>
-        <div style="font-size:16px;font-weight:600;">Data Collection: 97% | Tax Prep: 60% | Filing: 0%</div>
-        <div style="font-size:13px;color:var(--muted);margin-top:4px;">Target: Print &amp; mail by April 10, 2026</div>
+        <div style="font-size:16px;font-weight:600;">Data Collection: 97% | Tax Prep: 60% | Filing: 0% <span class="drill-arrow">&#8599;</span></div>
+        <div style="font-size:13px;color:var(--muted);margin-top:4px;">Target: Print &amp; mail by April 10, 2026 &mdash; <span style="color:var(--accent)">Click to see milestones</span></div>
       </div>
     </div>
   </div>
@@ -442,14 +442,14 @@
     <div class="milestone done"><input type="checkbox" checked disabled><div class="info"><div class="title">The Great Dedup: 2,224 Duplicates Slain</div><div class="desc">Phase 1: 925 CC dupes via fingerprint. Phase 2: Full consolidation SHA-256 dedup across all sources. Deductions $67K &rarr; $42K.</div></div><span class="badge badge-done">DONE</span></div>
 
     <div class="milestone done"><input type="checkbox" checked disabled><div class="info"><div class="title">The Unified Ledger: 4,095 &rarr; 1,871 Rows</div><div class="desc">Consolidated QBO GL + Ledger + Tech Work + 68 Account CSVs. SHA-256 dedup removed 2,224 exact duplicates. Central database ready.</div></div><span class="badge badge-done">DONE</span></div>
-    <div class="milestone"><input type="checkbox"><div class="info"><div class="title">Bank Statement Bingo: 7 Banks</div><div class="desc">Download/cross-reference with QBO.</div></div><span class="badge badge-pending">PENDING</span></div>
-    <div class="milestone"><input type="checkbox"><div class="info"><div class="title">Amazon Archaeology: Biz or Shopping?</div><div class="desc">842 orders need classification.</div></div><span class="badge badge-pending">PENDING</span></div>
-    <div class="milestone"><input type="checkbox"><div class="info"><div class="title">Contractor Chronicles</div><div class="desc">Mitchell, Waters, J. Marshall &mdash; 1099-NEC if &gt;$600.</div></div><span class="badge badge-progress">IN PROGRESS</span></div>
-    <div class="milestone"><input type="checkbox"><div class="info"><div class="title">Home Office (Form 8829)</div><div class="desc">Square footage, internet %, office deduction.</div></div><span class="badge badge-pending">PENDING</span></div>
-    <div class="milestone"><input type="checkbox"><div class="info"><div class="title">Vehicle Deduction</div><div class="desc">100% biz use. GEICO + mileage or actual expenses.</div></div><span class="badge badge-pending">PENDING</span></div>
-    <div class="milestone"><input type="checkbox"><div class="info"><div class="title">Cyberattack Deduction</div><div class="desc">AGT Mortgage incident &mdash; casualty/theft loss.</div></div><span class="badge badge-pending">PENDING</span></div>
-    <div class="milestone"><input type="checkbox"><div class="info"><div class="title">TurboTax Data Entry</div><div class="desc">All Schedule C data into TurboTax 2022 Desktop.</div></div><span class="badge badge-pending">PENDING</span></div>
-    <div class="milestone"><input type="checkbox"><div class="info"><div class="title">Final Review + Print + Mail</div><div class="desc">Triple-check, print, USPS Certified. We're DONE!</div></div><span class="badge badge-pending">PENDING</span></div>
+    <div class="milestone drill-row" onclick="document.getElementById('sec-data-sources')&&document.getElementById('sec-data-sources').scrollIntoView({behavior:'smooth'})" title="View data sources"><input type="checkbox"><div class="info"><div class="title">Bank Statement Bingo: 7 Banks <span class="drill-arrow">&#8599;</span></div><div class="desc">Download/cross-reference with QBO.</div></div><span class="badge badge-pending">PENDING</span></div>
+    <div class="milestone drill-row" onclick="location.href='deductions.html#sec-liverecords'" title="View deduction records"><input type="checkbox"><div class="info"><div class="title">Amazon Archaeology: Biz or Shopping? <span class="drill-arrow">&#8599;</span></div><div class="desc">842 orders need classification.</div></div><span class="badge badge-pending">PENDING</span></div>
+    <div class="milestone drill-row" onclick="location.href='income.html#sec-clients'" title="View income by client"><input type="checkbox"><div class="info"><div class="title">Contractor Chronicles <span class="drill-arrow">&#8599;</span></div><div class="desc">Mitchell, Waters, J. Marshall &mdash; 1099-NEC if &gt;$600.</div></div><span class="badge badge-progress">IN PROGRESS</span></div>
+    <div class="milestone drill-row" onclick="location.href='deductions.html#sec-findings'" title="View deduction findings"><input type="checkbox"><div class="info"><div class="title">Home Office (Form 8829) <span class="drill-arrow">&#8599;</span></div><div class="desc">Square footage, internet %, office deduction.</div></div><span class="badge badge-pending">PENDING</span></div>
+    <div class="milestone drill-row" onclick="location.href='deductions.html#sec-findings'" title="View deduction findings"><input type="checkbox"><div class="info"><div class="title">Vehicle Deduction <span class="drill-arrow">&#8599;</span></div><div class="desc">100% biz use. GEICO + mileage or actual expenses.</div></div><span class="badge badge-pending">PENDING</span></div>
+    <div class="milestone drill-row" onclick="location.href='deductions.html#sec-findings'" title="View deduction findings"><input type="checkbox"><div class="info"><div class="title">Cyberattack Deduction <span class="drill-arrow">&#8599;</span></div><div class="desc">AGT Mortgage incident &mdash; casualty/theft loss.</div></div><span class="badge badge-pending">PENDING</span></div>
+    <div class="milestone drill-row" onclick="document.getElementById('sec-taxforms').scrollIntoView({behavior:'smooth'})" title="View tax forms status"><input type="checkbox"><div class="info"><div class="title">TurboTax Data Entry <span class="drill-arrow">&#8599;</span></div><div class="desc">All Schedule C data into TurboTax 2022 Desktop.</div></div><span class="badge badge-pending">PENDING</span></div>
+    <div class="milestone drill-row" onclick="document.getElementById('sec-overview').scrollIntoView({behavior:'smooth'})" title="View progress overview"><input type="checkbox"><div class="info"><div class="title">Final Review + Print + Mail <span class="drill-arrow">&#8599;</span></div><div class="desc">Triple-check, print, USPS Certified. We're DONE!</div></div><span class="badge badge-pending">PENDING</span></div>
   </div>
 
   <!-- BOUNTY BOARD (Compact — full board on Page 2) -->
@@ -566,11 +566,11 @@
     <table class="income-table">
       <thead><tr><th>Date</th><th>From</th><th>Document</th><th class="amount">Status</th></tr></thead>
       <tbody>
-        <tr><td>Jan 10, 2023</td><td>Intuit</td><td>Form 1099-K</td><td class="amount" style="color:var(--red)">RETRIEVE</td></tr>
-        <tr><td>Jan 24, 2023</td><td>TD Ameritrade</td><td>Consolidated 1099</td><td class="amount" style="color:var(--red)">RETRIEVE</td></tr>
-        <tr><td>Mar 7, 2023</td><td>AGT Mortgage</td><td>Property + 1099</td><td class="amount" style="color:var(--red)">RETRIEVE</td></tr>
-        <tr><td>Jan 2023</td><td>Discover/BofA</td><td>CC Year-End</td><td class="amount" style="color:var(--yellow)">REVIEW</td></tr>
-        <tr><td>Jan 2023</td><td>Stronghold Rescue</td><td>Charitable Receipt</td><td class="amount" style="color:var(--green)">FOUND</td></tr>
+        <tr class="drill-row" onclick="location.href='helpdesk.html'" title="Open helpdesk to track retrieval"><td>Jan 10, 2023</td><td>Intuit</td><td>Form 1099-K <span class="drill-arrow">&#8599;</span></td><td class="amount" style="color:var(--red)">RETRIEVE</td></tr>
+        <tr class="drill-row" onclick="location.href='helpdesk.html'" title="Open helpdesk to track retrieval"><td>Jan 24, 2023</td><td>TD Ameritrade</td><td>Consolidated 1099 <span class="drill-arrow">&#8599;</span></td><td class="amount" style="color:var(--red)">RETRIEVE</td></tr>
+        <tr class="drill-row" onclick="location.href='helpdesk.html'" title="Open helpdesk to track retrieval"><td>Mar 7, 2023</td><td>AGT Mortgage</td><td>Property + 1099 <span class="drill-arrow">&#8599;</span></td><td class="amount" style="color:var(--red)">RETRIEVE</td></tr>
+        <tr class="drill-row" onclick="location.href='deductions.html#sec-auditor'" title="Open auditor review"><td>Jan 2023</td><td>Discover/BofA</td><td>CC Year-End <span class="drill-arrow">&#8599;</span></td><td class="amount" style="color:var(--yellow)">REVIEW</td></tr>
+        <tr class="drill-row" onclick="location.href='deductions.html#sec-findings'" title="View findings"><td>Jan 2023</td><td>Stronghold Rescue</td><td>Charitable Receipt <span class="drill-arrow">&#8599;</span></td><td class="amount" style="color:var(--green)">FOUND</td></tr>
       </tbody>
     </table>
   </div>
@@ -592,36 +592,36 @@
       <div style="width:10%;background:var(--border);color:var(--muted)" title="Phase 8: Print & Mail">Mail</div>
     </div>
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:16px">
-      <div style="padding:12px;border-radius:8px;background:rgba(74,222,128,0.08);border:1px solid rgba(74,222,128,0.2)">
-        <div style="font-weight:700;color:var(--green);margin-bottom:4px">Phase 1: Data Harvest</div>
+      <div class="stat-link" style="padding:12px;border-radius:8px;background:rgba(74,222,128,0.08);border:1px solid rgba(74,222,128,0.2);cursor:pointer" onclick="document.getElementById('sec-data-sources')&&document.getElementById('sec-data-sources').scrollIntoView({behavior:'smooth'})" title="View data sources">
+        <div style="font-weight:700;color:var(--green);margin-bottom:4px">Phase 1: Data Harvest <span class="drill-arrow">&#8599;</span></div>
         <div style="font-size:12px;color:var(--muted)">QBO export, email indexing, FPCS ledger, Trello merge, vendor list. <strong style="color:var(--green)">100% DONE</strong></div>
       </div>
-      <div style="padding:12px;border-radius:8px;background:rgba(74,222,128,0.08);border:1px solid rgba(74,222,128,0.2)">
-        <div style="font-weight:700;color:var(--green);margin-bottom:4px">Phase 2: Cross-Reference</div>
+      <div class="stat-link" style="padding:12px;border-radius:8px;background:rgba(74,222,128,0.08);border:1px solid rgba(74,222,128,0.2);cursor:pointer" onclick="document.getElementById('sec-ddbot').scrollIntoView({behavior:'smooth'})" title="View DDBOT findings">
+        <div style="font-weight:700;color:var(--green);margin-bottom:4px">Phase 2: Cross-Reference <span class="drill-arrow">&#8599;</span></div>
         <div style="font-size:12px;color:var(--muted)">QBO vs FPCS ledger, email payment matching, 1099 search, expense categorization. <strong style="color:var(--green)">100% DONE</strong></div>
       </div>
-      <div style="padding:12px;border-radius:8px;background:rgba(74,222,128,0.08);border:1px solid rgba(74,222,128,0.2)">
-        <div style="font-weight:700;color:var(--green);margin-bottom:4px">Phase 3: Dedup &amp; Clean</div>
+      <div class="stat-link" style="padding:12px;border-radius:8px;background:rgba(74,222,128,0.08);border:1px solid rgba(74,222,128,0.2);cursor:pointer" onclick="document.getElementById('sec-expenses').scrollIntoView({behavior:'smooth'})" title="View corrected expenses">
+        <div style="font-weight:700;color:var(--green);margin-bottom:4px">Phase 3: Dedup &amp; Clean <span class="drill-arrow">&#8599;</span></div>
         <div style="font-size:12px;color:var(--muted)">925 CC dupes removed. $67K &rarr; $42K deductions. 5/5 DDBOT criticals fixed. <strong style="color:var(--green)">100% DONE</strong></div>
       </div>
-      <div style="padding:12px;border-radius:8px;background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.2)">
-        <div style="font-weight:700;color:var(--yellow);margin-bottom:4px">Phase 4: Verification</div>
+      <div class="stat-link" style="padding:12px;border-radius:8px;background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.2);cursor:pointer" onclick="location.href='income.html'" title="View income drill-down">
+        <div style="font-weight:700;color:var(--yellow);margin-bottom:4px">Phase 4: Verification <span class="drill-arrow">&#8599;</span></div>
         <div style="font-size:12px;color:var(--muted)">Bank statements (7 banks), Amazon biz/personal split (842 orders), contractor payments. <strong style="color:var(--yellow)">30% IN PROGRESS</strong></div>
       </div>
-      <div style="padding:12px;border-radius:8px;background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.2)">
-        <div style="font-weight:700;color:var(--yellow);margin-bottom:4px">Phase 5: Special Deductions</div>
+      <div class="stat-link" style="padding:12px;border-radius:8px;background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.2);cursor:pointer" onclick="location.href='deductions.html#sec-findings'" title="View deduction findings">
+        <div style="font-weight:700;color:var(--yellow);margin-bottom:4px">Phase 5: Special Deductions <span class="drill-arrow">&#8599;</span></div>
         <div style="font-size:12px;color:var(--muted)">Home office (8829), vehicle deduction, cyberattack loss, depreciation schedule. <strong style="color:var(--yellow)">10% STARTED</strong></div>
       </div>
-      <div style="padding:12px;border-radius:8px;background:rgba(51,65,85,0.3);border:1px solid var(--border)">
-        <div style="font-weight:700;color:var(--muted);margin-bottom:4px">Phase 6: TurboTax Entry</div>
+      <div class="stat-link" style="padding:12px;border-radius:8px;background:rgba(51,65,85,0.3);border:1px solid var(--border);cursor:pointer" onclick="document.getElementById('sec-taxforms').scrollIntoView({behavior:'smooth'})" title="View tax forms needed">
+        <div style="font-weight:700;color:var(--muted);margin-bottom:4px">Phase 6: TurboTax Entry <span class="drill-arrow">&#8599;</span></div>
         <div style="font-size:12px;color:var(--muted)">Install TurboTax 2022 from thumb drive, enter all Schedule C data. <strong>NOT STARTED</strong></div>
       </div>
-      <div style="padding:12px;border-radius:8px;background:rgba(51,65,85,0.3);border:1px solid var(--border)">
-        <div style="font-weight:700;color:var(--muted);margin-bottom:4px">Phase 7: Review</div>
+      <div class="stat-link" style="padding:12px;border-radius:8px;background:rgba(51,65,85,0.3);border:1px solid var(--border);cursor:pointer" onclick="document.getElementById('sec-expenses').scrollIntoView({behavior:'smooth'})" title="Review expense table">
+        <div style="font-weight:700;color:var(--muted);margin-bottom:4px">Phase 7: Review <span class="drill-arrow">&#8599;</span></div>
         <div style="font-size:12px;color:var(--muted)">Triple-check all numbers, compare with bank statements, verify totals. <strong>NOT STARTED</strong></div>
       </div>
-      <div style="padding:12px;border-radius:8px;background:rgba(51,65,85,0.3);border:1px solid var(--border)">
-        <div style="font-weight:700;color:var(--muted);margin-bottom:4px">Phase 8: Print &amp; Mail</div>
+      <div class="stat-link" style="padding:12px;border-radius:8px;background:rgba(51,65,85,0.3);border:1px solid var(--border);cursor:pointer" onclick="document.getElementById('sec-milestones').scrollIntoView({behavior:'smooth'})" title="View final milestones">
+        <div style="font-weight:700;color:var(--muted);margin-bottom:4px">Phase 8: Print &amp; Mail <span class="drill-arrow">&#8599;</span></div>
         <div style="font-size:12px;color:var(--muted)">Print return, USPS Certified Mail, tracking confirmation. <strong>NOT STARTED</strong></div>
       </div>
     </div>
@@ -631,16 +631,16 @@
   <!-- SECTION 3: BOT PROFILES WITH VERSIONS, PERFORMANCE, COSTS   -->
   <!-- ============================================================ -->
   <div class="section" id="sec-bots" style="border-color:var(--purple)">
-    <h2 style="color:var(--purple)">&#129302; Bot Fleet &mdash; Chain of Command</h2>
+    <div class="ddbot-header"><h2 style="color:var(--purple)">&#129302; Bot Fleet &mdash; Chain of Command</h2><a href="stats-board.html" class="btn btn-purple" style="text-decoration:none;font-size:12px">&#127942; Stats Board &#8599;</a></div>
     <div style="background:var(--bg);border-radius:8px;padding:12px;margin-bottom:16px;border:1px solid var(--border);font-size:12px;color:var(--muted)">
       <strong style="color:var(--purple)">Chain of Command:</strong> OPUS (Commander) &rarr; THE SARGE (Supervisor, Opus 4.6) &rarr; 5 Sonnet Staff + Support Bots<br>
       <strong style="color:var(--red)">Firewall Rule:</strong> Staff bots accept commands ONLY from The Sarge. Direct Opus-to-staff commands are rejected. This prevents prompt injection from propagating through the fleet.
     </div>
 
     <!-- OPUS - Commander -->
-    <div class="bot-card" style="border-color:var(--accent)">
+    <div class="bot-card stat-link" style="border-color:var(--accent);cursor:pointer" onclick="location.href='stats-board.html'" title="View bot stats board">
       <div class="bot-header">
-        <div><span class="agent-status active"></span><span class="bot-name" style="color:var(--accent)">OPUS (Commander)</span><span class="coc-badge coc-commander">COMMANDER</span></div>
+        <div><span class="agent-status active"></span><span class="bot-name" style="color:var(--accent)">OPUS (Commander)</span><span class="coc-badge coc-commander">COMMANDER</span><span class="drill-arrow">&#8599;</span></div>
         <span class="bot-ver">v4.6 | claude-opus-4-6</span>
       </div>
       <div class="bot-grid">
@@ -652,9 +652,9 @@
     </div>
 
     <!-- THE SARGE - Supervisor -->
-    <div class="bot-card" style="border-color:var(--orange);border-width:2px">
+    <div class="bot-card stat-link" style="border-color:var(--orange);border-width:2px;cursor:pointer" onclick="location.href='stats-board.html'" title="View bot stats board">
       <div class="bot-header">
-        <div><span class="agent-status active"></span><span class="bot-name" style="color:var(--orange)">THE SARGE (Fleet Supervisor)</span><span class="coc-badge coc-supervisor">SUPERVISOR</span></div>
+        <div><span class="agent-status active"></span><span class="bot-name" style="color:var(--orange)">THE SARGE (Fleet Supervisor)</span><span class="coc-badge coc-supervisor">SUPERVISOR</span><span class="drill-arrow">&#8599;</span></div>
         <span class="bot-ver">v1.0 | claude-opus-4-6</span>
       </div>
       <p style="font-size:12px;color:var(--muted);margin-bottom:10px">Grizzled veteran who runs the floor. All staff bots report to The Sarge. Trained in prompt injection detection. Validates every staff output before it reaches Opus. Low token budget enforced.</p>
