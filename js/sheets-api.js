@@ -39,8 +39,10 @@
 
   // --- Known Spreadsheet Registry ---
   var SHEETS = {
-    TAX_MASTER:   '163vEMLpch2KXvQevBcwKiOp5YjS4DicDRX0r01dALDE',
-    JAPSTER:      '1gQke6Tzfbln0zVqMPjLnzXaUPZDr4oPzx2lX2rsRtmI'
+    TAX_MASTER:       '163vEMLpch2KXvQevBcwKiOp5YjS4DicDRX0r01dALDE',
+    CONSOLIDATED:     '',  // TODO: Set after James creates Google Sheet via consolidate_to_sheets.py --push-to-sheets
+    FINANCIAL_ACCTS:  '',  // TODO: Set after Financial Accounts sheet is created
+    JAPSTER:          '1gQke6Tzfbln0zVqMPjLnzXaUPZDr4oPzx2lX2rsRtmI'
   };
 
   // --- Internal state ---

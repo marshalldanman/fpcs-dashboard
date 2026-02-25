@@ -403,9 +403,9 @@
       <div class="sub">5 critical fixed, 5 warnings, 1 info remain</div>
     </div>
     <div class="stat-card stat-link" onclick="document.getElementById('sec-data-sources').scrollIntoView({behavior:'smooth'})" title="View data source inventory">
-      <div class="label">Data Sources Processed</div>
-      <div class="value" style="color:var(--accent)">9 / 12 <span class="drill-arrow">&#8599;</span></div>
-      <div class="sub">QBO, Ledger, Email, FPCS, Expenses done</div>
+      <div class="label">Consolidated Database</div>
+      <div class="value" style="color:var(--accent)">1,871 rows <span class="drill-arrow">&#8599;</span></div>
+      <div class="sub">4 sources merged, 2,224 dupes removed, 25 accounts</div>
     </div>
   </div>
 
@@ -414,11 +414,11 @@
     <h2>&#9889; Overall Progress</h2>
     <div style="display:flex;align-items:center;gap:16px;">
       <div style="position:relative;width:80px;height:80px;">
-        <svg width="80" height="80" style="transform:rotate(-90deg)"><circle cx="40" cy="40" r="34" fill="none" stroke="#334155" stroke-width="8"/><circle cx="40" cy="40" r="34" fill="none" stroke="#38bdf8" stroke-width="8" stroke-dasharray="213.6" stroke-dashoffset="96" stroke-linecap="round"/></svg>
-        <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:18px;font-weight:700;color:var(--accent);">55%</div>
+        <svg width="80" height="80" style="transform:rotate(-90deg)"><circle cx="40" cy="40" r="34" fill="none" stroke="#334155" stroke-width="8"/><circle cx="40" cy="40" r="34" fill="none" stroke="#38bdf8" stroke-width="8" stroke-dasharray="213.6" stroke-dashoffset="38.4" stroke-linecap="round"/></svg>
+        <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:18px;font-weight:700;color:var(--accent);">82%</div>
       </div>
       <div>
-        <div style="font-size:16px;font-weight:600;">Data Collection: 80% | Tax Prep: 45% | Filing: 0%</div>
+        <div style="font-size:16px;font-weight:600;">Data Collection: 97% | Tax Prep: 60% | Filing: 0%</div>
         <div style="font-size:13px;color:var(--muted);margin-top:4px;">Target: Print &amp; mail by April 10, 2026</div>
       </div>
     </div>
@@ -439,9 +439,9 @@
     <div class="milestone done"><input type="checkbox" checked disabled><div class="info"><div class="title">DDBOT Activated: Audit Bot Awakens</div><div class="desc">Found 5 critical double-counts worth ~$8,600+.</div></div><span class="badge badge-done">DONE</span></div>
     <div class="milestone done"><input type="checkbox" checked disabled><div class="info"><div class="title">Token Economy Dashboard</div><div class="desc">Live usage tracking, agent monitoring, settings control panel.</div></div><span class="badge badge-done">DONE</span></div>
 
-    <div class="milestone done"><input type="checkbox" checked disabled><div class="info"><div class="title">The Great Dedup: 925 CC Duplicates Slain</div><div class="desc">Built 2-pass fingerprint system. Deductions $67K &rarr; $42K. All 5 critical DDBOT findings resolved.</div></div><span class="badge badge-done">DONE</span></div>
+    <div class="milestone done"><input type="checkbox" checked disabled><div class="info"><div class="title">The Great Dedup: 2,224 Duplicates Slain</div><div class="desc">Phase 1: 925 CC dupes via fingerprint. Phase 2: Full consolidation SHA-256 dedup across all sources. Deductions $67K &rarr; $42K.</div></div><span class="badge badge-done">DONE</span></div>
 
-    <div class="milestone"><input type="checkbox"><div class="info"><div class="title">The Unified Ledger</div><div class="desc">Merge QBO GL + Sheets Ledger + FPCS Work into master document.</div></div><span class="badge badge-progress">IN PROGRESS</span></div>
+    <div class="milestone done"><input type="checkbox" checked disabled><div class="info"><div class="title">The Unified Ledger: 4,095 &rarr; 1,871 Rows</div><div class="desc">Consolidated QBO GL + Ledger + Tech Work + 68 Account CSVs. SHA-256 dedup removed 2,224 exact duplicates. Central database ready.</div></div><span class="badge badge-done">DONE</span></div>
     <div class="milestone"><input type="checkbox"><div class="info"><div class="title">Bank Statement Bingo: 7 Banks</div><div class="desc">Download/cross-reference with QBO.</div></div><span class="badge badge-pending">PENDING</span></div>
     <div class="milestone"><input type="checkbox"><div class="info"><div class="title">Amazon Archaeology: Biz or Shopping?</div><div class="desc">842 orders need classification.</div></div><span class="badge badge-pending">PENDING</span></div>
     <div class="milestone"><input type="checkbox"><div class="info"><div class="title">Contractor Chronicles</div><div class="desc">Mitchell, Waters, J. Marshall &mdash; 1099-NEC if &gt;$600.</div></div><span class="badge badge-progress">IN PROGRESS</span></div>
@@ -510,7 +510,7 @@
 
   <!-- EXPENSE TABLE (CORRECTED after dedup fix) -->
   <div class="section" id="sec-expenses">
-    <h2>&#128221; 2022 Schedule C Expenses (Corrected &mdash; 925 CC dupes removed)</h2>
+    <h2>&#128221; 2022 Schedule C Expenses (Corrected &mdash; 2,224 dupes removed)</h2>
     <table class="income-table">
       <thead><tr><th>Line</th><th>Category</th><th>Amount</th><th class="amount">Txns</th><th class="amount">Status</th></tr></thead>
       <tbody>
@@ -535,7 +535,7 @@
     </table>
     <div style="margin-top:12px;padding:12px;background:rgba(74,222,128,0.08);border-radius:8px;border:1px solid rgba(74,222,128,0.2);">
       <strong style="color:var(--green)">Dedup Fix Summary:</strong>
-      <span style="color:var(--muted);font-size:13px;">925 CC duplicate transactions identified &amp; removed. QBO double-entry GL creates rows in BOTH expense sub-accounts AND CC/bank liability accounts. Pass-1/Pass-2 fingerprint dedup solved systemic double-counting.</span>
+      <span style="color:var(--muted);font-size:13px;">Phase 1: 925 CC dupes via fingerprint dedup. Phase 2: Full consolidation across 4 sources (4,095 &rarr; 1,871 rows) using SHA-256 hash dedup + fuzzy matching. Central database ready for Google Sheets push.</span>
     </div>
   </div>
 
@@ -1548,15 +1548,46 @@
   }
 
   // Tax knowledge base for Sarge's local intelligence
+  // Hardcoded fallback — will be overridden by live Google Sheets data when available
   const FPCS_DATA = {
     income: { gross: 17967.15, services: 14726.50, ebay: 13051.65, arOffset: -10725, deposits: -180, tips: 174, lateFees: 50, missingQBO: 870 },
     deductions: { total: 42889.72, supplies: 13256.68, equipment: 12654.39, otherExp: 7919.51, carTruck: 3239.62, cogs: 2895.75, utilities: 1066.34, office: 1024.14, insurance: 422.54, ccInterest: 248.90, meals: 97.39, repairs: 39.98, advertising: 23.18, contractLabor: 50, techParts: 524.98, techPartsCOGS: 300.00, techDiscount: 4699.00 },
     netLoss: -24922.57,
-    stats: { qboTxns: 2155, accounts: 62, emailsIndexed: 63587, taxEmails: 6315, amazonOrders: 842, dupesRemoved: 925 },
-    progress: { dataCollection: 80, taxPrep: 45, filing: 0, overall: 63 },
+    stats: { qboTxns: 2155, consolidatedRows: 1871, accounts: 25, emailsIndexed: 63587, taxEmails: 6315, amazonOrders: 842, dupesRemoved: 2224 },
+    progress: { dataCollection: 97, taxPrep: 60, filing: 0, overall: 82 },
     deadline: '2026-04-10',
-    needed: ['Bank statements (7 banks)', 'Home office sqft', 'Mileage log', 'TurboTax install', 'Amazon biz/personal split', '1099 forms (3)', 'Cyberattack docs']
+    needed: ['Google Cloud service account setup', 'Classify $4,699 discounts', 'Bank statements (7 banks)', 'Home office sqft', 'Mileage log', 'TurboTax install', 'Amazon biz/personal split'],
+    dataSource: 'hardcoded' // Will change to 'sheets' when live
   };
+
+  // Dynamic data loader — tries Google Sheets Summary tab first, falls back to hardcoded
+  function loadLiveData() {
+    if (typeof FPCSSheets === 'undefined' || !FPCSSheets.SHEETS.CONSOLIDATED) return;
+    var sheetId = FPCSSheets.SHEETS.CONSOLIDATED;
+    if (!sheetId) return; // Sheet ID not set yet
+
+    FPCSSheets.readAsObjects(sheetId, 'Summary!A1:B50').then(function(rows) {
+      if (!rows || rows.length === 0) return;
+      // Parse key-value pairs from Summary tab
+      var summary = {};
+      rows.forEach(function(r) {
+        var key = (r.Key || r.key || r.Metric || '').trim();
+        var val = parseFloat((r.Value || r.value || r.Amount || '0').toString().replace(/[$,]/g, ''));
+        if (key && !isNaN(val)) summary[key] = val;
+      });
+      // Override FPCS_DATA if we got real data
+      if (summary['Gross Income']) FPCS_DATA.income.gross = summary['Gross Income'];
+      if (summary['Total Deductions']) FPCS_DATA.deductions.total = summary['Total Deductions'];
+      if (summary['Net Loss']) FPCS_DATA.netLoss = summary['Net Loss'];
+      if (summary['Consolidated Rows']) FPCS_DATA.stats.consolidatedRows = summary['Consolidated Rows'];
+      FPCS_DATA.dataSource = 'sheets';
+      console.log('[Dashboard] Live data loaded from Google Sheets');
+      // Refresh stat cards with live data
+      if (typeof refreshStatCards === 'function') refreshStatCards();
+    }).catch(function(err) {
+      console.log('[Dashboard] Sheets unavailable, using hardcoded data:', err.message || err);
+    });
+  }
 
   // Sarge's local response engine — smart tax assistant with personality
   function sargeRespond(msg) {
