@@ -383,19 +383,19 @@
   <!-- STATS ROW (clickable drill-down) -->
   <div class="grid" id="sec-stats">
     <div class="stat-card stat-link" onclick="location.href='income.html'" title="View detailed income breakdown">
-      <div class="label">QBO Gross Income (2022)</div>
-      <div class="value" style="color:var(--green)">$17,097.15 <span class="drill-arrow">&#8599;</span></div>
-      <div class="sub">Services $14,727 + Sales $13,052 - AR $10,725 + Other $44</div>
+      <div class="label">Gross Income (2022)</div>
+      <div class="value" style="color:var(--green)">$17,967.15 <span class="drill-arrow">&#8599;</span></div>
+      <div class="sub">QBO $17,097 + Missing Arlene $870</div>
     </div>
     <div class="stat-card stat-link" onclick="location.href='deductions.html'" title="View detailed deduction categories">
       <div class="label">Total Business Deductions</div>
-      <div class="value" style="color:var(--yellow)">$42,024.74 <span class="drill-arrow">&#8599;</span></div>
-      <div class="sub">Down from $67,439 after dedup fix (925 dupes removed)</div>
+      <div class="value" style="color:var(--yellow)">$42,889.72 <span class="drill-arrow">&#8599;</span></div>
+      <div class="sub">+$864.98 tech parts/contract (+ $4,699 discounts pending)</div>
     </div>
     <div class="stat-card stat-link" onclick="document.getElementById('sec-income').scrollIntoView({behavior:'smooth'})" title="See income vs deductions breakdown">
       <div class="label">Net Business Loss</div>
-      <div class="value" style="color:var(--red)">-$24,927.59 <span class="drill-arrow">&#8599;</span></div>
-      <div class="sub">Income $17,097 - Deductions $42,025</div>
+      <div class="value" style="color:var(--red)">-$24,922.57 <span class="drill-arrow">&#8599;</span></div>
+      <div class="sub">Income $17,967 - Deductions $42,890</div>
     </div>
     <div class="stat-card stat-link" onclick="document.getElementById('ddbotFindings').scrollIntoView({behavior:'smooth'})" title="View DDBOT findings detail">
       <div class="label">DDBOT Findings</div>
@@ -526,8 +526,11 @@
         <tr class="drill-row" onclick="drillExpense('Utilities')"><td>25</td><td>Utilities (Phone + Internet)</td><td class="amount drill-amount" style="color:var(--green)">$1,066.34 &#8599;</td><td class="amount">11</td><td class="amount" style="color:var(--green)">Fixed (was $1,811)</td></tr>
         <tr class="drill-row" onclick="drillExpense('Other')"><td>27a</td><td>Other Expenses (Fees/Subs/Ship)</td><td class="amount drill-amount" style="color:var(--green)">$7,919.51 &#8599;</td><td class="amount">232</td><td class="amount" style="color:var(--green)">Fixed (was $7,134)</td></tr>
         <tr class="drill-row" onclick="drillExpense('Meals')"><td>--</td><td>Meals (50% deductible)</td><td class="amount drill-amount">$97.39 &#8599;</td><td class="amount">15</td><td class="amount" style="color:var(--green)">Fixed (was $630)</td></tr>
-        <tr class="drill-row" onclick="drillExpense('COGS')"><td>--</td><td>COGS/Inventory</td><td class="amount drill-amount">$2,595.75 &#8599;</td><td class="amount">11</td><td class="amount" style="color:var(--green)">OK</td></tr>
-        <tr class="drill-row" style="border-top:2px solid var(--accent)" onclick="location.href='deductions.html'"><td colspan="2"><strong>Total Business Deductions</strong></td><td class="amount drill-amount" style="color:var(--accent);font-size:16px"><strong>$42,024.74 &#8599;</strong></td><td></td><td class="amount" style="color:var(--green)"><strong>-37% from $67K</strong></td></tr>
+        <tr class="drill-row" onclick="drillExpense('COGS')"><td>--</td><td>COGS/Inventory (eBay + resale)</td><td class="amount drill-amount">$2,895.75 &#8599;</td><td class="amount">12</td><td class="amount" style="color:var(--accent)">+$300 Optiplex resale</td></tr>
+        <tr class="drill-row" onclick="location.href='income.html#sec-timeline'" style="background:rgba(74,222,128,.04)"><td>22</td><td>Tech Service Parts (NEW)</td><td class="amount drill-amount" style="color:var(--green)">$524.98 &#8599;</td><td class="amount">5</td><td class="amount" style="color:var(--green)">NEW &mdash; from ledger</td></tr>
+        <tr class="drill-row" onclick="location.href='income.html#sec-timeline'" style="background:rgba(74,222,128,.04)"><td>11</td><td>Contract Labor (updated)</td><td class="amount drill-amount" style="color:var(--green)">$50.00 &#8599;</td><td class="amount">2</td><td class="amount" style="color:var(--green)">+$40 from ledger</td></tr>
+        <tr class="drill-row" onclick="location.href='income.html#sec-timeline'" style="background:rgba(251,191,36,.06)"><td>--</td><td>Discounts Given (REVIEW NEEDED)</td><td class="amount drill-amount" style="color:var(--yellow)">$4,699.00 &#9888;</td><td class="amount">15</td><td class="amount" style="color:var(--yellow)">James must classify</td></tr>
+        <tr class="drill-row" style="border-top:2px solid var(--accent)" onclick="location.href='deductions.html'"><td colspan="2"><strong>Total Business Deductions</strong></td><td class="amount drill-amount" style="color:var(--accent);font-size:16px"><strong>$42,889.72 &#8599;</strong></td><td></td><td class="amount" style="color:var(--green)"><strong>+$864.98 from ledger</strong></td></tr>
       </tbody>
     </table>
     <div style="margin-top:12px;padding:12px;background:rgba(74,222,128,0.08);border-radius:8px;border:1px solid rgba(74,222,128,0.2);">
@@ -548,12 +551,13 @@
         <tr class="drill-row" onclick="drillIncome('Deposits')"><td>QBO</td><td>Client Deposits (offset)</td><td>7 entries</td><td class="amount drill-amount" style="color:var(--red)">-$180.00 &#8599;</td></tr>
         <tr class="drill-row" onclick="drillIncome('Tips')"><td>QBO</td><td>Tip Revenue</td><td>1 txn</td><td class="amount drill-amount" style="color:var(--green)">$174.00 &#8599;</td></tr>
         <tr class="drill-row" onclick="drillIncome('Late Fee')"><td>QBO</td><td>Late Fee Income</td><td>1 txn</td><td class="amount drill-amount" style="color:var(--green)">$50.00 &#8599;</td></tr>
-        <tr class="drill-row" style="border-top:2px solid var(--accent)" onclick="location.href='income.html'"><td colspan="3"><strong>Gross Income (Schedule C) &#8599;</strong></td><td class="amount" style="color:var(--green);font-size:16px"><strong>$17,097.15</strong></td></tr>
-        <tr class="drill-row" style="" onclick="location.href='deductions.html'"><td colspan="3"><em style="color:var(--muted)">Less: Business Deductions &#8599;</em></td><td class="amount drill-amount" style="color:var(--yellow)">-$42,024.74 &#8599;</td></tr>
-        <tr style="border-top:2px solid var(--red)"><td colspan="3"><strong>Estimated Net Business Income</strong></td><td class="amount" style="color:var(--red);font-size:16px"><strong>-$24,927.59</strong></td></tr>
+        <tr class="drill-row" onclick="location.href='income.html#sec-timeline'" style="background:rgba(74,222,128,.04)"><td>Ledger</td><td>Missing QBO Income (Arlene Harris)</td><td>3 jobs</td><td class="amount drill-amount" style="color:var(--accent)">$870.00 &#8599;</td></tr>
+        <tr class="drill-row" style="border-top:2px solid var(--accent)" onclick="location.href='income.html'"><td colspan="3"><strong>Gross Income (Schedule C) &#8599;</strong></td><td class="amount" style="color:var(--green);font-size:16px"><strong>$17,967.15</strong></td></tr>
+        <tr class="drill-row" style="" onclick="location.href='deductions.html'"><td colspan="3"><em style="color:var(--muted)">Less: Business Deductions &#8599;</em></td><td class="amount drill-amount" style="color:var(--yellow)">-$42,889.72 &#8599;</td></tr>
+        <tr style="border-top:2px solid var(--red)"><td colspan="3"><strong>Estimated Net Business Income</strong></td><td class="amount" style="color:var(--red);font-size:16px"><strong>-$24,922.57</strong></td></tr>
       </tbody>
     </table>
-    <div style="margin-top:8px;font-size:12px;color:var(--muted)">Note: Gross total corrected from $31,654 to $17,097 &mdash; AR offset and client deposit adjustments now properly netted.</div>
+    <div style="margin-top:8px;font-size:12px;color:var(--muted)">Updated: +$870 missing Arlene income, +$864.98 tech parts/contract deductions. $4,699 in discounts pending James review.</div>
   </div>
 
   <!-- TAX FORMS -->
@@ -1004,9 +1008,9 @@
     </div>
 
     <h3 style="color:var(--accent);font-size:14px;margin-bottom:12px">TurboTax Data Entry Steps</h3>
-    <div class="tt-step"><div class="tt-num tt-done">1</div><div><strong>Income: Schedule C gross receipts</strong><div style="font-size:12px;color:var(--muted)">$17,097.15 total. Services $14,727 + Sales $13,052 - AR $10,725. <span style="color:var(--green)">DATA READY</span></div></div></div>
-    <div class="tt-step"><div class="tt-num tt-done">2</div><div><strong>COGS: Cost of goods sold</strong><div style="font-size:12px;color:var(--muted)">$2,595.75 inventory. <span style="color:var(--green)">DATA READY</span></div></div></div>
-    <div class="tt-step"><div class="tt-num tt-done">3</div><div><strong>Expenses: Lines 8-27a</strong><div style="font-size:12px;color:var(--muted)">All 13 categories totaled from corrected expense summary. <span style="color:var(--green)">DATA READY</span></div></div></div>
+    <div class="tt-step"><div class="tt-num tt-done">1</div><div><strong>Income: Schedule C gross receipts</strong><div style="font-size:12px;color:var(--muted)">$17,967.15 total (includes $870 missing Arlene Harris income). <span style="color:var(--accent)">UPDATED</span></div></div></div>
+    <div class="tt-step"><div class="tt-num tt-done">2</div><div><strong>COGS: Cost of goods sold</strong><div style="font-size:12px;color:var(--muted)">$2,895.75 (eBay $2,595.75 + Optiplex resale $300). <span style="color:var(--accent)">UPDATED</span></div></div></div>
+    <div class="tt-step"><div class="tt-num tt-done">3</div><div><strong>Expenses: Lines 8-27a</strong><div style="font-size:12px;color:var(--muted)">Supplies $13,256.68 (+$524.98 tech parts), Contract $50 (+$40). <span style="color:var(--accent)">UPDATED</span></div></div></div>
     <div class="tt-step"><div class="tt-num tt-current">4</div><div><strong>Vehicle: Line 9 detail</strong><div style="font-size:12px;color:var(--muted)">Choose mileage ($0.585/mi) or actual expenses ($3,240). Need mileage log. <span style="color:var(--yellow)">NEEDS INFO</span></div></div></div>
     <div class="tt-step"><div class="tt-num tt-current">5</div><div><strong>Home Office: Form 8829</strong><div style="font-size:12px;color:var(--muted)">Need sq footage of office vs home, utility amounts. <span style="color:var(--yellow)">NEEDS INFO</span></div></div></div>
     <div class="tt-step"><div class="tt-num tt-current">6</div><div><strong>Depreciation: Form 4562</strong><div style="font-size:12px;color:var(--muted)">$12,654 furniture. Determine if Section 179 or standard depreciation. <span style="color:var(--yellow)">NEEDS REVIEW</span></div></div></div>
@@ -1545,9 +1549,9 @@
 
   // Tax knowledge base for Sarge's local intelligence
   const FPCS_DATA = {
-    income: { gross: 17097.15, services: 14726.50, ebay: 13051.65, arOffset: -10725, deposits: -180, tips: 174, lateFees: 50 },
-    deductions: { total: 42024.74, supplies: 12731.70, equipment: 12654.39, otherExp: 7919.51, carTruck: 3239.62, cogs: 2595.75, utilities: 1066.34, office: 1024.14, insurance: 422.54, ccInterest: 248.90, meals: 97.39, repairs: 39.98, advertising: 23.18, contractLabor: 10 },
-    netLoss: -24927.59,
+    income: { gross: 17967.15, services: 14726.50, ebay: 13051.65, arOffset: -10725, deposits: -180, tips: 174, lateFees: 50, missingQBO: 870 },
+    deductions: { total: 42889.72, supplies: 13256.68, equipment: 12654.39, otherExp: 7919.51, carTruck: 3239.62, cogs: 2895.75, utilities: 1066.34, office: 1024.14, insurance: 422.54, ccInterest: 248.90, meals: 97.39, repairs: 39.98, advertising: 23.18, contractLabor: 50, techParts: 524.98, techPartsCOGS: 300.00, techDiscount: 4699.00 },
+    netLoss: -24922.57,
     stats: { qboTxns: 2155, accounts: 62, emailsIndexed: 63587, taxEmails: 6315, amazonOrders: 842, dupesRemoved: 925 },
     progress: { dataCollection: 80, taxPrep: 45, filing: 0, overall: 63 },
     deadline: '2026-04-10',
@@ -1625,18 +1629,30 @@
     }
     if (m.includes('deduction') || m.includes('expense') || m.includes('write-off') || m.includes('writeoff')) {
       return { bot: 'DeductBot', text: 'Total Business Deductions: $' + FPCS_DATA.deductions.total.toLocaleString() + '\n' +
-        '  Supplies: $' + FPCS_DATA.deductions.supplies.toLocaleString() + '\n' +
+        '  Supplies (Line 22): $' + FPCS_DATA.deductions.supplies.toLocaleString() + ' (incl. $' + FPCS_DATA.deductions.techParts.toLocaleString() + ' tech parts)\n' +
         '  Equipment: $' + FPCS_DATA.deductions.equipment.toLocaleString() + '\n' +
         '  Other Expenses: $' + FPCS_DATA.deductions.otherExp.toLocaleString() + '\n' +
         '  Car/Truck: $' + FPCS_DATA.deductions.carTruck.toLocaleString() + '\n' +
-        '  COGS: $' + FPCS_DATA.deductions.cogs.toLocaleString() + '\n' +
-        '  + 7 more categories. 925 CC dupes were removed via dedup.' };
+        '  COGS: $' + FPCS_DATA.deductions.cogs.toLocaleString() + ' (incl. $' + FPCS_DATA.deductions.techPartsCOGS.toLocaleString() + ' resale)\n' +
+        '  Contract Labor: $' + FPCS_DATA.deductions.contractLabor.toLocaleString() + '\n' +
+        '  Discounts (pending review): $' + FPCS_DATA.deductions.techDiscount.toLocaleString() + '\n' +
+        '  + 6 more categories. 925 CC dupes removed via dedup.' };
+    }
+    if (m.includes('parts') || m.includes('invoice') || m.includes('ledger')) {
+      return { bot: 'ForensicBot', text: 'TECH SERVICE PARTS ANALYSIS (22 jobs, 2022):\n' +
+        '  Parts/Supplies (Line 22): $524.98 from 5 invoices\n' +
+        '  Parts/COGS (resale): $300.00 (Optiplex 7040 to Arlene)\n' +
+        '  Contract Work (Line 11): $40.00 from 2 invoices\n' +
+        '  Discounts Given: $4,699.00 (15 invoices — needs James review)\n' +
+        '  Missing from QBO: Arlene Harris $870 (3 jobs)\n\n' +
+        'Full report: TECH_PARTS_REPORT.txt | CSV: FPCS_2022_TECH_PARTS.csv' };
     }
     if (m.includes('loss') || m.includes('net') || m.includes('refund')) {
       return { bot: 'Cruncher', text: 'Net Business Loss: -$' + Math.abs(FPCS_DATA.netLoss).toLocaleString() + '\n' +
-        'Income $17,097 minus Deductions $42,025 = Loss of $24,928.\n' +
-        'This loss can offset other income on your 1040, potentially resulting in a refund.\n' +
-        'SE tax is $0 on a loss (no self-employment tax owed on negative income).' };
+        'Income $' + FPCS_DATA.income.gross.toLocaleString() + ' minus Deductions $' + FPCS_DATA.deductions.total.toLocaleString() + '\n' +
+        '(Includes $870 missing Arlene income + $864.98 new tech parts deductions)\n' +
+        'This loss offsets other income on 1040, potentially resulting in a refund.\n' +
+        'SE tax is $0 on a loss. Discounts ($4,699) pending review — could increase loss further.' };
     }
     if (m.includes('deadline') || m.includes('when') || m.includes('mail') || m.includes('date')) {
       const days = Math.floor((new Date('2026-04-10') - new Date()) / 86400000);
