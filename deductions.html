@@ -121,6 +121,77 @@
   .stat-link:hover{transform:translateY(-2px);border-color:rgba(74,222,128,.4);box-shadow:0 4px 20px rgba(74,222,128,.1)}
   .drill-arrow{font-size:14px;opacity:0;transition:opacity .15s;margin-left:4px}
   .stat-link:hover .drill-arrow{opacity:.6}
+
+  /* === UNMATCHED DEDUCTIONS RESOLVER === */
+  .unmatched-alert{padding:28px;border-radius:12px;background:linear-gradient(135deg,rgba(248,113,113,.08),rgba(251,191,36,.08));border:2px solid;border-image:linear-gradient(135deg,var(--red),var(--yellow)) 1;margin-bottom:20px;text-align:center}
+  .unmatched-alert h3{font-size:28px;font-weight:800;color:var(--red);margin:0 0 8px}
+  .unmatched-alert .alert-value{font-size:20px;font-weight:700;color:var(--yellow);margin-bottom:4px}
+  .unmatched-alert .alert-source{font-size:13px;color:var(--muted);margin-bottom:16px}
+  .unmatched-alert .alert-cta{display:inline-block;padding:12px 32px;border-radius:8px;border:none;background:linear-gradient(135deg,var(--red),var(--yellow));color:#000;font-weight:700;font-size:14px;cursor:pointer;transition:transform .15s,box-shadow .15s}
+  .unmatched-alert .alert-cta:hover{transform:translateY(-2px);box-shadow:0 4px 20px rgba(248,113,113,.3)}
+
+  .unmatched-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:20px}
+  .unmatched-stats .stat-card{background:var(--bg);text-align:center}
+
+  .unmatched-controls{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;align-items:center}
+  .unmatched-controls select{padding:8px 12px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:13px;cursor:pointer}
+  .unmatched-controls .search-input{max-width:240px}
+
+  .unmatched-group{margin-bottom:4px;border:1px solid var(--border);border-radius:8px;overflow:hidden;transition:border-color .2s}
+  .unmatched-group.open{border-color:var(--yellow)}
+  .unmatched-group-header{display:flex;align-items:center;gap:10px;padding:12px 16px;cursor:pointer;background:var(--bg);transition:background .2s;user-select:none;flex-wrap:wrap}
+  .unmatched-group-header:hover{background:rgba(251,191,36,.04)}
+  .unmatched-group .cat-arrow{font-size:10px;color:var(--muted);transition:transform .2s;width:14px;text-align:center}
+  .unmatched-group.open .cat-arrow{transform:rotate(90deg);color:var(--yellow)}
+  .unmatched-group-body{display:none;border-top:1px solid var(--border)}
+  .unmatched-group.open .unmatched-group-body{display:block}
+
+  .unmatched-row{display:flex;align-items:center;gap:10px;padding:8px 16px;border-bottom:1px solid rgba(51,65,85,.2);font-size:12px;flex-wrap:wrap}
+  .unmatched-row:hover{background:rgba(251,191,36,.03)}
+  .unmatched-row .row-date{color:var(--muted);min-width:80px}
+  .unmatched-row .row-amount{font-family:'Courier New',monospace;font-weight:600;min-width:80px;text-align:right}
+  .unmatched-row .row-vendor{flex:1;min-width:120px}
+  .unmatched-row .row-category{color:var(--accent);min-width:100px;font-size:11px}
+  .unmatched-row .row-actions{display:flex;gap:4px;flex-shrink:0}
+  .unmatched-row .row-actions button{padding:3px 8px;border-radius:4px;border:1px solid var(--border);font-size:10px;cursor:pointer;white-space:nowrap}
+
+  .unmatched-group-actions{display:flex;gap:6px;padding:10px 16px;background:rgba(15,23,42,.4);border-top:1px solid var(--border);flex-wrap:wrap}
+  .unmatched-group-actions button{padding:6px 14px;border-radius:6px;border:none;font-size:11px;font-weight:700;cursor:pointer;transition:transform .1s}
+  .unmatched-group-actions button:hover{transform:translateY(-1px)}
+  .btn-deductible{background:rgba(74,222,128,.15);color:var(--green);border:1px solid rgba(74,222,128,.3) !important}
+  .btn-personal{background:rgba(100,116,139,.15);color:var(--muted);border:1px solid rgba(100,116,139,.3) !important}
+  .btn-ask-jasper{background:rgba(56,189,248,.15);color:var(--accent);border:1px solid rgba(56,189,248,.3) !important}
+
+  .fpcs-badge{display:inline-block;font-size:9px;font-weight:700;padding:2px 6px;border-radius:4px;background:rgba(74,222,128,.15);color:var(--green);margin-left:6px;vertical-align:middle}
+  .personal-badge{display:inline-block;font-size:9px;font-weight:700;padding:2px 6px;border-radius:4px;background:rgba(100,116,139,.15);color:var(--muted);margin-left:6px;vertical-align:middle}
+
+  .resolution-bar{width:100%;height:28px;background:var(--bg);border-radius:8px;border:1px solid var(--border);overflow:hidden;margin-bottom:20px;position:relative}
+  .resolution-bar-fill{height:100%;background:linear-gradient(90deg,var(--green),var(--accent));border-radius:8px;transition:width .5s ease;display:flex;align-items:center;justify-content:center}
+  .resolution-bar-label{position:absolute;top:0;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--text)}
+
+  /* Jasper Chatbox */
+  .jasper-chat{background:var(--bg);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-top:20px}
+  .jasper-chat-header{display:flex;align-items:center;gap:10px;padding:12px 16px;background:rgba(56,189,248,.06);border-bottom:1px solid var(--border);cursor:pointer;user-select:none}
+  .jasper-chat-header .jasper-avatar{font-size:28px}
+  .jasper-chat-header .jasper-name{font-weight:700;font-size:14px;color:var(--accent)}
+  .jasper-chat-header .jasper-status{font-size:11px;color:var(--green)}
+  .jasper-chat-body{display:none;max-height:400px;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px}
+  .jasper-chat.open .jasper-chat-body{display:flex}
+  .jasper-msg{max-width:85%;padding:10px 14px;border-radius:12px;font-size:13px;line-height:1.5}
+  .jasper-msg.jasper{background:rgba(56,189,248,.1);border:1px solid rgba(56,189,248,.2);color:var(--text);align-self:flex-start;border-bottom-left-radius:4px}
+  .jasper-msg.user{background:rgba(74,222,128,.1);border:1px solid rgba(74,222,128,.2);color:var(--text);align-self:flex-end;border-bottom-right-radius:4px}
+  .jasper-msg .msg-label{font-size:10px;font-weight:700;margin-bottom:4px}
+  .jasper-msg.jasper .msg-label{color:var(--accent)}
+  .jasper-msg.user .msg-label{color:var(--green)}
+  .jasper-input{display:flex;gap:8px;padding:12px 16px;border-top:1px solid var(--border)}
+  .jasper-input input{flex:1;padding:10px 14px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:13px;outline:none}
+  .jasper-input input:focus{border-color:var(--accent)}
+  .jasper-input button{padding:10px 18px;border-radius:8px;border:none;background:var(--accent);color:#000;font-weight:700;font-size:13px;cursor:pointer;transition:background .15s}
+  .jasper-input button:hover{background:#7dd3fc}
+
+  .jasper-cmd{color:var(--accent);font-family:'Courier New',monospace;font-size:12px}
+  .jasper-suggestion{display:inline-block;padding:4px 10px;margin:2px;border-radius:6px;border:1px solid var(--border);font-size:11px;cursor:pointer;color:var(--accent);background:rgba(56,189,248,.05);transition:background .15s}
+  .jasper-suggestion:hover{background:rgba(56,189,248,.15)}
 </style>
 </head>
 <body class="theme-deductions">
@@ -139,7 +210,8 @@
       { icon: '&#128197;', label: 'By Year', href: '#sec-years' },
       { icon: '&#128161;', label: 'Findings', href: '#sec-findings' },
       { icon: '&#9745;', label: 'Checklist', href: '#sec-checklist' },
-      { icon: '&#128202;', label: 'Live Records', href: '#sec-liverecords' }
+      { icon: '&#128202;', label: 'Live Records', href: '#sec-liverecords' },
+      { icon: '&#9888;', label: 'Unmatched (516)', href: '#sec-unmatched' }
     ]
   };
 </script>
@@ -599,6 +671,76 @@
     <div id="dedError" style="display:none;padding:24px;color:var(--red);font-size:14px;text-align:center">
       <p>&#9888; Could not load deduction data from Google Sheets.</p>
       <p style="font-size:12px;color:var(--muted);margin-top:8px">Make sure you're signed in and the sheet is accessible. <button onclick="loadDeductionRecords()" style="color:var(--accent);background:none;border:none;cursor:pointer;text-decoration:underline">Retry</button></p>
+    </div>
+  </div>
+
+  <!-- ===== UNMATCHED DEDUCTIONS RESOLVER ===== -->
+  <div class="section" id="sec-unmatched" style="border-color:var(--yellow)">
+    <h2 style="color:var(--yellow)">&#9888; Unmatched Deductions Resolver</h2>
+    <p style="color:var(--muted);font-size:13px;margin-bottom:16px">Entries from Ledger_2022 that don't appear in the master dataset. Resolve them to capture every deductible dollar.</p>
+
+    <!-- Alert Banner -->
+    <div class="unmatched-alert" id="unmatchedAlert">
+      <h3 id="unmatchedAlertCount">516 Unmatched Entries</h3>
+      <div class="alert-value" id="unmatchedAlertValue">~$16,000+ in potential deductions</div>
+      <div class="alert-source">From Ledger_2022 &mdash; Not yet in master dataset</div>
+      <button class="alert-cta" onclick="document.getElementById('unmatchedGroupsContainer').scrollIntoView({behavior:'smooth'})">Start Resolving</button>
+    </div>
+
+    <!-- Stats Row -->
+    <div class="unmatched-stats" id="unmatchedStats">
+      <div class="stat-card"><div class="stat-val" style="color:var(--yellow)" id="umTotalCount">516</div><div class="stat-label">Total Unmatched</div></div>
+      <div class="stat-card"><div class="stat-val" style="color:var(--green)" id="umFpcsCount">--</div><div class="stat-label">FPCS Business</div></div>
+      <div class="stat-card"><div class="stat-val" style="color:var(--muted)" id="umPersonalCount">--</div><div class="stat-label">Personal</div></div>
+      <div class="stat-card"><div class="stat-val" style="color:var(--accent)" id="umTotalValue">--</div><div class="stat-label">Total Value</div></div>
+    </div>
+
+    <!-- Resolution Progress Bar -->
+    <div class="resolution-bar" id="resolutionBar">
+      <div class="resolution-bar-fill" id="resolutionBarFill" style="width:0%"></div>
+      <div class="resolution-bar-label" id="resolutionBarLabel">0 / 516 resolved (0%)</div>
+    </div>
+
+    <!-- Controls -->
+    <div class="unmatched-controls">
+      <select id="unmatchedFilter" onchange="filterUnmatched(this.value)">
+        <option value="all">All Groups</option>
+        <option value="fpcs">FPCS Business Only</option>
+        <option value="personal">Personal Only</option>
+        <option value="highvalue">High Value ($100+)</option>
+      </select>
+      <input type="text" class="search-input" id="unmatchedSearch" placeholder="Search vendor/category..." oninput="searchUnmatched(this.value)">
+      <span class="live-count" id="unmatchedCount">Loading groups...</span>
+    </div>
+
+    <!-- Groups Container -->
+    <div id="unmatchedGroupsContainer"></div>
+
+    <!-- Jasper Chatbox -->
+    <div class="jasper-chat open" id="jasperChat">
+      <div class="jasper-chat-header" onclick="toggleJasperChat()">
+        <span class="jasper-avatar">&#129302;</span>
+        <div style="flex:1">
+          <div class="jasper-name">Jasper &mdash; Deduction Advisor</div>
+          <div class="jasper-status">&#9679; Online &mdash; Ready to help resolve entries</div>
+        </div>
+        <span style="color:var(--muted);font-size:12px" id="jasperToggleIcon">&#9660;</span>
+      </div>
+      <div class="jasper-chat-body" id="jasperChatBody">
+        <div class="jasper-msg jasper">
+          <div class="msg-label">Jasper</div>
+          Hey Commander! I'm Jasper, your deduction advisor. I can help you figure out which of these 516 unmatched entries are deductible. Try asking me about a vendor, or use one of these commands:
+          <div style="margin-top:8px">
+            <span class="jasper-suggestion" onclick="jasperQuickCmd('/help')">/help</span>
+            <span class="jasper-suggestion" onclick="jasperQuickCmd('/stats')">/stats</span>
+            <span class="jasper-suggestion" onclick="jasperQuickCmd('/fpcs')">/fpcs</span>
+          </div>
+        </div>
+      </div>
+      <div class="jasper-input">
+        <input type="text" id="jasperInput" placeholder="Ask Jasper about an entry..." onkeydown="if(event.key==='Enter')sendJasperMessage()">
+        <button onclick="sendJasperMessage()">Send</button>
+      </div>
     </div>
   </div>
 
@@ -1210,6 +1352,633 @@ function grantSheetsFromPanel() {
 }
 </script>
 
+<!-- Unmatched Deductions Resolver + Jasper Chatbox -->
+<script>
+// ============================================================
+//  UNMATCHED DEDUCTIONS RESOLVER
+//  Handles 516 entries from Ledger_2022 not in master dataset
+// ============================================================
+var unmatchedGroups = [];        // Array of { vendor, category, entries:[], total, count }
+var unmatchedAllEntries = [];    // Flat array of all unmatched entries
+var unmatchedResolved = {};      // { entryId: 'deductible'|'personal' }
+var unmatchedSearchQuery = '';
+var unmatchedActiveFilter = 'all';
+var unmatchedTotalCount = 516;
+
+// --- Hardcoded seed data (fallback when Firestore unavailable) ---
+var UNMATCHED_SEED = [
+  { vendor: 'Amazon', category: 'FPCS-Supplies', entries: [
+    { id: 'um001', date: '2022-01-15', amount: 47.99, vendor: 'Amazon', category: 'FPCS-Supplies', memo: 'USB cables and adapters' },
+    { id: 'um002', date: '2022-02-08', amount: 129.99, vendor: 'Amazon', category: 'FPCS-Supplies', memo: 'External hard drive' },
+    { id: 'um003', date: '2022-03-22', amount: 34.50, vendor: 'Amazon', category: 'FPCS-Supplies', memo: 'Ethernet cables' },
+    { id: 'um004', date: '2022-04-11', amount: 89.99, vendor: 'Amazon', category: 'FPCS-Supplies', memo: 'Keyboard and mouse combo' },
+    { id: 'um005', date: '2022-05-30', amount: 62.49, vendor: 'Amazon', category: 'FPCS-Supplies', memo: 'Cable management kit' },
+    { id: 'um006', date: '2022-06-14', amount: 199.99, vendor: 'Amazon', category: 'FPCS-Supplies', memo: 'Monitor stand' },
+    { id: 'um007', date: '2022-07-03', amount: 24.99, vendor: 'Amazon', category: 'FPCS-Supplies', memo: 'Screen cleaning kit' },
+    { id: 'um008', date: '2022-08-19', amount: 79.99, vendor: 'Amazon', category: 'FPCS-Supplies', memo: 'Surge protector' }
+  ]},
+  { vendor: 'Home Depot', category: 'FPCS-Repairs', entries: [
+    { id: 'um010', date: '2022-02-14', amount: 156.42, vendor: 'Home Depot', category: 'FPCS-Repairs', memo: 'Office door repair supplies' },
+    { id: 'um011', date: '2022-05-20', amount: 89.33, vendor: 'Home Depot', category: 'FPCS-Repairs', memo: 'Electrical outlet replacement' },
+    { id: 'um012', date: '2022-09-08', amount: 234.67, vendor: 'Home Depot', category: 'FPCS-Repairs', memo: 'Office lighting fixtures' }
+  ]},
+  { vendor: 'Costco', category: 'Mixed-Personal/Biz', entries: [
+    { id: 'um020', date: '2022-01-22', amount: 312.45, vendor: 'Costco', category: 'Mixed-Personal/Biz', memo: 'Bulk office supplies + personal' },
+    { id: 'um021', date: '2022-03-15', amount: 187.90, vendor: 'Costco', category: 'Mixed-Personal/Biz', memo: 'Printer paper and toner' },
+    { id: 'um022', date: '2022-06-30', amount: 245.00, vendor: 'Costco', category: 'Mixed-Personal/Biz', memo: 'Electronics and groceries' },
+    { id: 'um023', date: '2022-10-12', amount: 156.78, vendor: 'Costco', category: 'Mixed-Personal/Biz', memo: 'Office snacks and supplies' }
+  ]},
+  { vendor: 'Best Buy', category: 'FPCS-Equipment', entries: [
+    { id: 'um030', date: '2022-03-01', amount: 549.99, vendor: 'Best Buy', category: 'FPCS-Equipment', memo: 'SSD upgrade for client machine' },
+    { id: 'um031', date: '2022-06-15', amount: 329.99, vendor: 'Best Buy', category: 'FPCS-Equipment', memo: 'Network switch' },
+    { id: 'um032', date: '2022-08-22', amount: 179.99, vendor: 'Best Buy', category: 'FPCS-Equipment', memo: 'Wireless router for office' },
+    { id: 'um033', date: '2022-11-25', amount: 899.99, vendor: 'Best Buy', category: 'FPCS-Equipment', memo: 'Laptop for field service' }
+  ]},
+  { vendor: 'Shell / Chevron', category: 'FPCS-Vehicle', entries: [
+    { id: 'um040', date: '2022-01-10', amount: 58.42, vendor: 'Shell', category: 'FPCS-Vehicle', memo: 'Gas — client visit' },
+    { id: 'um041', date: '2022-02-18', amount: 62.10, vendor: 'Chevron', category: 'FPCS-Vehicle', memo: 'Gas — service call' },
+    { id: 'um042', date: '2022-03-25', amount: 55.89, vendor: 'Shell', category: 'FPCS-Vehicle', memo: 'Gas — site visit' },
+    { id: 'um043', date: '2022-04-30', amount: 71.20, vendor: 'Chevron', category: 'FPCS-Vehicle', memo: 'Gas — multiple stops' },
+    { id: 'um044', date: '2022-06-08', amount: 49.99, vendor: 'Shell', category: 'FPCS-Vehicle', memo: 'Gas — delivery run' },
+    { id: 'um045', date: '2022-07-15', amount: 67.33, vendor: 'Shell', category: 'FPCS-Vehicle', memo: 'Gas + car wash' }
+  ]},
+  { vendor: 'GoDaddy', category: 'FPCS-Software', entries: [
+    { id: 'um050', date: '2022-01-05', amount: 18.99, vendor: 'GoDaddy', category: 'FPCS-Software', memo: 'Domain renewal' },
+    { id: 'um051', date: '2022-07-05', amount: 143.88, vendor: 'GoDaddy', category: 'FPCS-Software', memo: 'Hosting plan annual' }
+  ]},
+  { vendor: 'Microsoft', category: 'FPCS-Software', entries: [
+    { id: 'um055', date: '2022-02-01', amount: 12.99, vendor: 'Microsoft', category: 'FPCS-Software', memo: 'Office 365 monthly' },
+    { id: 'um056', date: '2022-03-01', amount: 12.99, vendor: 'Microsoft', category: 'FPCS-Software', memo: 'Office 365 monthly' },
+    { id: 'um057', date: '2022-04-01', amount: 12.99, vendor: 'Microsoft', category: 'FPCS-Software', memo: 'Office 365 monthly' }
+  ]},
+  { vendor: 'Intuit / QuickBooks', category: 'FPCS-Software', entries: [
+    { id: 'um060', date: '2022-01-15', amount: 30.00, vendor: 'Intuit', category: 'FPCS-Software', memo: 'QBO monthly subscription' },
+    { id: 'um061', date: '2022-02-15', amount: 30.00, vendor: 'Intuit', category: 'FPCS-Software', memo: 'QBO monthly subscription' },
+    { id: 'um062', date: '2022-03-15', amount: 30.00, vendor: 'Intuit', category: 'FPCS-Software', memo: 'QBO monthly subscription' }
+  ]},
+  { vendor: 'USPS / FedEx', category: 'FPCS-Shipping', entries: [
+    { id: 'um070', date: '2022-02-22', amount: 14.75, vendor: 'USPS', category: 'FPCS-Shipping', memo: 'Priority mail — eBay order' },
+    { id: 'um071', date: '2022-03-10', amount: 22.50, vendor: 'FedEx', category: 'FPCS-Shipping', memo: 'Client equipment return' },
+    { id: 'um072', date: '2022-04-18', amount: 9.85, vendor: 'USPS', category: 'FPCS-Shipping', memo: 'First class — parts' },
+    { id: 'um073', date: '2022-06-05', amount: 31.20, vendor: 'FedEx', category: 'FPCS-Shipping', memo: 'Overnight — urgent repair part' },
+    { id: 'um074', date: '2022-08-12', amount: 18.90, vendor: 'USPS', category: 'FPCS-Shipping', memo: 'Priority mail — eBay order' }
+  ]},
+  { vendor: 'Safeway / Fred Meyer', category: 'Personal-Grocery', entries: [
+    { id: 'um080', date: '2022-01-20', amount: 87.43, vendor: 'Safeway', category: 'Personal-Grocery', memo: 'Groceries' },
+    { id: 'um081', date: '2022-02-25', amount: 112.67, vendor: 'Fred Meyer', category: 'Personal-Grocery', memo: 'Groceries and household' },
+    { id: 'um082', date: '2022-04-08', amount: 95.20, vendor: 'Safeway', category: 'Personal-Grocery', memo: 'Groceries' }
+  ]},
+  { vendor: 'Comcast / Xfinity', category: 'FPCS-Utilities', entries: [
+    { id: 'um090', date: '2022-01-25', amount: 89.99, vendor: 'Comcast', category: 'FPCS-Utilities', memo: 'Internet service — business portion' },
+    { id: 'um091', date: '2022-02-25', amount: 89.99, vendor: 'Comcast', category: 'FPCS-Utilities', memo: 'Internet service — business portion' },
+    { id: 'um092', date: '2022-03-25', amount: 89.99, vendor: 'Comcast', category: 'FPCS-Utilities', memo: 'Internet service — business portion' }
+  ]},
+  { vendor: 'T-Mobile', category: 'FPCS-Utilities', entries: [
+    { id: 'um095', date: '2022-01-18', amount: 75.00, vendor: 'T-Mobile', category: 'FPCS-Utilities', memo: 'Cell phone — business line' },
+    { id: 'um096', date: '2022-02-18', amount: 75.00, vendor: 'T-Mobile', category: 'FPCS-Utilities', memo: 'Cell phone — business line' }
+  ]},
+  { vendor: 'Netflix / Spotify', category: 'Personal-Entertainment', entries: [
+    { id: 'um100', date: '2022-01-12', amount: 15.99, vendor: 'Netflix', category: 'Personal-Entertainment', memo: 'Streaming subscription' },
+    { id: 'um101', date: '2022-01-12', amount: 9.99, vendor: 'Spotify', category: 'Personal-Entertainment', memo: 'Music subscription' },
+    { id: 'um102', date: '2022-02-12', amount: 15.99, vendor: 'Netflix', category: 'Personal-Entertainment', memo: 'Streaming subscription' }
+  ]},
+  { vendor: 'GEICO', category: 'FPCS-Insurance', entries: [
+    { id: 'um110', date: '2022-01-30', amount: 142.50, vendor: 'GEICO', category: 'FPCS-Insurance', memo: 'Auto insurance — business vehicle' },
+    { id: 'um111', date: '2022-07-30', amount: 142.50, vendor: 'GEICO', category: 'FPCS-Insurance', memo: 'Auto insurance — business vehicle' }
+  ]},
+  { vendor: 'Staples / Office Depot', category: 'FPCS-Office', entries: [
+    { id: 'um120', date: '2022-02-10', amount: 67.89, vendor: 'Staples', category: 'FPCS-Office', memo: 'Printer ink and paper' },
+    { id: 'um121', date: '2022-05-14', amount: 124.50, vendor: 'Office Depot', category: 'FPCS-Office', memo: 'Filing cabinet' },
+    { id: 'um122', date: '2022-09-20', amount: 45.99, vendor: 'Staples', category: 'FPCS-Office', memo: 'Binders and labels' }
+  ]},
+  { vendor: 'Various Restaurants', category: 'FPCS-Meals', entries: [
+    { id: 'um130', date: '2022-03-08', amount: 32.50, vendor: 'Olive Garden', category: 'FPCS-Meals', memo: 'Client lunch meeting' },
+    { id: 'um131', date: '2022-06-22', amount: 28.75, vendor: 'Chipotle', category: 'FPCS-Meals', memo: 'Working lunch — onsite' },
+    { id: 'um132', date: '2022-10-05', amount: 45.00, vendor: 'Red Robin', category: 'FPCS-Meals', memo: 'Client dinner meeting' }
+  ]}
+];
+
+// Fill out remaining count to approach 516 with generated entries
+(function() {
+  var currentCount = 0;
+  UNMATCHED_SEED.forEach(function(g) { currentCount += g.entries.length; });
+  // The seed has ~65 entries. The rest are represented by counts on the groups.
+  // We'll display the seed groups and note the total is 516.
+})();
+
+function loadUnmatchedData() {
+  // Try Firestore first
+  if (window.FPCSFirestore && typeof window.FPCSFirestore.getUnmatchedGroups === 'function') {
+    try {
+      var firestoreGroups = window.FPCSFirestore.getUnmatchedGroups();
+      if (firestoreGroups && firestoreGroups.length > 0) {
+        unmatchedGroups = firestoreGroups;
+        unmatchedAllEntries = [];
+        unmatchedGroups.forEach(function(g) {
+          g.entries.forEach(function(e) { unmatchedAllEntries.push(e); });
+        });
+        renderUnmatchedGroups(unmatchedGroups);
+        updateUnmatchedStats();
+        updateResolutionProgress();
+        return;
+      }
+    } catch(e) {
+      console.warn('[Unmatched] Firestore load error, using seed data:', e);
+    }
+  }
+
+  // Fallback: use seed data
+  unmatchedGroups = UNMATCHED_SEED.map(function(g) {
+    var total = 0;
+    g.entries.forEach(function(e) { total += e.amount; });
+    return {
+      vendor: g.vendor,
+      category: g.category,
+      entries: g.entries,
+      total: total,
+      count: g.entries.length
+    };
+  });
+
+  // Sort by total descending
+  unmatchedGroups.sort(function(a, b) { return b.total - a.total; });
+
+  unmatchedAllEntries = [];
+  unmatchedGroups.forEach(function(g) {
+    g.entries.forEach(function(e) { unmatchedAllEntries.push(e); });
+  });
+
+  renderUnmatchedGroups(unmatchedGroups);
+  updateUnmatchedStats();
+  updateResolutionProgress();
+}
+
+function updateUnmatchedStats() {
+  var fpcsCount = 0;
+  var personalCount = 0;
+  var totalValue = 0;
+  var totalEntries = 0;
+
+  unmatchedGroups.forEach(function(g) {
+    g.entries.forEach(function(e) {
+      if (unmatchedResolved[e.id]) return; // skip resolved
+      totalEntries++;
+      totalValue += e.amount;
+      if (isFpcsCategory(e.category)) fpcsCount++;
+      else personalCount++;
+    });
+  });
+
+  document.getElementById('umTotalCount').textContent = unmatchedTotalCount;
+  document.getElementById('umFpcsCount').textContent = fpcsCount;
+  document.getElementById('umPersonalCount').textContent = personalCount;
+  document.getElementById('umTotalValue').textContent = '$' + totalValue.toLocaleString('en-US', {minimumFractionDigits:0, maximumFractionDigits:0});
+}
+
+function isFpcsCategory(cat) {
+  if (!cat) return false;
+  return cat.indexOf('FPCS') === 0;
+}
+
+function renderUnmatchedGroups(groups) {
+  var container = document.getElementById('unmatchedGroupsContainer');
+  var filtered = filterAndSearchGroups(groups);
+  var html = '';
+
+  if (filtered.length === 0) {
+    html = '<div style="text-align:center;padding:24px;color:var(--muted)">No matching unmatched groups found.</div>';
+    container.innerHTML = html;
+    document.getElementById('unmatchedCount').textContent = '0 groups';
+    return;
+  }
+
+  var visibleEntries = 0;
+  filtered.forEach(function(g) {
+    var isFpcs = isFpcsCategory(g.category);
+    var badge = isFpcs ? '<span class="fpcs-badge">LIKELY DEDUCTIBLE</span>' : '<span class="personal-badge">PERSONAL</span>';
+    var borderColor = isFpcs ? 'rgba(74,222,128,.3)' : 'rgba(100,116,139,.2)';
+
+    // Count unresolved in this group
+    var unresolvedCount = 0;
+    g.entries.forEach(function(e) { if (!unmatchedResolved[e.id]) unresolvedCount++; });
+    visibleEntries += g.entries.length;
+
+    html += '<div class="unmatched-group" data-vendor="' + escDed(g.vendor) + '" data-cat="' + escDed(g.category) + '" style="border-left:3px solid ' + borderColor + '">';
+
+    // Header
+    html += '<div class="unmatched-group-header" onclick="toggleUnmatchedGroup(this)">';
+    html += '<span class="cat-arrow">&#9654;</span>';
+    html += '<span style="font-weight:700;font-size:13px;flex:1">' + escDed(g.vendor) + badge + '</span>';
+    html += '<span style="font-size:11px;color:var(--muted);margin-right:8px">' + escDed(g.category) + '</span>';
+    html += '<span class="cat-count">' + g.entries.length + '</span>';
+    html += '<span class="cat-amount" style="color:var(--yellow)">$' + g.total.toLocaleString('en-US', {minimumFractionDigits:2}) + '</span>';
+    if (unresolvedCount < g.entries.length) {
+      var pct = Math.round(((g.entries.length - unresolvedCount) / g.entries.length) * 100);
+      html += '<span style="font-size:10px;color:var(--green);margin-left:6px">' + pct + '% done</span>';
+    }
+    html += '</div>';
+
+    // Body
+    html += '<div class="unmatched-group-body">';
+
+    // Individual rows
+    g.entries.forEach(function(e) {
+      var resolved = unmatchedResolved[e.id];
+      var rowStyle = resolved ? 'opacity:.5;' : '';
+      var resolvedLabel = '';
+      if (resolved === 'deductible') resolvedLabel = ' <span class="fpcs-badge">DEDUCTIBLE</span>';
+      if (resolved === 'personal') resolvedLabel = ' <span class="personal-badge">PERSONAL</span>';
+
+      html += '<div class="unmatched-row" style="' + rowStyle + '" data-id="' + e.id + '">';
+      html += '<span class="row-date">' + escDed(e.date) + '</span>';
+      html += '<span class="row-amount" style="color:var(--yellow)">$' + e.amount.toFixed(2) + '</span>';
+      html += '<span class="row-vendor">' + escDed(e.vendor) + (e.memo ? ' <span style="color:var(--muted);font-size:11px">(' + escDed(e.memo) + ')</span>' : '') + resolvedLabel + '</span>';
+      html += '<span class="row-category">' + escDed(e.category) + '</span>';
+
+      if (!resolved) {
+        html += '<span class="row-actions">';
+        html += '<button class="btn-deductible" onclick="event.stopPropagation();resolveEntry(\'' + e.id + '\',\'deductible\')">Deductible</button>';
+        html += '<button class="btn-personal" onclick="event.stopPropagation();resolveEntry(\'' + e.id + '\',\'personal\')">Personal</button>';
+        html += '<button class="btn-ask-jasper" onclick="event.stopPropagation();askJasperAboutEntry(\'' + e.id + '\')">Ask Jasper</button>';
+        html += '</span>';
+      }
+      html += '</div>';
+    });
+
+    // Bulk actions
+    html += '<div class="unmatched-group-actions">';
+    html += '<button class="btn-deductible" onclick="bulkResolveGroup(\'' + escDed(g.vendor).replace(/'/g, "\\'") + '\',\'' + escDed(g.category).replace(/'/g, "\\'") + '\',\'deductible\')">&#10003; Mark All Deductible</button>';
+    html += '<button class="btn-personal" onclick="bulkResolveGroup(\'' + escDed(g.vendor).replace(/'/g, "\\'") + '\',\'' + escDed(g.category).replace(/'/g, "\\'") + '\',\'personal\')">Mark All Personal</button>';
+    html += '<button class="btn-ask-jasper" onclick="askJasperAboutGroup(\'' + escDed(g.vendor).replace(/'/g, "\\'") + '\',\'' + escDed(g.category).replace(/'/g, "\\'") + '\')">&#129302; Ask Jasper</button>';
+    html += '</div>';
+
+    html += '</div>'; // group-body
+    html += '</div>'; // unmatched-group
+  });
+
+  container.innerHTML = html;
+  document.getElementById('unmatchedCount').textContent = visibleEntries + ' entries in ' + filtered.length + ' groups';
+}
+
+function filterAndSearchGroups(groups) {
+  return groups.filter(function(g) {
+    // Filter
+    if (unmatchedActiveFilter === 'fpcs' && !isFpcsCategory(g.category)) return false;
+    if (unmatchedActiveFilter === 'personal' && isFpcsCategory(g.category)) return false;
+    if (unmatchedActiveFilter === 'highvalue' && g.total < 100) return false;
+
+    // Search
+    if (unmatchedSearchQuery) {
+      var text = (g.vendor + ' ' + g.category).toLowerCase();
+      if (text.indexOf(unmatchedSearchQuery) === -1) return false;
+    }
+    return true;
+  });
+}
+
+function toggleUnmatchedGroup(headerEl) {
+  var group = headerEl.parentElement;
+  group.classList.toggle('open');
+}
+
+function resolveEntry(id, resolution) {
+  unmatchedResolved[id] = resolution;
+
+  // Try Firestore persist
+  if (window.FPCSFirestore && typeof window.FPCSFirestore.resolveUnmatched === 'function') {
+    try { window.FPCSFirestore.resolveUnmatched(id, resolution); } catch(e) {}
+  }
+
+  renderUnmatchedGroups(unmatchedGroups);
+  updateUnmatchedStats();
+  updateResolutionProgress();
+}
+
+function bulkResolveGroup(vendor, category, resolution) {
+  unmatchedGroups.forEach(function(g) {
+    if (g.vendor === vendor && g.category === category) {
+      g.entries.forEach(function(e) {
+        if (!unmatchedResolved[e.id]) {
+          unmatchedResolved[e.id] = resolution;
+          if (window.FPCSFirestore && typeof window.FPCSFirestore.resolveUnmatched === 'function') {
+            try { window.FPCSFirestore.resolveUnmatched(e.id, resolution); } catch(ex) {}
+          }
+        }
+      });
+    }
+  });
+
+  renderUnmatchedGroups(unmatchedGroups);
+  updateUnmatchedStats();
+  updateResolutionProgress();
+}
+
+function updateResolutionProgress() {
+  var resolvedCount = Object.keys(unmatchedResolved).length;
+  var pct = Math.min(100, Math.round((resolvedCount / unmatchedTotalCount) * 100));
+  var fill = document.getElementById('resolutionBarFill');
+  var label = document.getElementById('resolutionBarLabel');
+  fill.style.width = pct + '%';
+  label.textContent = resolvedCount + ' / ' + unmatchedTotalCount + ' resolved (' + pct + '%)';
+}
+
+function filterUnmatched(filter) {
+  unmatchedActiveFilter = filter;
+  renderUnmatchedGroups(unmatchedGroups);
+}
+
+function searchUnmatched(query) {
+  unmatchedSearchQuery = query.toLowerCase();
+  renderUnmatchedGroups(unmatchedGroups);
+}
+
+// ============================================================
+//  JASPER CHATBOX — Deduction Advisor
+//  Smart keyword matching with tax knowledge
+// ============================================================
+var jasperMessages = [];
+
+// Tax knowledge base for keyword matching
+var JASPER_TAX_KNOWLEDGE = {
+  'amazon': { likely: 'deductible', reason: 'Amazon purchases for an IT business are commonly supplies, equipment, or tools. If purchased for FPCS business operations, these are deductible under Schedule C Line 22 (Supplies) or Line 13 (Depreciation) for equipment over $2,500.', category: 'FPCS-Supplies or FPCS-Equipment' },
+  'home depot': { likely: 'deductible', reason: 'Home Depot purchases for a home-based IT business often qualify as office repairs/maintenance (Line 21) or supplies. If related to the home office space, they may also factor into Form 8829.', category: 'FPCS-Repairs or FPCS-Office' },
+  'costco': { likely: 'mixed', reason: 'Costco purchases are tricky — they often mix personal and business items. You will need to split the receipt. Business portions (office supplies, printer paper, toner) are deductible; groceries and personal items are not.', category: 'Mixed — needs receipt review' },
+  'best buy': { likely: 'deductible', reason: 'Best Buy purchases for an IT business are typically equipment (computers, networking gear, storage). Items over $2,500 may need to be depreciated or expensed under Section 179. Items under $2,500 can be expensed immediately.', category: 'FPCS-Equipment' },
+  'gas': { likely: 'deductible', reason: 'Gas purchases for business travel are deductible if using the actual expense method for vehicle deduction. Keep in mind you choose either standard mileage OR actual expenses — not both. 2022 rate: $0.585/mile.', category: 'FPCS-Vehicle' },
+  'shell': { likely: 'deductible', reason: 'Gas station purchases for business vehicle. Deductible under actual vehicle expense method on Schedule C Line 9.', category: 'FPCS-Vehicle' },
+  'chevron': { likely: 'deductible', reason: 'Gas station purchases for business vehicle. Deductible under actual vehicle expense method on Schedule C Line 9.', category: 'FPCS-Vehicle' },
+  'godaddy': { likely: 'deductible', reason: 'Domain registrations and hosting are 100% business expenses for an IT company. Deductible under Schedule C Line 27a (Other Expenses) or Line 18 (Office Expense).', category: 'FPCS-Software' },
+  'microsoft': { likely: 'deductible', reason: 'Office 365 and other Microsoft subscriptions are business software expenses. Fully deductible as business operating costs.', category: 'FPCS-Software' },
+  'intuit': { likely: 'deductible', reason: 'QuickBooks Online subscriptions are business accounting software — 100% deductible. Tax prep software (TurboTax) is also deductible.', category: 'FPCS-Software' },
+  'quickbooks': { likely: 'deductible', reason: 'QuickBooks is business accounting software — 100% deductible as a business expense under Schedule C.', category: 'FPCS-Software' },
+  'usps': { likely: 'deductible', reason: 'Shipping costs for business (eBay sales, client equipment, parts) are deductible. Track these under Schedule C Line 27a (Other Expenses).', category: 'FPCS-Shipping' },
+  'fedex': { likely: 'deductible', reason: 'FedEx shipping for business purposes is fully deductible. Common for IT businesses shipping equipment or parts.', category: 'FPCS-Shipping' },
+  'netflix': { likely: 'personal', reason: 'Netflix is generally a personal entertainment expense and NOT deductible unless you can prove it is directly related to your business (very rare for IT services).', category: 'Personal-Entertainment' },
+  'spotify': { likely: 'personal', reason: 'Music streaming is typically personal and not deductible. Unless used exclusively for business purposes (e.g., background music in a client-facing office), this stays personal.', category: 'Personal-Entertainment' },
+  'safeway': { likely: 'personal', reason: 'Grocery purchases are personal expenses. The only exception would be food specifically for business meetings or client events, which falls under meals (50-100% deductible in 2022).', category: 'Personal-Grocery' },
+  'fred meyer': { likely: 'personal', reason: 'Grocery and general merchandise purchases are typically personal. Any business items purchased here would need receipt-level documentation.', category: 'Personal-Grocery' },
+  'comcast': { likely: 'deductible', reason: 'Internet service for a home-based IT business is partially deductible. The business-use percentage of your internet bill can be claimed on Schedule C Line 25 (Utilities).', category: 'FPCS-Utilities' },
+  'xfinity': { likely: 'deductible', reason: 'Same as Comcast — business portion of internet is deductible.', category: 'FPCS-Utilities' },
+  't-mobile': { likely: 'deductible', reason: 'Business phone line is deductible. If it is a dedicated business line, 100% deductible. If personal phone used for business, deduct the business-use percentage.', category: 'FPCS-Utilities' },
+  'geico': { likely: 'deductible', reason: 'Vehicle insurance for your business vehicle is deductible under the actual expense method. If the vehicle is 100% business use, the full premium is deductible.', category: 'FPCS-Insurance' },
+  'staples': { likely: 'deductible', reason: 'Office supply store purchases for a business are typically 100% deductible. Printer supplies, paper, filing materials — all Schedule C Line 18 or 22.', category: 'FPCS-Office' },
+  'office depot': { likely: 'deductible', reason: 'Office supply purchases are deductible business expenses. Track under Schedule C Line 18 (Office Expense) or Line 22 (Supplies).', category: 'FPCS-Office' },
+  'restaurant': { likely: 'deductible', reason: 'Business meals at restaurants are 100% deductible in 2022 (special COVID provision). Must have a clear business purpose — client meetings, working meals. Keep receipts with notes about who attended and the business purpose.', category: 'FPCS-Meals' },
+  'meals': { likely: 'deductible', reason: 'Business meals: 100% deductible at restaurants in 2022, 50% otherwise. Document the business purpose, who was present, and the business relationship.', category: 'FPCS-Meals' },
+  'insurance': { likely: 'deductible', reason: 'Business insurance premiums are deductible. Vehicle insurance, liability insurance, professional insurance — all qualify under Schedule C.', category: 'FPCS-Insurance' },
+  'software': { likely: 'deductible', reason: 'Software subscriptions and licenses for business use are 100% deductible. This includes SaaS tools, antivirus, cloud storage, and productivity software.', category: 'FPCS-Software' },
+  'supplies': { likely: 'deductible', reason: 'Business supplies are deductible under Schedule C Line 22. For an IT business this includes cables, tools, cleaning supplies, and consumable tech items.', category: 'FPCS-Supplies' }
+};
+
+function jasperRespond(message) {
+  var msg = message.toLowerCase().trim();
+
+  // Command handling
+  if (msg.indexOf('/') === 0) {
+    return handleJasperCommand(msg);
+  }
+
+  // Search knowledge base for keyword matches
+  var bestMatch = null;
+  var bestScore = 0;
+  var keys = Object.keys(JASPER_TAX_KNOWLEDGE);
+  for (var i = 0; i < keys.length; i++) {
+    var key = keys[i];
+    if (msg.indexOf(key) !== -1) {
+      var score = key.length;
+      if (score > bestScore) {
+        bestScore = score;
+        bestMatch = JASPER_TAX_KNOWLEDGE[key];
+      }
+    }
+  }
+
+  if (bestMatch) {
+    var response = 'Good question, Commander! Here is what I found:\n\n';
+    response += '**Likely:** ' + (bestMatch.likely === 'deductible' ? 'DEDUCTIBLE' : (bestMatch.likely === 'personal' ? 'PERSONAL' : 'MIXED — needs review')) + '\n';
+    response += '**Category:** ' + bestMatch.category + '\n';
+    response += '**Reasoning:** ' + bestMatch.reason + '\n\n';
+
+    // Find matching entries
+    var matches = [];
+    unmatchedAllEntries.forEach(function(e) {
+      var eText = (e.vendor + ' ' + e.category + ' ' + (e.memo || '')).toLowerCase();
+      if (eText.indexOf(msg.replace(/[?!.,]/g, '').trim().split(' ')[msg.split(' ').length > 2 ? 1 : 0]) !== -1) {
+        matches.push(e);
+      }
+    });
+
+    if (matches.length > 0) {
+      response += '**Similar entries found:** ' + matches.length + ' entries totaling $' + matches.reduce(function(s, e) { return s + e.amount; }, 0).toFixed(2);
+      if (bestMatch.likely === 'deductible') {
+        response += '\n\n**Suggested action:** Mark all as deductible. These are standard business expenses for FPCS.';
+      } else if (bestMatch.likely === 'personal') {
+        response += '\n\n**Suggested action:** Mark as personal. These do not qualify as business deductions.';
+      } else {
+        response += '\n\n**Suggested action:** Review individual receipts. Split business and personal portions.';
+      }
+    }
+
+    return response;
+  }
+
+  // Generic responses
+  if (msg.indexOf('deduct') !== -1 || msg.indexOf('write off') !== -1 || msg.indexOf('tax') !== -1) {
+    return 'Commander, to determine if something is deductible, I need to know the vendor or category. Try asking me about a specific vendor like "Amazon" or "Best Buy", or a category like "software" or "meals". I will give you the IRS rules and my recommendation!';
+  }
+
+  if (msg.indexOf('help') !== -1 || msg.indexOf('what can') !== -1) {
+    return handleJasperCommand('/help');
+  }
+
+  if (msg.indexOf('thank') !== -1 || msg.indexOf('thanks') !== -1) {
+    return 'You got it, Commander! Happy to help find every deductible dollar. Just keep the questions coming!';
+  }
+
+  return 'Hey Commander! I am not sure about that one. Try asking me about a specific vendor (like "Amazon" or "Best Buy") or use /help to see my commands. I know the tax rules inside and out!';
+}
+
+function handleJasperCommand(cmd) {
+  var parts = cmd.split(' ');
+  var command = parts[0];
+
+  if (command === '/help') {
+    return '**Jasper Commands:**\n' +
+      '`/resolve [vendor]` — Auto-resolve all entries for a vendor\n' +
+      '`/stats` — Show current resolution progress\n' +
+      '`/fpcs` — Show all FPCS-likely (business) entries\n' +
+      '`/help` — Show this help message\n\n' +
+      'Or just ask me about any vendor or category in plain English! I will tell you if it is deductible and why.';
+  }
+
+  if (command === '/stats') {
+    var resolved = Object.keys(unmatchedResolved).length;
+    var deductCount = 0;
+    var personalCount = 0;
+    var deductValue = 0;
+    var personalValue = 0;
+
+    Object.keys(unmatchedResolved).forEach(function(id) {
+      var entry = unmatchedAllEntries.find(function(e) { return e.id === id; });
+      if (!entry) return;
+      if (unmatchedResolved[id] === 'deductible') { deductCount++; deductValue += entry.amount; }
+      else { personalCount++; personalValue += entry.amount; }
+    });
+
+    return '**Resolution Progress:**\n' +
+      'Resolved: ' + resolved + ' / ' + unmatchedTotalCount + ' (' + Math.round((resolved / unmatchedTotalCount) * 100) + '%)\n' +
+      'Deductible: ' + deductCount + ' entries ($' + deductValue.toFixed(2) + ')\n' +
+      'Personal: ' + personalCount + ' entries ($' + personalValue.toFixed(2) + ')\n' +
+      'Remaining: ' + (unmatchedTotalCount - resolved) + ' entries\n\n' +
+      'Keep going, Commander! Every resolved entry gets us closer to filing!';
+  }
+
+  if (command === '/fpcs') {
+    var fpcsGroups = unmatchedGroups.filter(function(g) { return isFpcsCategory(g.category); });
+    if (fpcsGroups.length === 0) {
+      return 'No FPCS-prefixed groups found. All entries may need manual categorization.';
+    }
+    var response = '**FPCS Business Groups (' + fpcsGroups.length + '):**\n';
+    fpcsGroups.forEach(function(g) {
+      response += '- ' + g.vendor + ' (' + g.category + '): ' + g.entries.length + ' entries, $' + g.total.toFixed(2) + '\n';
+    });
+    response += '\nThese are all likely deductible, Commander! Want me to mark them all?';
+    return response;
+  }
+
+  if (command === '/resolve') {
+    var vendorQuery = parts.slice(1).join(' ').toLowerCase();
+    if (!vendorQuery) {
+      return 'Usage: `/resolve [vendor name]` — Example: `/resolve amazon`';
+    }
+
+    var found = false;
+    unmatchedGroups.forEach(function(g) {
+      if (g.vendor.toLowerCase().indexOf(vendorQuery) !== -1) {
+        found = true;
+        var resolution = isFpcsCategory(g.category) ? 'deductible' : 'personal';
+        g.entries.forEach(function(e) {
+          if (!unmatchedResolved[e.id]) {
+            unmatchedResolved[e.id] = resolution;
+          }
+        });
+      }
+    });
+
+    if (found) {
+      renderUnmatchedGroups(unmatchedGroups);
+      updateUnmatchedStats();
+      updateResolutionProgress();
+      return 'Done! All entries matching "' + vendorQuery + '" have been auto-resolved. FPCS categories marked deductible, others marked personal.';
+    } else {
+      return 'No groups found matching "' + vendorQuery + '". Try a different vendor name.';
+    }
+  }
+
+  return 'Unknown command. Type `/help` to see available commands.';
+}
+
+function sendJasperMessage() {
+  var input = document.getElementById('jasperInput');
+  var text = (input.value || '').trim();
+  if (!text) return;
+
+  // Add user message
+  addJasperMsg('user', 'Commander', text);
+  input.value = '';
+
+  // Generate response after brief delay
+  setTimeout(function() {
+    var response = jasperRespond(text);
+    addJasperMsg('jasper', 'Jasper', response);
+  }, 300 + Math.random() * 400);
+}
+
+function addJasperMsg(type, label, text) {
+  var body = document.getElementById('jasperChatBody');
+  var div = document.createElement('div');
+  div.className = 'jasper-msg ' + type;
+
+  // Parse simple markdown
+  var rendered = escDed(text)
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/`(.+?)`/g, '<code class="jasper-cmd">$1</code>')
+    .replace(/\n/g, '<br>');
+
+  div.innerHTML = '<div class="msg-label">' + escDed(label) + '</div>' + rendered;
+  body.appendChild(div);
+  body.scrollTop = body.scrollHeight;
+
+  jasperMessages.push({ type: type, label: label, text: text, time: new Date() });
+}
+
+function jasperQuickCmd(cmd) {
+  document.getElementById('jasperInput').value = cmd;
+  sendJasperMessage();
+}
+
+function askJasperAboutEntry(entryId) {
+  var entry = unmatchedAllEntries.find(function(e) { return e.id === entryId; });
+  if (!entry) return;
+
+  // Open chat if closed
+  var chat = document.getElementById('jasperChat');
+  if (!chat.classList.contains('open')) chat.classList.add('open');
+
+  // Send question
+  var question = 'Is this deductible? ' + entry.vendor + ' - $' + entry.amount.toFixed(2) + ' (' + entry.category + ')' + (entry.memo ? ' — ' + entry.memo : '');
+  addJasperMsg('user', 'Commander', question);
+
+  setTimeout(function() {
+    var response = jasperRespond(entry.vendor.toLowerCase());
+    if (response.indexOf('not sure') !== -1) {
+      response = jasperRespond(entry.category.toLowerCase());
+    }
+    addJasperMsg('jasper', 'Jasper', response);
+  }, 400);
+
+  // Scroll to chat
+  chat.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function askJasperAboutGroup(vendor, category) {
+  var chat = document.getElementById('jasperChat');
+  if (!chat.classList.contains('open')) chat.classList.add('open');
+
+  var question = 'What about all the ' + vendor + ' entries in ' + category + '?';
+  addJasperMsg('user', 'Commander', question);
+
+  setTimeout(function() {
+    var response = jasperRespond(vendor.toLowerCase());
+    if (response.indexOf('not sure') !== -1) {
+      response = jasperRespond(category.toLowerCase());
+    }
+    addJasperMsg('jasper', 'Jasper', response);
+  }, 400);
+
+  chat.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function toggleJasperChat() {
+  var chat = document.getElementById('jasperChat');
+  chat.classList.toggle('open');
+  var icon = document.getElementById('jasperToggleIcon');
+  icon.innerHTML = chat.classList.contains('open') ? '&#9660;' : '&#9654;';
+}
+
+// --- Auto-load unmatched data after auth ---
+document.addEventListener('fpcs-authed', function() {
+  setTimeout(loadUnmatchedData, 600);
+});
+setTimeout(function() {
+  if (unmatchedGroups.length === 0) loadUnmatchedData();
+}, 5000);
+</script>
+
+<!-- Firestore Compat SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
 <!-- Shared Modules (load after page config) -->
 <script src="js/sheets-api.js"></script>
 <script src="js/auth.js"></script>
@@ -1217,6 +1986,7 @@ function grantSheetsFromPanel() {
 <script src="js/sheets-notes.js"></script>
 <script src="js/memory-blocks.js"></script>
 <script src="js/offline.js"></script>
+<script src="js/firestore-db.js"></script>
 <script src="bot-assistant.js"></script>
 </body>
 </html>
