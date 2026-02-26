@@ -691,7 +691,7 @@
 
   <div id="recordsLoading" class="loading-indicator">
     <div class="loading-spinner"></div>
-    <span>Connecting to Google Sheets...</span>
+    <span>Loading income records...</span>
   </div>
 
   <div id="recordsContainer" style="display:none;overflow-x:auto">
@@ -704,9 +704,9 @@
     <div class="records-pager" id="recordsPager"></div>
   </div>
 
-  <div id="recordsError" style="display:none;padding:24px;color:var(--red);font-size:14px;text-align:center">
-    <p>&#9888; Could not load data from Google Sheets.</p>
-    <p style="font-size:12px;color:var(--muted);margin-top:8px">Make sure you're signed in and the sheet is accessible. <button onclick="loadAllRecords()" style="color:var(--accent);background:none;border:none;cursor:pointer;text-decoration:underline">Retry</button></p>
+  <div id="recordsError" style="display:none;padding:24px;color:var(--yellow);font-size:14px;text-align:center">
+    <p>&#9888; Google Sheets not connected &mdash; data will load from Firestore once configured.</p>
+    <p style="font-size:12px;color:var(--muted);margin-top:8px">Income records require a data source. Connect Sheets or enable Firestore to view records. <button onclick="window._sheetsRetryCount=0;loadAllRecords()" style="color:var(--accent);background:none;border:none;cursor:pointer;text-decoration:underline">Retry Sheets</button></p>
   </div>
 </div>
 
@@ -818,7 +818,7 @@ function loadAllRecords() {
     if (window._sheetsRetryCount > 30) {
       loading.style.display = 'none';
       errorDiv.style.display = 'block';
-      errorDiv.querySelector('p').innerHTML = '&#9888; Google Sheets connection timed out. Make sure you are signed in. <button onclick="window._sheetsRetryCount=0;loadAllRecords()" style="color:var(--accent);background:none;border:none;cursor:pointer;text-decoration:underline">Retry</button>';
+      errorDiv.querySelector('p').innerHTML = '&#9888; Google Sheets not connected &mdash; data will load from Firestore once configured. <button onclick="window._sheetsRetryCount=0;loadAllRecords()" style="color:var(--accent);background:none;border:none;cursor:pointer;text-decoration:underline">Retry Sheets</button>';
       return;
     }
     setTimeout(loadAllRecords, 500);
