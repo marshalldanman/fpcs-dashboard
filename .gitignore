@@ -3,3 +3,8 @@ response.json
 *.zip
 node_modules/
 .DS_Store
+
+# Firebase secrets — NEVER commit these
+service-account-key.json
+**/service-account-key.json
+*.key.json
