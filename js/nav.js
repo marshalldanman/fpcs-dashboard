@@ -30,7 +30,8 @@
     { key: 'admin',      icon: '&#128274;', label: 'Admin HQ (Page 8)', href: 'admin.html',      color: 'var(--purple)' },
     { key: 'village',    icon: '&#127968;', label: 'Realbotville (Page 9)', href: 'realbotville.html', color: '#38bdf8' },
     { key: 'library',   icon: '&#128218;', label: 'Library (Page 10)',     href: 'library.html',      color: '#f59e0b' },
-    { key: 'stats-board', icon: '&#127942;', label: 'Stats Board',         href: 'stats-board.html',  color: 'var(--purple)' }
+    { key: 'stats-board', icon: '&#127942;', label: 'Stats Board',         href: 'stats-board.html',  color: 'var(--purple)' },
+    { key: 'sentrylion', icon: '&#128737;', label: 'SentryLion',           href: 'sentrylion.html',   color: '#f59e0b' }
   ];
 
   // --- Read page config ---
@@ -95,6 +96,14 @@
       '</a>'
     );
 
+    // Radio indicator (shows when radio is playing)
+    html.push(
+      '<div class="nav-radio-indicator" id="navRadioIndicator" style="display:none;padding:6px 12px;font-size:11px;color:var(--muted);text-align:center;cursor:pointer" title="Radio is playing" onclick="if(window.toggleRadio)window.toggleRadio()">' +
+      '<span style="animation:navPulse 1.5s ease-in-out infinite">&#9835;</span>' +
+      '<span class="nav-label" style="margin-left:4px;font-size:10px">Radio On</span>' +
+      '</div>'
+    );
+
     return html.join('\n');
   }
 
@@ -126,10 +135,35 @@
     dashContent.insertBefore(nav, dashContent.firstChild);
   }
 
+  // --- Radio indicator: listen for custom events from radio module ---
+  function setupRadioIndicator() {
+    document.addEventListener('fpcs-radio-playing', function () {
+      var el = document.getElementById('navRadioIndicator');
+      if (el) el.style.display = 'block';
+    });
+    document.addEventListener('fpcs-radio-stopped', function () {
+      var el = document.getElementById('navRadioIndicator');
+      if (el) el.style.display = 'none';
+    });
+  }
+
+  // --- Inject pulse animation style ---
+  function injectNavStyles() {
+    var style = document.createElement('style');
+    style.textContent = '@keyframes navPulse{0%,100%{opacity:.5}50%{opacity:1}}';
+    document.head.appendChild(style);
+  }
+
   // --- Init ---
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', injectNav);
+    document.addEventListener('DOMContentLoaded', function () {
+      injectNav();
+      injectNavStyles();
+      setupRadioIndicator();
+    });
   } else {
     injectNav();
+    injectNavStyles();
+    setupRadioIndicator();
   }
 })();

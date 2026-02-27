@@ -59,6 +59,9 @@
     'japster.html':      'member',
     'helpdesk.html':     'member',
     'realbotville.html': 'member',
+    'library.html':      'member',
+    'stats-board.html':  'member',
+    'sentrylion.html':   'member',
     'admin.html':        'admin'
   };
   var ROLE_LEVELS = { guest: 0, member: 1, admin: 2 };

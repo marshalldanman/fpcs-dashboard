@@ -10,6 +10,7 @@
 <link rel="stylesheet" href="css/core.css">
 <link rel="stylesheet" href="css/nav.css">
 <link rel="stylesheet" href="css/auth.css">
+<link rel="stylesheet" href="css/suno-radio.css">
 <style>
   /* FILTER BAR */
   .filter-bar{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap}
@@ -99,6 +100,41 @@
   .records-pager button.active{background:rgba(56,189,248,.1);color:var(--accent);border-color:var(--accent)}
   .records-pager button:disabled{opacity:0.3;cursor:default}
   .records-pager .page-info{font-size:12px;color:var(--muted)}
+
+  /* === CLIENT DETAIL MODAL === */
+  .inc-detail-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.65);z-index:9980;display:none;align-items:center;justify-content:center;padding:24px;animation:incFadeIn .2s ease}
+  .inc-detail-overlay.open{display:flex}
+  @keyframes incFadeIn{from{opacity:0}to{opacity:1}}
+  .inc-detail-modal{background:#0f172a;border:1px solid var(--border);border-radius:16px;width:100%;max-width:900px;max-height:85vh;display:flex;flex-direction:column;box-shadow:0 8px 40px rgba(0,0,0,.6);animation:incSlideUp .25s ease}
+  @keyframes incSlideUp{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+  .inc-detail-header{padding:20px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;flex-shrink:0}
+  .inc-detail-header h3{flex:1;font-size:16px;font-weight:700;color:var(--green);margin:0}
+  .inc-detail-header .inc-detail-total{font-family:'Courier New',monospace;font-size:20px;font-weight:700;color:var(--green)}
+  .inc-detail-close{background:none;border:none;color:var(--muted);font-size:24px;cursor:pointer;padding:0 4px;line-height:1;transition:color .15s}
+  .inc-detail-close:hover{color:var(--text)}
+  .inc-detail-body{flex:1;overflow-y:auto;padding:0}
+  .inc-detail-table{width:100%;border-collapse:collapse;font-size:13px}
+  .inc-detail-table th{text-align:left;padding:10px 16px;color:var(--accent);font-size:10px;text-transform:uppercase;letter-spacing:.5px;background:rgba(15,23,42,.6);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:1}
+  .inc-detail-table td{padding:8px 16px;border-bottom:1px solid rgba(51,65,85,.2)}
+  .inc-detail-table tr:hover td{background:rgba(56,189,248,.03)}
+  .inc-detail-note{padding:12px 16px;font-size:12px;color:var(--muted);background:rgba(15,23,42,.3);border-top:1px solid var(--border)}
+  .inc-detail-footer{padding:16px 24px;border-top:1px solid var(--border);display:flex;gap:10px;flex-wrap:wrap;align-items:center;flex-shrink:0}
+  .inc-detail-footer .detail-meta{flex:1;font-size:12px;color:var(--muted)}
+  .inc-detail-footer button{padding:8px 16px;border-radius:8px;border:1px solid var(--border);font-size:12px;font-weight:700;cursor:pointer;transition:transform .1s,background .15s}
+  .inc-detail-footer button:hover{transform:translateY(-1px)}
+  .inc-detail-footer .btn-sheets{background:rgba(74,222,128,.1);color:var(--green);border-color:rgba(74,222,128,.3)}
+  .inc-detail-footer .btn-sheets:hover{background:rgba(74,222,128,.2)}
+  .inc-detail-footer .btn-export{background:rgba(56,189,248,.1);color:var(--accent);border-color:rgba(56,189,248,.3)}
+  .inc-detail-footer .btn-export:hover{background:rgba(56,189,248,.2)}
+  .client-header .amount{cursor:pointer;transition:color .15s,text-shadow .15s}
+  .client-header .amount:hover{text-shadow:0 0 8px rgba(74,222,128,.3)}
+  @media(max-width:640px){
+    .inc-detail-modal{max-height:95vh;border-radius:12px}
+    .inc-detail-header{padding:14px 16px}
+    .inc-detail-table th,.inc-detail-table td{padding:6px 10px;font-size:11px}
+    .inc-detail-footer{padding:12px 16px}
+    .inc-detail-footer button{padding:6px 12px;font-size:11px}
+  }
 </style>
 </head>
 <body class="theme-income">
@@ -162,7 +198,7 @@
         <div class="meta"><span>Invoice #221406</span><span>Hacker Incident &mdash; Cyber Security</span></div>
       </div>
       <div style="text-align:right">
-        <div class="amount" style="color:var(--green)">$2,000.00</div>
+        <div class="amount" style="color:var(--green)" onclick="openIncomeDetail(this,event)" title="Click to view details">$2,000.00 &#8599;</div>
         <div class="meta">received 12/11/2022</div>
       </div>
       <span class="chevron">&#9654;</span>
@@ -204,7 +240,7 @@
         <div class="meta"><span>Invoices #221398, #221399</span><span>Tech Support &amp; Computer Sale</span></div>
       </div>
       <div style="text-align:right">
-        <div class="amount" style="color:var(--green)">$916.50</div>
+        <div class="amount" style="color:var(--green)" onclick="openIncomeDetail(this,event)" title="Click to view details">$916.50 &#8599;</div>
         <div class="meta">2 payments in 2022</div>
       </div>
       <span class="chevron">&#9654;</span>
@@ -240,7 +276,7 @@
         <div class="meta"><span>Invoice #221395</span><span>Laptop screen fix &mdash; Lenovo Yoga Book</span></div>
       </div>
       <div style="text-align:right">
-        <div class="amount" style="color:var(--green)">$130.00</div>
+        <div class="amount" style="color:var(--green)" onclick="openIncomeDetail(this,event)" title="Click to view details">$130.00 &#8599;</div>
         <div class="meta">paid 7/11/2022</div>
       </div>
       <span class="chevron">&#9654;</span>
@@ -269,7 +305,7 @@
         <div class="meta"><span>3 paid jobs NOT in QuickBooks</span><span>Likely paid by personal check</span></div>
       </div>
       <div style="text-align:right">
-        <div class="amount" style="color:var(--yellow)">$870.00</div>
+        <div class="amount" style="color:var(--yellow)" onclick="openIncomeDetail(this,event)" title="Click to view details">$870.00 &#8599;</div>
         <div class="meta">gross / $385.00 net labor</div>
       </div>
       <span class="chevron">&#9654;</span>
@@ -320,7 +356,7 @@
         <div class="meta"><span>Invoices #1399, #1385, #1372</span><span>Reminder sent 10/16/2023 &mdash; still outstanding</span></div>
       </div>
       <div style="text-align:right">
-        <div class="amount" style="color:var(--red)">$730.00</div>
+        <div class="amount" style="color:var(--red)" onclick="openIncomeDetail(this,event)" title="Click to view details">$730.00 &#8599;</div>
         <div class="meta">NOT income (never collected)</div>
       </div>
       <span class="chevron">&#9654;</span>
@@ -680,6 +716,33 @@
   <h2>&#128202; All Income Records &mdash; Live from Google Sheets</h2>
   <p style="color:var(--muted);font-size:13px;margin-bottom:16px">Every income transaction from FINAL_MASTER. Loaded live from the Google Sheet database. Click column headers to sort.</p>
 
+  <!-- Live income summary (populated after data load) -->
+  <div id="incLiveSummary" style="display:none;margin-bottom:16px">
+    <div style="display:flex;gap:12px;flex-wrap:wrap">
+      <div style="flex:1;min-width:130px;padding:12px;background:var(--bg);border-radius:8px;text-align:center;border:1px solid var(--border)">
+        <div style="font-size:18px;font-weight:700;font-family:'Courier New',monospace;color:var(--green)" id="incLiveGross">--</div>
+        <div style="font-size:10px;text-transform:uppercase;color:var(--muted);margin-top:4px">Total Gross Income</div>
+      </div>
+      <div style="flex:1;min-width:130px;padding:12px;background:var(--bg);border-radius:8px;text-align:center;border:1px solid var(--border)">
+        <div style="font-size:18px;font-weight:700;font-family:'Courier New',monospace;color:var(--red)" id="incLiveExpense">--</div>
+        <div style="font-size:10px;text-transform:uppercase;color:var(--muted);margin-top:4px">Total Expenses</div>
+      </div>
+      <div style="flex:1;min-width:130px;padding:12px;background:var(--bg);border-radius:8px;text-align:center;border:1px solid var(--border)">
+        <div style="font-size:18px;font-weight:700;font-family:'Courier New',monospace;color:var(--accent)" id="incLiveCount">--</div>
+        <div style="font-size:10px;text-transform:uppercase;color:var(--muted);margin-top:4px">Total Records</div>
+      </div>
+      <div style="flex:1;min-width:130px;padding:12px;background:var(--bg);border-radius:8px;text-align:center;border:1px solid rgba(251,191,36,.3)">
+        <div style="font-size:18px;font-weight:700;font-family:'Courier New',monospace;color:var(--yellow)" id="incLiveMissing">$870</div>
+        <div style="font-size:10px;text-transform:uppercase;color:var(--yellow);margin-top:4px">Missing from QBO</div>
+      </div>
+    </div>
+  </div>
+  <!-- Data freshness -->
+  <div id="incDataFreshness" style="display:none;font-size:11px;color:var(--muted);margin-bottom:12px;align-items:center;gap:6px">
+    <span id="incFreshnessIcon" style="color:var(--green)">&#9679;</span>
+    <span id="incFreshnessText">Data loaded just now</span>
+  </div>
+
   <div class="records-controls">
     <button class="filter-btn active" onclick="filterRecords('all',this)">All</button>
     <button class="filter-btn f-green" onclick="filterRecords('income',this)">Income</button>
@@ -811,17 +874,18 @@ function loadAllRecords() {
   container.style.display = 'none';
   errorDiv.style.display = 'none';
 
-  // Wait for FPCSSheets to be ready (max 15 seconds)
+  // Wait for FPCSSheets to be ready — exponential backoff, max 3 retries
   if (!window._sheetsRetryCount) window._sheetsRetryCount = 0;
   if (!window.FPCSSheets || !window.FPCSSheets.isReady()) {
     window._sheetsRetryCount++;
-    if (window._sheetsRetryCount > 30) {
+    if (window._sheetsRetryCount > 3) {
       loading.style.display = 'none';
       errorDiv.style.display = 'block';
-      errorDiv.querySelector('p').innerHTML = '&#9888; Google Sheets not connected &mdash; data will load from Firestore once configured. <button onclick="window._sheetsRetryCount=0;loadAllRecords()" style="color:var(--accent);background:none;border:none;cursor:pointer;text-decoration:underline">Retry Sheets</button>';
+      console.warn('[Income] Sheets not available after 3 retries');
       return;
     }
-    setTimeout(loadAllRecords, 500);
+    var delay = Math.min(500 * Math.pow(2, window._sheetsRetryCount - 1), 4000);
+    setTimeout(loadAllRecords, delay);
     return;
   }
   window._sheetsRetryCount = 0;
@@ -934,7 +998,6 @@ function updateLiveStats(rows, colMap) {
   // Update stat card for total if it exists
   var summaryStats = document.getElementById('sec-summary');
   if (summaryStats) {
-    // Add or update a live data stat card
     var liveCard = document.getElementById('liveDataCard');
     if (!liveCard) {
       liveCard = document.createElement('div');
@@ -946,6 +1009,34 @@ function updateLiveStats(rows, colMap) {
     liveCard.innerHTML = '<div class="label">Live Data (All Records)</div>' +
       '<div class="value" style="font-size:18px">' + count + ' rows</div>' +
       '<div class="sub">From Google Sheets &bull; Click to view all</div>';
+  }
+
+  // Populate live summary cards
+  var liveSummary = document.getElementById('incLiveSummary');
+  if (liveSummary) {
+    liveSummary.style.display = 'block';
+    var elGross = document.getElementById('incLiveGross');
+    var elExpense = document.getElementById('incLiveExpense');
+    var elCount = document.getElementById('incLiveCount');
+    if (elGross) elGross.textContent = '$' + totalIncome.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+    if (elExpense) elExpense.textContent = '$' + totalExpense.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+    if (elCount) elCount.textContent = count;
+  }
+
+  // Data freshness indicator
+  var freshness = document.getElementById('incDataFreshness');
+  if (freshness) {
+    freshness.style.display = 'flex';
+    var iconEl = document.getElementById('incFreshnessIcon');
+    var textEl = document.getElementById('incFreshnessText');
+    var now = new Date();
+    var timeStr = now.toLocaleTimeString('en-US', {hour:'numeric', minute:'2-digit'});
+    if (textEl) textEl.textContent = 'Data loaded at ' + timeStr;
+    if (iconEl) iconEl.style.color = 'var(--green)';
+    setTimeout(function() {
+      if (iconEl) iconEl.style.color = 'var(--yellow)';
+      if (textEl) textEl.textContent = 'Data may be stale \u2014 loaded at ' + timeStr;
+    }, 120000);
   }
 }
 
@@ -1089,6 +1180,152 @@ setTimeout(function() {
   if (allRecords.length === 0) loadAllRecords();
 }, 4000);
 </script>
+<!-- Client Detail Modal -->
+<div class="inc-detail-overlay" id="incDetailOverlay" onclick="if(event.target===this)closeIncomeDetail()">
+  <div class="inc-detail-modal">
+    <div class="inc-detail-header">
+      <h3 id="incDetailTitle">Client</h3>
+      <span class="inc-detail-total" id="incDetailTotal">$0.00</span>
+      <button class="inc-detail-close" onclick="closeIncomeDetail()" title="Close">&times;</button>
+    </div>
+    <div class="inc-detail-body" id="incDetailBody"></div>
+    <div class="inc-detail-footer">
+      <span class="detail-meta" id="incDetailMeta"></span>
+      <button class="btn-sheets" onclick="openIncomeInSheets()" title="Open in Google Sheets">&#128196; View in Sheets</button>
+      <button class="btn-export" onclick="exportIncomeCSV()" title="Download as CSV">&#128229; Export CSV</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+//  CLIENT DETAIL MODAL — Income drill-down per client
+// ============================================================
+var _incDetailClientEl = null;
+
+function openIncomeDetail(amountEl, event) {
+  if (event) event.stopPropagation();
+
+  var headerEl = amountEl.closest('.client-header');
+  var groupEl = headerEl.closest('.client-group');
+  _incDetailClientEl = groupEl;
+
+  // Extract client name
+  var nameEl = headerEl.querySelector('.name');
+  var clientName = nameEl ? nameEl.textContent.replace(/[^\x20-\x7E]/g, '').trim() : 'Client';
+  // Clean badge text from name
+  clientName = clientName.replace(/IN QBO|MISSING.*|UNPAID.*|NOT IN QBO/gi, '').trim();
+
+  // Extract amount
+  var amountText = amountEl.textContent.trim();
+
+  document.getElementById('incDetailTitle').textContent = clientName;
+  document.getElementById('incDetailTotal').textContent = amountText;
+
+  // Extract the table from client-body
+  var bodyEl = groupEl.querySelector('.client-body');
+  var tableEl = bodyEl ? bodyEl.querySelector('.tx-table') : null;
+  var noteEl = bodyEl ? bodyEl.querySelector('div[style*="background"]') : null;
+
+  var html = '';
+  if (tableEl) {
+    html += '<table class="inc-detail-table">';
+    // Copy the table contents
+    var rows = tableEl.querySelectorAll('tr');
+    rows.forEach(function(row, idx) {
+      if (idx === 0) {
+        html += '<thead><tr>';
+        row.querySelectorAll('th').forEach(function(th) {
+          html += '<th>' + th.innerHTML + '</th>';
+        });
+        html += '</tr></thead><tbody>';
+      } else {
+        html += '<tr>';
+        row.querySelectorAll('td').forEach(function(td) {
+          html += '<td style="' + (td.getAttribute('style') || '') + '">' + td.innerHTML + '</td>';
+        });
+        html += '</tr>';
+      }
+    });
+    html += '</tbody></table>';
+  } else {
+    html += '<div style="padding:24px;text-align:center;color:var(--muted)">No transaction details available for this client.</div>';
+  }
+
+  // Cross-ref note
+  if (noteEl) {
+    html += '<div class="inc-detail-note">' + noteEl.innerHTML + '</div>';
+  }
+
+  document.getElementById('incDetailBody').innerHTML = html;
+
+  // Meta
+  var status = groupEl.dataset.status || 'unknown';
+  var statusLabel = status === 'confirmed' ? 'In QBO' : (status === 'missing' ? 'Missing from QBO' : (status === 'unpaid' ? 'Unpaid' : status));
+  var statusColor = status === 'confirmed' ? 'var(--green)' : (status === 'missing' ? 'var(--yellow)' : (status === 'unpaid' ? 'var(--red)' : 'var(--muted)'));
+  document.getElementById('incDetailMeta').innerHTML = 'Status: <span style="color:' + statusColor + ';font-weight:600">' + statusLabel.toUpperCase() + '</span>';
+
+  // Show
+  document.getElementById('incDetailOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeIncomeDetail() {
+  document.getElementById('incDetailOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+  _incDetailClientEl = null;
+}
+
+function openIncomeInSheets() {
+  if (!window.FPCSSheets || !window.FPCSSheets.isReady()) {
+    alert('Sheets module not ready. Please wait for data to load.');
+    return;
+  }
+  var sheetId = window.FPCSSheets.SHEETS ? window.FPCSSheets.SHEETS.TAX_MASTER : '';
+  if (sheetId) {
+    window.open('https://docs.google.com/spreadsheets/d/' + sheetId + '/edit', '_blank');
+  } else {
+    alert('Sheet ID not found. Cannot open Google Sheets.');
+  }
+}
+
+function exportIncomeCSV() {
+  if (!_incDetailClientEl) return;
+
+  var bodyEl = _incDetailClientEl.querySelector('.client-body');
+  var tableEl = bodyEl ? bodyEl.querySelector('.tx-table') : null;
+  if (!tableEl) return;
+
+  var csvRows = [];
+  var rows = tableEl.querySelectorAll('tr');
+  rows.forEach(function(row) {
+    var cells = row.querySelectorAll('th, td');
+    var csvCols = [];
+    cells.forEach(function(cell) {
+      var text = cell.textContent.replace(/"/g, '""').trim();
+      csvCols.push('"' + text + '"');
+    });
+    csvRows.push(csvCols.join(','));
+  });
+
+  var clientName = (document.getElementById('incDetailTitle').textContent || 'income').trim();
+  var blob = new Blob([csvRows.join('\n')], { type: 'text/csv;charset=utf-8;' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = 'income-' + clientName.replace(/[^a-z0-9]/gi, '-').toLowerCase() + '.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// Close on Escape
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape' && document.getElementById('incDetailOverlay').classList.contains('open')) {
+    closeIncomeDetail();
+  }
+});
+</script>
+
 <!-- Email obfuscation decoder (prevents scraping from public repo) -->
 <script>document.querySelectorAll('[data-e]').forEach(function(el){el.textContent=atob(el.getAttribute('data-e'))});</script>
 
@@ -1099,5 +1336,6 @@ setTimeout(function() {
 <script src="js/memory-blocks.js"></script>
 <script src="js/offline.js"></script>
 <script src="bot-assistant.js"></script>
+<script src="js/suno-radio.js"></script>
 </body>
 </html>

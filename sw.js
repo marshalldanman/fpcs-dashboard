@@ -7,7 +7,7 @@
    use in Chrome browser.
    ============================================================ */
 
-var CACHE_NAME = 'fpcs-dash-v2';
+var CACHE_NAME = 'fpcs-dash-v4';
 var STATIC_ASSETS = [
   './',
   'index.html',
@@ -20,6 +20,8 @@ var STATIC_ASSETS = [
   'admin.html',
   'realbotville.html',
   'library.html',
+  'stats-board.html',
+  'sentrylion.html',
   'js/auth.js',
   'js/nav.js',
   'js/sheets-api.js',
@@ -28,6 +30,9 @@ var STATIC_ASSETS = [
   'js/offline.js',
   'js/chiligbot.js',
   'js/designmode.js',
+  'js/firestore-db.js',
+  'js/suno-radio.js',
+  'css/suno-radio.css',
   'bot-assistant.js'
 ];
 

@@ -97,9 +97,14 @@
     return idOrKey;
   }
 
-  // --- Core fetch wrapper ---
-  function sheetsFetch(url, options) {
+  // --- Retry config ---
+  var SHEETS_MAX_RETRIES = 3;
+  var SHEETS_RETRY_BASE_MS = 500;
+
+  // --- Core fetch wrapper with exponential backoff ---
+  function sheetsFetch(url, options, _retryCount) {
     options = options || {};
+    _retryCount = _retryCount || 0;
     var headers = options.headers || {};
 
     // Add auth: prefer OAuth token for writes, API key for reads
@@ -119,6 +124,13 @@
 
     return fetch(url, options)
       .then(function (res) {
+        // Retry on 429 (rate limit) or 5xx (server error)
+        if ((res.status === 429 || res.status >= 500) && _retryCount < SHEETS_MAX_RETRIES) {
+          var delay = SHEETS_RETRY_BASE_MS * Math.pow(2, _retryCount);
+          warn('Sheets API ' + res.status + ' — retrying in ' + delay + 'ms (' + (SHEETS_MAX_RETRIES - _retryCount) + ' left)');
+          return new Promise(function (resolve) { setTimeout(resolve, delay); })
+            .then(function () { return sheetsFetch(url, options, _retryCount + 1); });
+        }
         if (!res.ok) {
           return res.json().then(function (err) {
             var msg = (err.error && err.error.message) || res.statusText;
@@ -126,6 +138,16 @@
           });
         }
         return res.json();
+      })
+      .catch(function (err) {
+        // Retry on network errors (Failed to fetch)
+        if (err.message && err.message.indexOf('Failed to fetch') !== -1 && _retryCount < SHEETS_MAX_RETRIES) {
+          var delay = SHEETS_RETRY_BASE_MS * Math.pow(2, _retryCount);
+          warn('Network error — retrying in ' + delay + 'ms (' + (SHEETS_MAX_RETRIES - _retryCount) + ' left)');
+          return new Promise(function (resolve) { setTimeout(resolve, delay); })
+            .then(function () { return sheetsFetch(url, options, _retryCount + 1); });
+        }
+        throw err;
       });
   }
 

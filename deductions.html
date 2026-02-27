@@ -11,6 +11,7 @@
 <link rel="stylesheet" href="css/core.css">
 <link rel="stylesheet" href="css/nav.css">
 <link rel="stylesheet" href="css/auth.css">
+<link rel="stylesheet" href="css/suno-radio.css">
 <style>
   /* === PAGE-SPECIFIC: Deductions HQ === */
 
@@ -192,6 +193,45 @@
   .jasper-cmd{color:var(--accent);font-family:'Courier New',monospace;font-size:12px}
   .jasper-suggestion{display:inline-block;padding:4px 10px;margin:2px;border-radius:6px;border:1px solid var(--border);font-size:11px;cursor:pointer;color:var(--accent);background:rgba(56,189,248,.05);transition:background .15s}
   .jasper-suggestion:hover{background:rgba(56,189,248,.15)}
+
+  /* === CATEGORY DETAIL MODAL === */
+  .cat-detail-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.65);z-index:9980;display:none;align-items:center;justify-content:center;padding:24px;animation:catFadeIn .2s ease}
+  .cat-detail-overlay.open{display:flex}
+  @keyframes catFadeIn{from{opacity:0}to{opacity:1}}
+  .cat-detail-modal{background:#0f172a;border:1px solid var(--border);border-radius:16px;width:100%;max-width:900px;max-height:85vh;display:flex;flex-direction:column;box-shadow:0 8px 40px rgba(0,0,0,.6);animation:catSlideUp .25s ease}
+  @keyframes catSlideUp{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+  .cat-detail-header{padding:20px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;flex-shrink:0}
+  .cat-detail-header h3{flex:1;font-size:16px;font-weight:700;color:var(--green);margin:0}
+  .cat-detail-header .cat-detail-total{font-family:'Courier New',monospace;font-size:20px;font-weight:700;color:var(--green)}
+  .cat-detail-close{background:none;border:none;color:var(--muted);font-size:24px;cursor:pointer;padding:0 4px;line-height:1;transition:color .15s}
+  .cat-detail-close:hover{color:var(--text)}
+  .cat-detail-body{flex:1;overflow-y:auto;padding:0}
+  .cat-detail-table{width:100%;border-collapse:collapse;font-size:13px}
+  .cat-detail-table th{text-align:left;padding:10px 16px;color:var(--accent);font-size:10px;text-transform:uppercase;letter-spacing:.5px;background:rgba(15,23,42,.6);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:1}
+  .cat-detail-table td{padding:8px 16px;border-bottom:1px solid rgba(51,65,85,.2)}
+  .cat-detail-table tr:hover td{background:rgba(74,222,128,.03)}
+  .cat-detail-table .td-amount{text-align:right;font-family:'Courier New',monospace;font-weight:600}
+  .cat-detail-table .td-source{font-size:11px;padding:2px 8px;border-radius:4px;display:inline-block}
+  .cat-detail-table .src-qbo{background:rgba(56,189,248,.12);color:var(--accent)}
+  .cat-detail-table .src-ledger{background:rgba(167,139,250,.12);color:var(--purple)}
+  .cat-detail-table .src-unknown{background:rgba(100,116,139,.12);color:var(--muted)}
+  .cat-detail-footer{padding:16px 24px;border-top:1px solid var(--border);display:flex;gap:10px;flex-wrap:wrap;align-items:center;flex-shrink:0}
+  .cat-detail-footer .detail-meta{flex:1;font-size:12px;color:var(--muted)}
+  .cat-detail-footer button{padding:8px 16px;border-radius:8px;border:1px solid var(--border);font-size:12px;font-weight:700;cursor:pointer;transition:transform .1s,background .15s}
+  .cat-detail-footer button:hover{transform:translateY(-1px)}
+  .cat-detail-footer .btn-sheets{background:rgba(74,222,128,.1);color:var(--green);border-color:rgba(74,222,128,.3)}
+  .cat-detail-footer .btn-sheets:hover{background:rgba(74,222,128,.2)}
+  .cat-detail-footer .btn-export{background:rgba(56,189,248,.1);color:var(--accent);border-color:rgba(56,189,248,.3)}
+  .cat-detail-footer .btn-export:hover{background:rgba(56,189,248,.2)}
+  .cat-detail-footer .btn-notes{background:rgba(245,158,11,.1);color:#f59e0b;border-color:rgba(245,158,11,.3)}
+  .cat-detail-footer .btn-notes:hover{background:rgba(245,158,11,.2)}
+  @media(max-width:640px){
+    .cat-detail-modal{max-height:95vh;border-radius:12px}
+    .cat-detail-header{padding:14px 16px}
+    .cat-detail-table th,.cat-detail-table td{padding:6px 10px;font-size:11px}
+    .cat-detail-footer{padding:12px 16px}
+    .cat-detail-footer button{padding:6px 12px;font-size:11px}
+  }
 </style>
 </head>
 <body class="theme-deductions">
@@ -612,7 +652,14 @@
       <div class="live-stat"><div class="live-stat-val" style="color:var(--green)" id="lsTotalDeductions">--</div><div class="live-stat-label">Total Deductions</div></div>
       <div class="live-stat"><div class="live-stat-val" style="color:var(--accent)" id="lsCategories">--</div><div class="live-stat-label">Categories</div></div>
       <div class="live-stat"><div class="live-stat-val" style="color:var(--purple)" id="lsTransactions">--</div><div class="live-stat-label">Transactions</div></div>
+      <div class="live-stat"><div class="live-stat-val" style="color:var(--yellow)" id="lsNeedsReview">--</div><div class="live-stat-label">Needs Review</div></div>
       <div class="live-stat"><div class="live-stat-val" style="color:var(--yellow)" id="lsLargest">--</div><div class="live-stat-label">Largest Category</div></div>
+      <div class="live-stat"><div class="live-stat-val" style="color:var(--red)" id="lsNolEstimate">--</div><div class="live-stat-label">NOL Estimate</div></div>
+    </div>
+    <!-- Data freshness indicator -->
+    <div id="dataFreshness" style="display:none;font-size:11px;color:var(--muted);margin-bottom:12px;display:flex;align-items:center;gap:6px">
+      <span id="freshnessIcon" style="color:var(--green)">&#9679;</span>
+      <span id="freshnessText">Data loaded just now</span>
     </div>
 
     <!-- Controls -->
@@ -773,7 +820,7 @@ var dedSortAsc = false;
 var dedColMap = {};
 var dedHeaders = [];
 var dedRetryCount = 0;
-var DED_MAX_RETRIES = 10;
+var DED_MAX_RETRIES = 3;
 
 function loadDeductionRecords() {
   var loading = document.getElementById('dedLoading');
@@ -788,14 +835,15 @@ function loadDeductionRecords() {
 
   if (!window.FPCSSheets || !window.FPCSSheets.isReady()) {
     dedRetryCount++;
-    if (dedRetryCount < DED_MAX_RETRIES) {
-      setTimeout(loadDeductionRecords, 500);
+    if (dedRetryCount > DED_MAX_RETRIES) {
+      // Max retries hit — show soft warning, hide loading spinner
+      loading.style.display = 'none';
+      errorDiv.style.display = 'block';
+      console.warn('[Deductions] Sheets not available after ' + DED_MAX_RETRIES + ' retries — use Unmatched Resolver below');
       return;
     }
-    // Max retries hit — show soft warning, hide loading spinner
-    loading.style.display = 'none';
-    errorDiv.style.display = 'block';
-    console.log('[Deductions] Sheets not available after ' + DED_MAX_RETRIES + ' retries — use Unmatched Resolver below');
+    var delay = Math.min(500 * Math.pow(2, dedRetryCount - 1), 4000);
+    setTimeout(loadDeductionRecords, delay);
     return;
   }
 
@@ -957,7 +1005,7 @@ function renderCategories() {
     html += '<span class="cat-arrow">&#9654;</span>';
     html += '<span class="cat-name">' + escDed(cat) + reviewBadge + '</span>';
     html += '<span class="cat-count">' + count + ' txn' + (count !== 1 ? 's' : '') + '</span>';
-    html += '<span class="cat-amount" onclick="event.stopPropagation();openCategoryInSheets(\'' + escDed(cat).replace(/'/g, "\\'") + '\')" style="cursor:pointer" title="Click to open in Google Sheets">$' + total.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}) + ' &#8599;</span>';
+    html += '<span class="cat-amount" onclick="event.stopPropagation();openCategoryDetail(\'' + escDed(cat).replace(/'/g, "\\'") + '\')" style="cursor:pointer" title="Click to view details">$' + total.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}) + ' &#8599;</span>';
     html += '<button onclick="event.stopPropagation();openNotesPanel(\'' + escDed(cat).replace(/'/g, "\\'") + '\')" style="margin-left:8px;padding:3px 8px;border-radius:6px;border:1px solid #334155;background:rgba(245,158,11,.08);color:#f59e0b;font-size:10px;cursor:pointer;white-space:nowrap" title="Notes for ' + escDed(cat) + '">&#128221; Notes</button>';
     html += '<button onclick="event.stopPropagation();openCategoryInSheets(\'' + escDed(cat).replace(/'/g, "\\'") + '\')" style="margin-left:4px;padding:3px 8px;border-radius:6px;border:1px solid #334155;background:rgba(74,222,128,.08);color:#4ade80;font-size:10px;cursor:pointer;white-space:nowrap" title="Open in Google Sheets filtered to ' + escDed(cat) + '">&#128196; Sheets</button>';
     html += '</div>';
@@ -1037,6 +1085,24 @@ function updateLiveSummary(records) {
   document.getElementById('lsCategories').textContent = dedGroupKeys.length;
   document.getElementById('lsTransactions').textContent = records.length;
 
+  // Needs review count
+  var reviewCount = dedGroupKeys.filter(function(c) { return dedGrouped[c].length > 20 || dedCatTotals[c] > 5000; }).length;
+  document.getElementById('lsNeedsReview').textContent = reviewCount;
+
+  // NOL estimate: total deductions minus estimated income ($3,916.50 from income page)
+  var estimatedIncome = 3916.50;
+  var nol = grandTotal - estimatedIncome;
+  var nolEl = document.getElementById('lsNolEstimate');
+  if (nol > 0) {
+    nolEl.textContent = '$' + nol.toLocaleString('en-US', {minimumFractionDigits:0, maximumFractionDigits:0});
+    nolEl.title = 'Net Operating Loss: Deductions ($' + grandTotal.toLocaleString('en-US', {minimumFractionDigits:2}) + ') exceed income ($' + estimatedIncome.toLocaleString('en-US', {minimumFractionDigits:2}) + ')';
+    nolEl.style.color = 'var(--red)';
+  } else {
+    nolEl.textContent = 'None';
+    nolEl.title = 'No net operating loss — income exceeds deductions';
+    nolEl.style.color = 'var(--green)';
+  }
+
   // Find largest category
   var largestCat = '';
   var largestAmt = 0;
@@ -1050,6 +1116,22 @@ function updateLiveSummary(records) {
   largestEl.textContent = largestCat.length > 18 ? largestCat.substring(0, 16) + '...' : largestCat;
   largestEl.title = largestCat + ' ($' + largestAmt.toLocaleString('en-US', {minimumFractionDigits:2}) + ')';
 
+  // Data freshness indicator
+  var freshnessDiv = document.getElementById('dataFreshness');
+  if (freshnessDiv) {
+    freshnessDiv.style.display = 'flex';
+    window._dedLastLoad = new Date();
+    document.getElementById('freshnessText').textContent = 'Data loaded ' + window._dedLastLoad.toLocaleTimeString();
+    document.getElementById('freshnessIcon').style.color = 'var(--green)';
+    // Fade freshness after 2 minutes
+    setTimeout(function() {
+      var icon = document.getElementById('freshnessIcon');
+      var text = document.getElementById('freshnessText');
+      if (icon) icon.style.color = 'var(--yellow)';
+      if (text) text.textContent = 'Data loaded ' + (window._dedLastLoad ? window._dedLastLoad.toLocaleTimeString() : 'earlier') + ' (may be stale)';
+    }, 120000);
+  }
+
   // Also update the hardcoded summary stats at top if we have data
   var topStats = document.getElementById('summaryStats');
   if (topStats) {
@@ -1059,7 +1141,7 @@ function updateLiveSummary(records) {
       cards[0].querySelector('.stat-val').title = 'Live from Google Sheets: $' + grandTotal.toLocaleString('en-US', {minimumFractionDigits:2});
     }
     if (cards.length >= 5) {
-      cards[4].querySelector('.stat-val').textContent = dedGroupKeys.filter(function(c) { return dedGrouped[c].length > 20 || dedCatTotals[c] > 5000; }).length;
+      cards[4].querySelector('.stat-val').textContent = reviewCount;
     }
   }
 }
@@ -1985,6 +2067,160 @@ setTimeout(function() {
 }, 5000);
 </script>
 
+<!-- Category Detail Modal -->
+<div class="cat-detail-overlay" id="catDetailOverlay" onclick="if(event.target===this)closeCategoryDetail()">
+  <div class="cat-detail-modal">
+    <div class="cat-detail-header">
+      <h3 id="catDetailTitle">Category</h3>
+      <span class="cat-detail-total" id="catDetailTotal">$0.00</span>
+      <button class="cat-detail-close" onclick="closeCategoryDetail()" title="Close">&times;</button>
+    </div>
+    <div class="cat-detail-body">
+      <table class="cat-detail-table">
+        <thead><tr id="catDetailHead"></tr></thead>
+        <tbody id="catDetailBody"></tbody>
+      </table>
+    </div>
+    <div class="cat-detail-footer">
+      <span class="detail-meta" id="catDetailMeta"></span>
+      <button class="btn-notes" onclick="closeCategoryDetail();openNotesPanel(_catDetailCurrent)" title="Notes for this category">&#128221; Notes</button>
+      <button class="btn-sheets" onclick="openCategoryInSheets(_catDetailCurrent)" title="Open in Google Sheets">&#128196; View in Sheets</button>
+      <button class="btn-export" onclick="exportCategoryCSV(_catDetailCurrent)" title="Download as CSV">&#128229; Export CSV</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+//  CATEGORY DETAIL MODAL — Drill-down for each deduction category
+// ============================================================
+var _catDetailCurrent = '';
+
+function openCategoryDetail(category) {
+  _catDetailCurrent = category;
+  var rows = dedGrouped[category] || [];
+  var total = dedCatTotals[category] || 0;
+
+  document.getElementById('catDetailTitle').textContent = category;
+  document.getElementById('catDetailTotal').textContent = '$' + total.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+
+  // Build header
+  var headHtml = '';
+  if (dedColMap.date !== undefined) headHtml += '<th>Date</th>';
+  if (dedColMap.type !== undefined) headHtml += '<th>Type</th>';
+  if (dedColMap.num !== undefined) headHtml += '<th>Num</th>';
+  if (dedColMap.name !== undefined) headHtml += '<th>Vendor / Name</th>';
+  if (dedColMap.memo !== undefined) headHtml += '<th>Description</th>';
+  headHtml += '<th>Source</th>';
+  headHtml += '<th style="text-align:right">Amount</th>';
+  document.getElementById('catDetailHead').innerHTML = headHtml;
+
+  // Sort by amount descending
+  var sorted = rows.slice().sort(function(a, b) {
+    var aAmt = Math.abs(parseFloat((a[dedColMap.amount] || '0').replace(/[$,]/g, '')));
+    var bAmt = Math.abs(parseFloat((b[dedColMap.amount] || '0').replace(/[$,]/g, '')));
+    return bAmt - aAmt;
+  });
+
+  // Build body
+  var bodyHtml = '';
+  sorted.forEach(function(row) {
+    bodyHtml += '<tr>';
+    if (dedColMap.date !== undefined) bodyHtml += '<td style="white-space:nowrap">' + escDed(row[dedColMap.date] || '') + '</td>';
+    if (dedColMap.type !== undefined) bodyHtml += '<td>' + escDed(row[dedColMap.type] || '') + '</td>';
+    if (dedColMap.num !== undefined) bodyHtml += '<td>' + escDed(row[dedColMap.num] || '') + '</td>';
+    if (dedColMap.name !== undefined) bodyHtml += '<td>' + escDed(row[dedColMap.name] || '') + '</td>';
+    if (dedColMap.memo !== undefined) bodyHtml += '<td style="color:var(--muted);max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + escDed(row[dedColMap.memo] || '') + '</td>';
+
+    // Source detection: look for 'QBO' or 'Ledger' in the row data
+    var rowText = row.join(' ').toLowerCase();
+    var src = 'unknown';
+    var srcLabel = 'Sheet';
+    if (rowText.indexOf('qbo') !== -1 || rowText.indexOf('quickbooks') !== -1) { src = 'qbo'; srcLabel = 'QBO'; }
+    else if (rowText.indexOf('ledger') !== -1) { src = 'ledger'; srcLabel = 'Ledger'; }
+    else if (rowText.indexOf('bank') !== -1) { src = 'qbo'; srcLabel = 'Bank'; }
+    bodyHtml += '<td><span class="td-source src-' + src + '">' + srcLabel + '</span></td>';
+
+    var amt = Math.abs(parseFloat((row[dedColMap.amount] || '0').replace(/[$,]/g, '')));
+    bodyHtml += '<td class="td-amount" style="color:var(--red)">-$' + amt.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}) + '</td>';
+    bodyHtml += '</tr>';
+  });
+
+  // Subtotal row
+  bodyHtml += '<tr style="background:rgba(15,23,42,.5);font-weight:700">';
+  var cols = 1; // source col
+  if (dedColMap.date !== undefined) cols++;
+  if (dedColMap.type !== undefined) cols++;
+  if (dedColMap.num !== undefined) cols++;
+  if (dedColMap.name !== undefined) cols++;
+  if (dedColMap.memo !== undefined) cols++;
+  bodyHtml += '<td colspan="' + cols + '" style="padding:10px 16px;color:var(--muted)">' + rows.length + ' transactions</td>';
+  bodyHtml += '<td class="td-amount" style="padding:10px 16px;color:var(--green);font-size:14px">$' + total.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}) + '</td>';
+  bodyHtml += '</tr>';
+
+  document.getElementById('catDetailBody').innerHTML = bodyHtml;
+
+  // Meta info
+  var needsReview = rows.length > 20 || total > 5000;
+  var meta = rows.length + ' transaction' + (rows.length !== 1 ? 's' : '');
+  if (needsReview) meta += ' &middot; <span style="color:var(--yellow)">NEEDS REVIEW</span>';
+  document.getElementById('catDetailMeta').innerHTML = meta;
+
+  // Show modal
+  document.getElementById('catDetailOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeCategoryDetail() {
+  document.getElementById('catDetailOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+  _catDetailCurrent = '';
+}
+
+function exportCategoryCSV(category) {
+  var rows = dedGrouped[category] || [];
+  if (rows.length === 0) return;
+
+  var headers = [];
+  if (dedColMap.date !== undefined) headers.push('Date');
+  if (dedColMap.type !== undefined) headers.push('Type');
+  if (dedColMap.num !== undefined) headers.push('Num');
+  if (dedColMap.name !== undefined) headers.push('Vendor');
+  if (dedColMap.memo !== undefined) headers.push('Description');
+  headers.push('Amount');
+  headers.push('Category');
+
+  var csvRows = [headers.join(',')];
+  rows.forEach(function(row) {
+    var cols = [];
+    if (dedColMap.date !== undefined) cols.push('"' + (row[dedColMap.date] || '').replace(/"/g, '""') + '"');
+    if (dedColMap.type !== undefined) cols.push('"' + (row[dedColMap.type] || '').replace(/"/g, '""') + '"');
+    if (dedColMap.num !== undefined) cols.push('"' + (row[dedColMap.num] || '').replace(/"/g, '""') + '"');
+    if (dedColMap.name !== undefined) cols.push('"' + (row[dedColMap.name] || '').replace(/"/g, '""') + '"');
+    if (dedColMap.memo !== undefined) cols.push('"' + (row[dedColMap.memo] || '').replace(/"/g, '""') + '"');
+    var amt = parseFloat((row[dedColMap.amount] || '0').replace(/[$,]/g, ''));
+    cols.push(amt.toFixed(2));
+    cols.push('"' + category.replace(/"/g, '""') + '"');
+    csvRows.push(cols.join(','));
+  });
+
+  var blob = new Blob([csvRows.join('\n')], { type: 'text/csv;charset=utf-8;' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = 'deductions-' + category.replace(/[^a-z0-9]/gi, '-').toLowerCase() + '.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// Close modal on Escape key
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape' && document.getElementById('catDetailOverlay').classList.contains('open')) {
+    closeCategoryDetail();
+  }
+});
+</script>
+
 <!-- Firestore Compat SDK -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -1998,5 +2234,6 @@ setTimeout(function() {
 <script src="js/offline.js"></script>
 <script src="js/firestore-db.js"></script>
 <script src="bot-assistant.js"></script>
+<script src="js/suno-radio.js"></script>
 </body>
 </html>
