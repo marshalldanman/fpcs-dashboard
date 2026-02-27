@@ -778,7 +778,10 @@ body::after {
 
   <!-- ── BOTTOM: LIVE LOG FEED ────────── -->
   <div id="bottom-panel" class="panel">
-    <div class="panel-label">LIVE FEED</div>
+    <div class="panel-label" style="display:flex;justify-content:space-between;align-items:center">
+      LIVE FEED
+      <button onclick="exportLog()" style="background:#f59e0b;color:#000;border:none;padding:3px 12px;border-radius:4px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;letter-spacing:1px" title="Download log as .txt file">⬇ EXPORT LOG</button>
+    </div>
     <div id="log-feed"></div>
   </div>
 
@@ -1259,8 +1262,15 @@ function updateGauges() {
   updateNeedle(gaugeBandwidth, state.bandwidth);
   document.getElementById('gv-bandwidth').textContent = Math.round(state.bandwidth) + ' Mbps';
 
-  // Threat level
-  state.threatLevel += (Math.random() - 0.5) * 5;
+  // Threat level — mode and sensitivity affect decay
+  let drift = (Math.random() - 0.5) * 5;
+  // Active mitigation from mode
+  if (state.mode === 'defense') drift -= 2.0;
+  if (state.mode === 'lockdown') drift -= 5.0;
+  // Higher sensitivity = better detection = slightly faster mitigation
+  if (state.sensitivity >= 2) drift -= 0.8;
+  if (state.sensitivity >= 3) drift -= 0.5;
+  state.threatLevel += drift;
   state.threatLevel = Math.max(2, Math.min(95, state.threatLevel));
   updateNeedle(gaugeThreat, state.threatLevel);
   const tl = state.threatLevel;
@@ -1328,21 +1338,38 @@ function futureDate() {
   return d.toISOString().split('T')[0];
 }
 
+const logHistory = [];
+
 function addLog(tag, message) {
   const now = new Date();
   const ts = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}.${String(now.getMilliseconds()).padStart(3,'0')}`;
   const tagCls = tag === 'SCAN' ? 'tag-scan' : tag === 'AI' ? 'tag-ai' : tag === 'ALLOW' ? 'tag-allow' : tag === 'BLOCK' ? 'tag-block' : tag === 'WARN' ? 'tag-warn' : 'tag-shield';
+
+  // Store in history for export
+  logHistory.push(`[${ts}] ${tag}: ${message}`);
+  if (logHistory.length > 500) logHistory.shift();
 
   const entry = document.createElement('div');
   entry.className = 'log-entry';
   entry.innerHTML = `<span class="ts">[${ts}]</span> <span class="${tagCls}">${tag}:</span> <span class="msg">${message}</span>`;
   logFeed.appendChild(entry);
 
-  // Keep max 80 entries
+  // Keep max 80 entries in DOM
   while (logFeed.children.length > 80) {
     logFeed.removeChild(logFeed.firstChild);
   }
   logFeed.scrollTop = logFeed.scrollHeight;
+}
+
+function exportLog() {
+  const header = `SENTRYLION LOG EXPORT — ${new Date().toISOString()}\nMode: ${state.mode.toUpperCase()} | Sensitivity: ${state.sensLabels[state.sensitivity]} | Entries: ${logHistory.length}\n${'═'.repeat(72)}\n`;
+  const blob = new Blob([header + logHistory.join('\n')], { type: 'text/plain' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `sentrylion-log-${Date.now()}.txt`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+  addLog('SHIELD', 'Log exported — ' + logHistory.length + ' entries');
 }
 
 function generateLogEntry() {
@@ -1368,8 +1395,11 @@ function generateThreatEvent() {
   state.networkNodes[idx].threat = true;
   setTimeout(() => { state.networkNodes[idx].threat = false; }, 5000);
 
-  // Spike threat level
-  state.threatLevel = Math.min(95, state.threatLevel + 15 + Math.random() * 20);
+  // Spike threat level — mode reduces impact
+  let spike = 15 + Math.random() * 20;
+  if (state.mode === 'defense') spike *= 0.5;
+  if (state.mode === 'lockdown') spike *= 0.2;
+  state.threatLevel = Math.min(95, state.threatLevel + spike);
 
   // Add to threat list
   const list = document.getElementById('threat-list');
