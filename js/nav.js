@@ -31,7 +31,8 @@
     { key: 'village',    icon: '&#127968;', label: 'Realbotville (Page 9)', href: 'realbotville.html', color: '#38bdf8' },
     { key: 'library',   icon: '&#128218;', label: 'Library (Page 10)',     href: 'library.html',      color: '#f59e0b' },
     { key: 'stats-board', icon: '&#127942;', label: 'Stats Board',         href: 'stats-board.html',  color: 'var(--purple)' },
-    { key: 'sentrylion', icon: '&#128737;', label: 'SentryLion',           href: 'sentrylion.html',   color: '#f59e0b' }
+    { key: 'sentrylion', icon: '&#128737;', label: 'SentryLion',           href: 'sentrylion.html',   color: '#f59e0b' },
+    { key: 'fleet',      icon: '&#127981;', label: 'Fleet Console',         href: 'sentrylion-console.html', color: '#ef4444' }
   ];
 
   // --- Read page config ---

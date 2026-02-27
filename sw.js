@@ -7,7 +7,7 @@
    use in Chrome browser.
    ============================================================ */
 
-var CACHE_NAME = 'fpcs-dash-v5';
+var CACHE_NAME = 'fpcs-dash-v6';
 var STATIC_ASSETS = [
   './',
   'index.html',
@@ -22,6 +22,7 @@ var STATIC_ASSETS = [
   'library.html',
   'stats-board.html',
   'sentrylion.html',
+  'sentrylion-console.html',
   'js/auth.js',
   'js/nav.js',
   'js/sheets-api.js',
@@ -31,6 +32,7 @@ var STATIC_ASSETS = [
   'js/chiligbot.js',
   'js/designmode.js',
   'js/firestore-db.js',
+  'js/sentryfleet-db.js',
   'js/suno-radio.js',
   'css/suno-radio.css',
   'bot-assistant.js'
@@ -87,10 +89,12 @@ self.addEventListener('fetch', function (event) {
     return;
   }
 
-  // Firebase Auth = network-only (never cache auth)
+  // Firebase Auth + RTDB = network-only (never cache auth or realtime data)
   if (url.hostname.indexOf('googleapis.com') !== -1 ||
       url.hostname.indexOf('firebaseapp.com') !== -1 ||
       url.hostname.indexOf('firebase.google.com') !== -1 ||
+      url.hostname.indexOf('firebaseio.com') !== -1 ||
+      url.hostname.indexOf('firebasedatabase.app') !== -1 ||
       url.hostname.indexOf('gstatic.com') !== -1) {
     event.respondWith(fetch(event.request).catch(function () {
       return new Response('', { status: 503, statusText: 'Offline' });

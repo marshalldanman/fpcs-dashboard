@@ -33,6 +33,7 @@
   var FIREBASE_CONFIG = {
     apiKey: 'AIzaSyBgYAPO_0cEvhPzfU6GZykJVUnF55LEzXQ',
     authDomain: 'fpcs-dashboard-63b25.firebaseapp.com',
+    databaseURL: 'https://fpcs-dashboard-63b25-default-rtdb.firebaseio.com',
     projectId: 'fpcs-dashboard-63b25',
     storageBucket: 'fpcs-dashboard-63b25.firebasestorage.app',
     messagingSenderId: '377879797743',
@@ -62,6 +63,7 @@
     'library.html':      'member',
     'stats-board.html':  'member',
     'sentrylion.html':   'member',
+    'sentrylion-console.html': 'admin',
     'admin.html':        'admin'
   };
   var ROLE_LEVELS = { guest: 0, member: 1, admin: 2 };
