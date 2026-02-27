@@ -512,7 +512,7 @@
     injectBootScreen(BOOT_STEPS);
     gate.style.display = 'none';
     runBootSequence(BOOT_STEPS, function () {
-      dash.style.display = 'block';
+      unlockDashboard(dash);
       filterNavByRole('admin');
       onComplete();
       dispatchAuthedEvent();
@@ -555,7 +555,7 @@
 
         fadeRemove('onboardModal', function () {
           runBootSequence(BOOT_STEPS, function () {
-            dash.style.display = 'block';
+            unlockDashboard(dash);
             filterNavByRole('member');
             onComplete();
             dispatchAuthedEvent();
@@ -567,7 +567,7 @@
       injectBootScreen(BOOT_STEPS);
       gate.style.display = 'none';
       runBootSequence(BOOT_STEPS, function () {
-        dash.style.display = 'block';
+        unlockDashboard(dash);
         filterNavByRole('member');
         onComplete();
         dispatchAuthedEvent();
@@ -904,6 +904,25 @@
   }
 
   // --- Boot ---
+
+  // ============================================================
+  //  SECURITY: CSS Defense-in-Depth — double-lock content
+  //  Inject CSS that hides #dashContent IMMEDIATELY on script load.
+  //  This fires before Firebase SDK loads, before auth callback,
+  //  and cannot be bypassed by removing inline styles.
+  //  Only unlockDashboard() can reveal content after auth succeeds.
+  // ============================================================
+  var securityStyle = document.createElement('style');
+  securityStyle.id = 'fpcs-security-lock';
+  securityStyle.textContent = '#dashContent:not(.fpcs-unlocked) { display: none !important; visibility: hidden !important; }';
+  document.head.appendChild(securityStyle);
+
+  // --- Unlock function: called ONLY after successful auth + access check ---
+  function unlockDashboard(dashEl) {
+    dashEl.classList.add('fpcs-unlocked');
+    dashEl.style.display = 'block';
+  }
+
   injectAuthGate();
   loadScript('https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js', function () {
     loadScript('https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js', initAuth);

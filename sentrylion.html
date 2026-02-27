@@ -829,6 +829,8 @@ body::after {
 </style>
 </head>
 <body>
+<noscript><div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#0a0e1a;color:#f87171;font-family:sans-serif;text-align:center;padding:40px"><div><h1>&#128274; JavaScript Required</h1><p>Enable JavaScript to access SentryLion.</p></div></div></noscript>
+<div id="dashContent" style="display:none">
 
 <!-- Grid background -->
 <div id="grid-bg"></div>
@@ -2651,5 +2653,19 @@ function init() {
 
 init();
 </script>
+</div><!-- /dashContent -->
+
+<script>
+  window.FPCS_PAGE = {
+    name: 'SentryLion',
+    theme: 'theme-sentry'
+  };
+  window.FPCS_NAV = {
+    active: 'sentrylion',
+    sections: []
+  };
+</script>
+<script src="js/auth.js"></script>
+<script src="js/nav.js"></script>
 </body>
 </html>
