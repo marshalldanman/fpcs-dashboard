@@ -778,9 +778,12 @@ body::after {
 
   <!-- ── BOTTOM: LIVE LOG FEED ────────── -->
   <div id="bottom-panel" class="panel">
-    <div class="panel-label" style="display:flex;justify-content:space-between;align-items:center">
-      LIVE FEED
-      <button onclick="exportLog()" style="background:#f59e0b;color:#000;border:none;padding:3px 12px;border-radius:4px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;letter-spacing:1px" title="Download log as .txt file">⬇ EXPORT LOG</button>
+    <div class="panel-label" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+      <span>LIVE FEED <span style="font-size:10px;color:#64748b;font-weight:400;margin-left:6px">[ <span id="log-count">0</span> stored ]</span></span>
+      <span style="display:flex;gap:6px">
+        <button onclick="clearLog()" style="background:#374151;color:#94a3b8;border:1px solid #4b5563;padding:3px 10px;border-radius:4px;font-size:10px;font-weight:600;cursor:pointer;font-family:inherit;letter-spacing:1px" title="Clear stored log">✕ CLEAR</button>
+        <button onclick="exportLog()" style="background:#f59e0b;color:#000;border:none;padding:3px 12px;border-radius:4px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;letter-spacing:1px" title="Download full log as .txt file">⬇ EXPORT LOG</button>
+      </span>
     </div>
     <div id="log-feed"></div>
   </div>
@@ -1338,16 +1341,59 @@ function futureDate() {
   return d.toISOString().split('T')[0];
 }
 
-const logHistory = [];
+// ── PERSISTENT LOG SYSTEM (localStorage) ──────────────────
+const LOG_STORAGE_KEY = 'sentrylion-log';
+const LOG_MAX_ENTRIES = 2000;
+let logDirty = false;
+let logSaveTimer = null;
+
+// Load existing log from localStorage
+function loadLog() {
+  try {
+    const raw = localStorage.getItem(LOG_STORAGE_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch (e) { return []; }
+}
+
+// Save log to localStorage (debounced)
+function persistLog() {
+  if (!logDirty) return;
+  try {
+    localStorage.setItem(LOG_STORAGE_KEY, JSON.stringify(logHistory));
+    logDirty = false;
+  } catch (e) {
+    // Storage full — trim older half
+    logHistory.splice(0, Math.floor(logHistory.length / 2));
+    try { localStorage.setItem(LOG_STORAGE_KEY, JSON.stringify(logHistory)); } catch (_) {}
+  }
+}
+
+function scheduleSave() {
+  if (logSaveTimer) return;
+  logSaveTimer = setTimeout(() => { persistLog(); logSaveTimer = null; }, 3000);
+}
+
+// Initialize from stored history
+const logHistory = loadLog();
+
+// Update log count display
+function updateLogCount() {
+  const el = document.getElementById('log-count');
+  if (el) el.textContent = logHistory.length.toLocaleString();
+}
 
 function addLog(tag, message) {
   const now = new Date();
+  const dateStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
   const ts = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}.${String(now.getMilliseconds()).padStart(3,'0')}`;
   const tagCls = tag === 'SCAN' ? 'tag-scan' : tag === 'AI' ? 'tag-ai' : tag === 'ALLOW' ? 'tag-allow' : tag === 'BLOCK' ? 'tag-block' : tag === 'WARN' ? 'tag-warn' : 'tag-shield';
 
-  // Store in history for export
-  logHistory.push(`[${ts}] ${tag}: ${message}`);
-  if (logHistory.length > 500) logHistory.shift();
+  // Store persistently with full date
+  logHistory.push(`[${dateStr} ${ts}] ${tag}: ${message}`);
+  while (logHistory.length > LOG_MAX_ENTRIES) logHistory.shift();
+  logDirty = true;
+  scheduleSave();
+  updateLogCount();
 
   const entry = document.createElement('div');
   entry.className = 'log-entry';
@@ -1362,7 +1408,13 @@ function addLog(tag, message) {
 }
 
 function exportLog() {
-  const header = `SENTRYLION LOG EXPORT — ${new Date().toISOString()}\nMode: ${state.mode.toUpperCase()} | Sensitivity: ${state.sensLabels[state.sensitivity]} | Entries: ${logHistory.length}\n${'═'.repeat(72)}\n`;
+  const header = [
+    `SENTRYLION PERSISTENT LOG — Exported ${new Date().toISOString()}`,
+    `Mode: ${state.mode.toUpperCase()} | Sensitivity: ${state.sensLabels[state.sensitivity]}`,
+    `Total entries: ${logHistory.length} / ${LOG_MAX_ENTRIES} max`,
+    '═'.repeat(72),
+    ''
+  ].join('\n');
   const blob = new Blob([header + logHistory.join('\n')], { type: 'text/plain' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
@@ -1371,6 +1423,18 @@ function exportLog() {
   URL.revokeObjectURL(a.href);
   addLog('SHIELD', 'Log exported — ' + logHistory.length + ' entries');
 }
+
+function clearLog() {
+  if (!confirm('Clear all ' + logHistory.length + ' stored log entries?')) return;
+  logHistory.length = 0;
+  localStorage.removeItem(LOG_STORAGE_KEY);
+  logFeed.innerHTML = '';
+  updateLogCount();
+  addLog('SHIELD', 'Log cleared by operator');
+}
+
+// Save on page unload
+window.addEventListener('beforeunload', persistLog);
 
 function generateLogEntry() {
   const tmpl = logTemplates[Math.floor(Math.random() * logTemplates.length)];
@@ -1536,6 +1600,14 @@ function init() {
   initRadarBlips();
   initNetworkNodes();
   initParticles();
+
+  // Show stored log count and boot message
+  updateLogCount();
+  const storedCount = logHistory.length;
+  if (storedCount > 0) {
+    addLog('SHIELD', `Persistent log loaded — ${storedCount} historical entries recovered`);
+  }
+  addLog('SHIELD', `SentryLion booted — session started at ${new Date().toLocaleTimeString()}`);
 
   // Seed initial log entries
   for (let i = 0; i < 8; i++) generateLogEntry();
