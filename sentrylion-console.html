@@ -872,19 +872,19 @@ body::after {
       }
       var html = '';
       cmds.forEach(function (c) {
-        var time = new Date(c.issuedAt).toLocaleTimeString();
+        var time = new Date(c.issued_at).toLocaleTimeString();
         html += '<div class="cmd-history-item">' +
           '<span class="cmd-status-dot cmd-status-' + (c.status || 'pending') + '"></span>' +
-          '<span style="flex:1">' + esc(c.type) + '</span>' +
+          '<span style="flex:1">' + esc(c.command) + '</span>' +
           '<span style="color:var(--text-dim)">' + time + '</span>' +
           '<span style="color:var(--text-dim);min-width:60px;text-align:right">' + (c.status || '?') + '</span>' +
           '</div>';
       });
       el.innerHTML = html;
-    }).catch(function () {
-      // Firestore index may not exist yet — show placeholder
+    }).catch(function (err) {
+      console.warn('[Console] Command history load failed:', err);
       document.getElementById('cmdHistory').innerHTML =
-        '<div style="font-size:10px;color:var(--text-dim);padding:8px">Command history requires Firestore index</div>';
+        '<div style="font-size:10px;color:var(--text-dim);padding:8px">Could not load command history</div>';
     });
   }
 

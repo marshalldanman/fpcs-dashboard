@@ -30,8 +30,8 @@
   // ============================================================
 
   var RTDB_AGENTS_PATH = 'sentryfleet/agents';
+  var RTDB_COMMANDS_PATH = 'sentryfleet-commands';
   var FS_LOGS = 'sentryfleet-logs';
-  var FS_COMMANDS = 'sentryfleet-commands';
   var FS_IPJAIL = 'sentryfleet-ipjail';
   var FS_PROBATION = 'sentryfleet-probation';
   var FS_THREATS = 'sentryfleet-threats';
@@ -184,8 +184,9 @@
   // ============================================================
 
   /**
-   * Send a command to an agent. Returns the command document ID.
+   * Send a command to an agent via RTDB. Returns the command ID.
    * Commands are signed with a nonce and expiry for security.
+   * Field names aligned with agent's RemoteCommand struct (Rust).
    */
   function sendCommand(agentId, type, payload) {
     if (!_initialized) return Promise.reject(new Error('Not initialized'));
@@ -194,22 +195,23 @@
     var nonce = generateId();
     var now = Date.now();
 
+    // Field names match agent's RTDB poll: target, command, args, status,
+    // issued_at, expiry, nonce, signature, issuedBy
     var command = {
-      agentId: agentId,
-      type: type,
-      payload: payload || {},
+      target: agentId,
+      command: type,
+      args: payload || {},
       status: 'pending',
-      issuedAt: now,
-      expiresAt: now + COMMAND_EXPIRE_MS,
+      issued_at: now,
+      expiry: now + COMMAND_EXPIRE_MS,
       nonce: nonce,
-      issuedBy: window.FPCS_USER ? window.FPCS_USER.email : 'unknown',
-      result: null,
-      completedAt: null
+      signature: '',  // TODO: Phase 8 — Ed25519 signing
+      issuedBy: window.FPCS_USER ? window.FPCS_USER.email : 'unknown'
     };
 
     log('Sending command: ' + type + ' to ' + agentId);
 
-    return _fs.collection(FS_COMMANDS).doc(commandId).set(command)
+    return _rtdb.ref(RTDB_COMMANDS_PATH + '/' + commandId).set(command)
       .then(function () {
         emit('command-sent', { agentId: agentId, type: type, commandId: commandId });
         return commandId;
@@ -221,45 +223,54 @@
   }
 
   /**
-   * Get command history for an agent.
+   * Get command history for an agent from RTDB.
    */
   function getCommandHistory(agentId, limit) {
     if (!_initialized) return Promise.reject(new Error('Not initialized'));
 
-    return _fs.collection(FS_COMMANDS)
-      .where('agentId', '==', agentId)
-      .orderBy('issuedAt', 'desc')
-      .limit(limit || 50)
-      .get()
-      .then(function (snap) {
+    return _rtdb.ref(RTDB_COMMANDS_PATH)
+      .orderByChild('target')
+      .equalTo(agentId)
+      .limitToLast(limit || 50)
+      .once('value')
+      .then(function (snapshot) {
         var commands = [];
-        snap.forEach(function (doc) {
-          var d = doc.data();
-          d._id = doc.id;
+        snapshot.forEach(function (child) {
+          var d = child.val();
+          d._id = child.key;
           commands.push(d);
         });
+        // Sort by issued_at descending (newest first)
+        commands.sort(function (a, b) { return (b.issued_at || 0) - (a.issued_at || 0); });
         return commands;
       });
   }
 
   /**
-   * Listen for command status updates for an agent.
+   * Listen for command status updates for an agent via RTDB.
    */
   function subscribeToCommands(agentId, callback) {
     if (!_initialized) return null;
 
-    return _fs.collection(FS_COMMANDS)
-      .where('agentId', '==', agentId)
-      .where('status', 'in', ['pending', 'running'])
-      .onSnapshot(function (snap) {
-        var commands = [];
-        snap.forEach(function (doc) {
-          var d = doc.data();
-          d._id = doc.id;
+    var ref = _rtdb.ref(RTDB_COMMANDS_PATH)
+      .orderByChild('target')
+      .equalTo(agentId);
+
+    ref.on('value', function (snapshot) {
+      var commands = [];
+      snapshot.forEach(function (child) {
+        var d = child.val();
+        d._id = child.key;
+        if (d.status === 'pending' || d.status === 'executing') {
           commands.push(d);
-        });
-        if (callback) callback(commands);
+        }
       });
+      if (callback) callback(commands);
+    });
+
+    return function unsubscribe() {
+      ref.off('value');
+    };
   }
 
   // ============================================================
