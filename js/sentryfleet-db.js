@@ -129,6 +129,9 @@
   function subscribeToAgents(callback) {
     if (!_initialized) { warn('Not initialized'); return null; }
 
+    // Remove any existing listener to prevent duplicate subscriptions
+    _agentRef.off('value');
+
     _agentRef.on('value', function (snapshot) {
       _agents = snapshot.val() || {};
 
