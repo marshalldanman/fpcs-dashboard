@@ -527,7 +527,11 @@
         agentVersion: '0.1.0',
         installedTools: ['adwcleaner', 'emsisoft', 'yara', 'sigma'],
         aiTrainingStatus: 'trained',
-        hardening: { score: 87, lastAudit: now - 3600000 }
+        hardening: { score: 87, lastAudit: now - 3600000 },
+        processCount: 195,
+        memTotalMb: 32768,
+        memUsedMb: 17695,
+        uptimeSecs: 432000
       },
       'agent-workstation-2': {
         hostname: 'WORKSTATION-2',
@@ -541,7 +545,11 @@
         agentVersion: '0.1.0',
         installedTools: ['adwcleaner', 'yara'],
         aiTrainingStatus: 'training',
-        hardening: { score: 52, lastAudit: now - 7200000 }
+        hardening: { score: 52, lastAudit: now - 7200000 },
+        processCount: 312,
+        memTotalMb: 16384,
+        memUsedMb: 12780,
+        uptimeSecs: 86400
       },
       'agent-laptop-field': {
         hostname: 'LAPTOP-FIELD',
@@ -555,7 +563,11 @@
         agentVersion: '0.1.0',
         installedTools: ['adwcleaner'],
         aiTrainingStatus: 'pre-trained',
-        hardening: { score: 31, lastAudit: now - 86400000 }
+        hardening: { score: 31, lastAudit: now - 86400000 },
+        processCount: 487,
+        memTotalMb: 8192,
+        memUsedMb: 7209,
+        uptimeSecs: 259200
       },
       'agent-server-nas': {
         hostname: 'SERVER-NAS',
@@ -569,7 +581,11 @@
         agentVersion: '0.1.0',
         installedTools: ['adwcleaner', 'emsisoft', 'yara', 'sigma'],
         aiTrainingStatus: 'trained',
-        hardening: { score: 94, lastAudit: now - 1800000 }
+        hardening: { score: 94, lastAudit: now - 1800000 },
+        processCount: 142,
+        memTotalMb: 65536,
+        memUsedMb: 22282,
+        uptimeSecs: 2592000
       },
       'agent-usb-deploy': {
         hostname: 'USB-DEPLOY-TEST',
@@ -583,7 +599,11 @@
         agentVersion: '0.1.0',
         installedTools: ['adwcleaner'],
         aiTrainingStatus: 'pre-trained',
-        hardening: { score: 18, lastAudit: now - 604800000 }
+        hardening: { score: 18, lastAudit: now - 604800000 },
+        processCount: 0,
+        memTotalMb: 4096,
+        memUsedMb: 0,
+        uptimeSecs: 0
       },
       'agent-probation-pc': {
         hostname: 'PROBATION-PC',
@@ -597,7 +617,11 @@
         agentVersion: '0.1.0',
         installedTools: ['adwcleaner', 'emsisoft'],
         aiTrainingStatus: 'trained',
-        hardening: { score: 65, lastAudit: now - 900000 }
+        hardening: { score: 65, lastAudit: now - 900000 },
+        processCount: 223,
+        memTotalMb: 16384,
+        memUsedMb: 9994,
+        uptimeSecs: 7200
       }
     };
 

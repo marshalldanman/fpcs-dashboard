@@ -438,6 +438,8 @@ body::after {
         <div class="info-row"><span class="lbl">Status</span><span class="val" id="dStatus">---</span></div>
         <div class="info-row"><span class="lbl">Agent</span><span class="val" id="dVersion">---</span></div>
         <div class="info-row"><span class="lbl">Heartbeat</span><span class="val" id="dHeartbeat">---</span></div>
+        <div class="info-row"><span class="lbl">Uptime</span><span class="val" id="dUptime">---</span></div>
+        <div class="info-row"><span class="lbl">Processes</span><span class="val" id="dProcesses">---</span></div>
         <div class="info-row"><span class="lbl">Tools</span><span class="val" id="dTools">---</span></div>
         <div class="info-row"><span class="lbl">AI Status</span><span class="val" id="dAI">---</span></div>
       </div>
@@ -452,6 +454,7 @@ body::after {
         <h3>Resources</h3>
         <div class="card-row"><span class="label">CPU</span><div class="bar-bg"><div class="bar-fill bar-cpu" id="dCPUBar" style="width:0%"></div></div><span class="val" id="dCPUVal">0%</span></div>
         <div class="card-row"><span class="label">MEM</span><div class="bar-bg"><div class="bar-fill bar-mem" id="dMEMBar" style="width:0%"></div></div><span class="val" id="dMEMVal">0%</span></div>
+        <div class="info-row" style="margin-top:6px"><span class="lbl">RAM</span><span class="val" id="dMemDetail" style="font-size:11px;color:var(--text-dim)">---</span></div>
       </div>
       <div class="info-block">
         <h3>Hardening</h3>
@@ -705,6 +708,7 @@ body::after {
             '<span class="meta-item"><span class="threat-indicator threat-' + (a.threatLevel || 'UNKNOWN') + '">' + (a.threatLevel || '?') + '</span></span>' +
             '<span class="meta-item"><span class="hardening-score ' + hsClass + '">HS:' + hsScore + '</span></span>' +
             '<span class="meta-item" style="color:var(--text-dim)">' + esc(a.os || '?') + '</span>' +
+            (a.uptimeSecs ? '<span class="meta-item" style="color:var(--text-dim);font-size:10px" title="Uptime">&#8986; ' + formatUptime(a.uptimeSecs) + '</span>' : '') +
           '</div>' +
           probHtml +
         '</div>' +
@@ -763,6 +767,8 @@ body::after {
     document.getElementById('dStatus').textContent = (a._display_status || a.status || '?').toUpperCase();
     document.getElementById('dVersion').textContent = a.agentVersion || '?';
     document.getElementById('dHeartbeat').textContent = formatAge(a._heartbeat_age);
+    document.getElementById('dUptime').textContent = formatUptime(a.uptimeSecs);
+    document.getElementById('dProcesses').textContent = a.processCount || '?';
     document.getElementById('dTools').textContent = (a.installedTools || []).join(', ') || 'none';
     document.getElementById('dAI').textContent = a.aiTrainingStatus || '?';
 
@@ -781,6 +787,8 @@ body::after {
     else document.getElementById('dCPUBar').className = 'bar-fill bar-cpu';
     if (mem > 80) document.getElementById('dMEMBar').className = 'bar-fill bar-mem high';
     else document.getElementById('dMEMBar').className = 'bar-fill bar-mem';
+
+    document.getElementById('dMemDetail').textContent = formatMemory(a.memUsedMb, a.memTotalMb);
 
     var hs = a.hardening ? a.hardening.score : '?';
     document.getElementById('dHardenScore').textContent = hs;
@@ -991,6 +999,23 @@ body::after {
     if (ms < 3600000) return Math.floor(ms / 60000) + 'm ago';
     if (ms < 86400000) return Math.floor(ms / 3600000) + 'h ago';
     return Math.floor(ms / 86400000) + 'd ago';
+  }
+
+  function formatUptime(secs) {
+    if (!secs || secs <= 0) return '?';
+    var d = Math.floor(secs / 86400);
+    var h = Math.floor((secs % 86400) / 3600);
+    var m = Math.floor((secs % 3600) / 60);
+    if (d > 0) return d + 'd ' + h + 'h';
+    if (h > 0) return h + 'h ' + m + 'm';
+    return m + 'm';
+  }
+
+  function formatMemory(usedMb, totalMb) {
+    if (!totalMb) return '?';
+    var usedGb = (usedMb / 1024).toFixed(1);
+    var totalGb = (totalMb / 1024).toFixed(1);
+    return usedGb + ' / ' + totalGb + ' GB';
   }
 
   function threatColor(level) {
