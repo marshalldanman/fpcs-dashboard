@@ -576,7 +576,11 @@ body::after {
       <h4>Emergency Response</h4>
       <button class="cmd-btn danger" onclick="confirmCommand('isolate')">
         <span class="cmd-icon">&#128721;</span>
-        <div><div class="cmd-label">Isolate Machine</div><div class="cmd-desc">Kill all network — maintain agent heartbeat only</div></div>
+        <div><div class="cmd-label">Isolate Machine</div><div class="cmd-desc">Block all network — allow Firebase heartbeat only</div></div>
+      </button>
+      <button class="cmd-btn" onclick="confirmCommand('unisolate')" style="border-color:var(--green)">
+        <span class="cmd-icon">&#128275;</span>
+        <div><div class="cmd-label">Remove Isolation</div><div class="cmd-desc">Restore full network access</div></div>
       </button>
       <button class="cmd-btn danger" onclick="confirmCommand('kill-connection')">
         <span class="cmd-icon">&#9986;</span>
@@ -990,7 +994,8 @@ body::after {
     'temp_cleanup':     { title: 'Strategic Temp Cleanup',  msg: 'Execute 4-phase cleanup: persistence removal → process suspension → file deletion → verification.', input: false },
     'adwcleaner':      { title: 'Run AdwCleaner',          msg: 'Run portable AdwCleaner scan and clean. Agent may reboot after cleanup.', input: false },
     'emsisoft':        { title: 'Run Emsisoft EEK',        msg: 'Run full Emsisoft Emergency Kit scan. This will take several minutes.', input: false },
-    'isolate':         { title: 'ISOLATE Machine',         msg: 'WARNING: This will cut ALL network connections except the agent heartbeat. The machine will be completely isolated.', input: false },
+    'isolate':         { title: 'ISOLATE Machine',         msg: 'WARNING: This will block ALL network traffic except Firebase heartbeat via Windows Firewall rules. The machine will be completely isolated.', input: false },
+    'unisolate':       { title: 'Remove Isolation',        msg: 'This will remove all SentryLion firewall isolation rules and restore normal network access.', input: false },
     'kill-connection': { title: 'Kill Connection',         msg: 'Enter the remote IP address to terminate:', input: true, placeholder: '10.0.0.1' },
     'start-probation': { title: 'Start Probation',        msg: 'Begin 3-minute graduated network restoration. The agent will slowly re-enable connectivity through 6 stages.', input: false },
     'push-file':       { title: 'Push & Execute File',    msg: 'The agent will download and execute the file at the specified URL.', input: false }
