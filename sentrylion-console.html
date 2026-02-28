@@ -471,6 +471,13 @@ body::after {
         <div class="info-row"><span class="lbl">Score</span><span class="val" id="dHardenScore">---</span></div>
         <div class="info-row"><span class="lbl">Last Audit</span><span class="val" id="dHardenDate">---</span></div>
       </div>
+      <div class="info-block">
+        <h3>Last Command</h3>
+        <div class="info-row"><span class="lbl">Command</span><span class="val" id="dLastCmdName" style="color:var(--cyan)">---</span></div>
+        <div class="info-row"><span class="lbl">Status</span><span class="val" id="dLastCmdStatus">---</span></div>
+        <div class="info-row"><span class="lbl">Time</span><span class="val" id="dLastCmdTime">---</span></div>
+        <div class="cmd-output-box open" id="dLastCmdOutput" style="max-height:150px;display:none"></div>
+      </div>
     </div>
     <!-- Center: log stream -->
     <div class="detail-center">
@@ -793,6 +800,36 @@ body::after {
         renderPlaceholderLogs(a);
       }
     }, 3000);
+
+    // Load last command output
+    loadLastCommand(agentId);
+  }
+
+  function loadLastCommand(agentId) {
+    SentryFleet.getCommandHistory(agentId, 1).then(function (cmds) {
+      if (!cmds.length) {
+        document.getElementById('dLastCmdName').textContent = 'none';
+        document.getElementById('dLastCmdStatus').textContent = '---';
+        document.getElementById('dLastCmdTime').textContent = '---';
+        document.getElementById('dLastCmdOutput').style.display = 'none';
+        return;
+      }
+      var c = cmds[0];
+      document.getElementById('dLastCmdName').textContent = c.command || '?';
+      var statusEl = document.getElementById('dLastCmdStatus');
+      statusEl.textContent = (c.status || '?').toUpperCase();
+      statusEl.style.color = c.status === 'completed' ? 'var(--green)' : c.status === 'failed' ? 'var(--red)' : 'var(--yellow)';
+      document.getElementById('dLastCmdTime').textContent = c.issued_at ? new Date(c.issued_at).toLocaleString() : '?';
+      var outputEl = document.getElementById('dLastCmdOutput');
+      if (c.output && c.output.length > 0) {
+        outputEl.textContent = c.output;
+        outputEl.style.display = 'block';
+      } else {
+        outputEl.style.display = 'none';
+      }
+    }).catch(function () {
+      document.getElementById('dLastCmdName').textContent = '?';
+    });
   }
 
   function updateDetailInfo(a) {
