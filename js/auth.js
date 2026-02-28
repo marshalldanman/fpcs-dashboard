@@ -672,6 +672,22 @@
       return;
     }
 
+    // --- Handle redirect sign-in result (if returning from signInWithRedirect) ---
+    auth.getRedirectResult().then(function (result) {
+      if (result && result.user) {
+        console.log('[FPCS Auth] Redirect sign-in completed for:', result.user.email);
+        if (result.credential) {
+          window._fpcsOAuthToken = result.credential.accessToken;
+          if (window.FPCSSheets) {
+            window.FPCSSheets.setToken(result.credential.accessToken);
+          }
+        }
+      }
+    }).catch(function (err) {
+      console.warn('[FPCS Auth] Redirect result error:', err.code || err.message);
+      if (errEl) errEl.textContent = err.message || 'Sign-in redirect failed';
+    });
+
     auth.onAuthStateChanged(function (user) {
       if (user) {
         findUser(user.email).then(function (userRecord) {
@@ -737,6 +753,15 @@
           }
         }
       }).catch(function (error) {
+        // If popup was blocked, fall back to redirect-based sign-in
+        if (error.code === 'auth/popup-blocked' ||
+            error.code === 'auth/popup-closed-by-user' ||
+            error.code === 'auth/cancelled-popup-request') {
+          console.warn('[FPCS Auth] Popup blocked — falling back to redirect sign-in');
+          loadEl.textContent = 'Redirecting to Google...';
+          auth.signInWithRedirect(provider);
+          return;
+        }
         loadEl.textContent = '';
         document.getElementById('googleSignIn').disabled = false;
         errEl.textContent = error.message || 'Sign-in failed';
