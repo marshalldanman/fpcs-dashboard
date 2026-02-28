@@ -335,9 +335,19 @@ body::after {
 }
 .cmd-status-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
 .cmd-status-pending { background: var(--yellow); }
+.cmd-status-executing { background: var(--cyan); animation: probPulse 0.8s infinite; }
 .cmd-status-running { background: var(--cyan); animation: probPulse 0.8s infinite; }
 .cmd-status-completed { background: var(--green); }
 .cmd-status-failed { background: var(--red); }
+.cmd-history-item { cursor: pointer; }
+.cmd-history-item:hover { background: rgba(56,189,248,0.05); }
+.cmd-output-box {
+  display: none; margin: 4px 0 8px; padding: 8px; background: #0a0e1a;
+  border: 1px solid var(--border); border-radius: 4px;
+  font-size: 9px; line-height: 1.4; color: var(--text-dim);
+  white-space: pre-wrap; word-break: break-all; max-height: 200px; overflow-y: auto;
+}
+.cmd-output-box.open { display: block; }
 
 /* ── CONFIRM MODAL ── */
 .confirm-overlay {
@@ -497,13 +507,36 @@ body::after {
         <span class="cmd-icon">&#9211;</span>
         <div><div class="cmd-label">Shutdown Computer</div><div class="cmd-desc">shutdown /s /t 60 — 60s warning</div></div>
       </button>
-      <button class="cmd-btn" onclick="confirmCommand('message')">
+      <button class="cmd-btn" onclick="confirmCommand('send_message')">
         <span class="cmd-icon">&#128172;</span>
         <div><div class="cmd-label">Send Message</div><div class="cmd-desc">Display message on remote screen</div></div>
       </button>
-      <button class="cmd-btn" onclick="confirmCommand('ipconfig')">
+      <button class="cmd-btn" onclick="confirmCommand('ipconfig_renew')">
         <span class="cmd-icon">&#128268;</span>
-        <div><div class="cmd-label">IP Release / Renew</div><div class="cmd-desc">ipconfig /release + /renew</div></div>
+        <div><div class="cmd-label">IP Release / Renew</div><div class="cmd-desc">ipconfig /release + /renew — brief drop</div></div>
+      </button>
+    </div>
+    <div class="cmd-section">
+      <h4>Diagnostics</h4>
+      <button class="cmd-btn" onclick="confirmCommand('ipconfig')">
+        <span class="cmd-icon">&#127760;</span>
+        <div><div class="cmd-label">IP Config</div><div class="cmd-desc">ipconfig /all — show network adapters</div></div>
+      </button>
+      <button class="cmd-btn" onclick="confirmCommand('sysinfo')">
+        <span class="cmd-icon">&#128187;</span>
+        <div><div class="cmd-label">System Info</div><div class="cmd-desc">systeminfo — OS, hardware, uptime, hotfixes</div></div>
+      </button>
+      <button class="cmd-btn" onclick="confirmCommand('tasklist')">
+        <span class="cmd-icon">&#128203;</span>
+        <div><div class="cmd-label">Task List</div><div class="cmd-desc">tasklist — running processes (top 80)</div></div>
+      </button>
+      <button class="cmd-btn" onclick="confirmCommand('netstat')">
+        <span class="cmd-icon">&#128279;</span>
+        <div><div class="cmd-label">Netstat</div><div class="cmd-desc">netstat -an -p TCP — active connections</div></div>
+      </button>
+      <button class="cmd-btn" onclick="confirmCommand('whoami')">
+        <span class="cmd-icon">&#128100;</span>
+        <div><div class="cmd-label">Who Am I</div><div class="cmd-desc">whoami /all — user, groups, privileges</div></div>
       </button>
     </div>
     <div class="cmd-section">
@@ -512,11 +545,11 @@ body::after {
         <span class="cmd-icon">&#128270;</span>
         <div><div class="cmd-label">Force Full Scan</div><div class="cmd-desc">YARA + Sigma + ML anomaly detection</div></div>
       </button>
-      <button class="cmd-btn" onclick="confirmCommand('hardening-audit')">
+      <button class="cmd-btn" onclick="confirmCommand('hardening_audit')">
         <span class="cmd-icon">&#128737;</span>
         <div><div class="cmd-label">Run Hardening Audit</div><div class="cmd-desc">GPO + Registry + HardeningKitty</div></div>
       </button>
-      <button class="cmd-btn" onclick="confirmCommand('temp-cleanup')">
+      <button class="cmd-btn" onclick="confirmCommand('temp_cleanup')">
         <span class="cmd-icon">&#128465;</span>
         <div><div class="cmd-label">Strategic Temp Cleanup</div><div class="cmd-desc">4-phase cleanup: persist → suspend → delete → verify</div></div>
       </button>
@@ -879,13 +912,18 @@ body::after {
         return;
       }
       var html = '';
-      cmds.forEach(function (c) {
+      cmds.forEach(function (c, i) {
         var time = new Date(c.issued_at).toLocaleTimeString();
-        html += '<div class="cmd-history-item">' +
+        var hasOutput = c.output && c.output.length > 0;
+        html += '<div>' +
+          '<div class="cmd-history-item" onclick="toggleCmdOutput(\'cmdOut' + i + '\')" title="' + (hasOutput ? 'Click to view output' : 'No output') + '">' +
           '<span class="cmd-status-dot cmd-status-' + (c.status || 'pending') + '"></span>' +
           '<span style="flex:1">' + esc(c.command) + '</span>' +
           '<span style="color:var(--text-dim)">' + time + '</span>' +
           '<span style="color:var(--text-dim);min-width:60px;text-align:right">' + (c.status || '?') + '</span>' +
+          (hasOutput ? '<span style="color:var(--cyan);font-size:9px">&#9660;</span>' : '') +
+          '</div>' +
+          (hasOutput ? '<div class="cmd-output-box" id="cmdOut' + i + '">' + esc(c.output) + '</div>' : '') +
           '</div>';
       });
       el.innerHTML = html;
@@ -903,11 +941,16 @@ body::after {
   var COMMAND_CONFIG = {
     'restart':         { title: 'Restart Computer',        msg: 'This will restart the remote computer with a 30-second warning.', input: false },
     'shutdown':        { title: 'Shutdown Computer',       msg: 'This will shut down the remote computer with a 60-second warning.', input: false },
-    'message':         { title: 'Send Message',            msg: 'Enter the message to display on the remote screen:', input: true, placeholder: 'Your message here...' },
-    'ipconfig':        { title: 'IP Release / Renew',      msg: 'This will release and renew the IP address. Network will drop briefly.', input: false },
+    'send_message':    { title: 'Send Message',            msg: 'Enter the message to display on the remote screen:', input: true, placeholder: 'Your message here...' },
+    'ipconfig_renew':  { title: 'IP Release / Renew',      msg: 'This will release and renew the IP address. Network will drop briefly.', input: false },
+    'ipconfig':        { title: 'IP Config',               msg: 'Show full network adapter configuration (ipconfig /all).', input: false },
+    'sysinfo':         { title: 'System Info',             msg: 'Get OS version, hardware details, uptime, and installed hotfixes.', input: false },
+    'tasklist':        { title: 'Task List',               msg: 'Get list of running processes (top 80 by memory).', input: false },
+    'netstat':         { title: 'Netstat',                 msg: 'Show active TCP connections and listening ports.', input: false },
+    'whoami':          { title: 'Who Am I',                msg: 'Show current user, group memberships, and privileges.', input: false },
     'full-scan':       { title: 'Force Full Scan',         msg: 'Run YARA + Sigma + ML anomaly detection. May take several minutes.', input: false },
-    'hardening-audit': { title: 'Hardening Audit',         msg: 'Run GPO analysis + registry checks + HardeningKitty audit.', input: false },
-    'temp-cleanup':    { title: 'Strategic Temp Cleanup',  msg: 'Execute 4-phase cleanup: persistence removal → process suspension → file deletion → verification.', input: false },
+    'hardening_audit':  { title: 'Hardening Audit',         msg: 'Run GPO analysis + registry checks + HardeningKitty audit.', input: false },
+    'temp_cleanup':     { title: 'Strategic Temp Cleanup',  msg: 'Execute 4-phase cleanup: persistence removal → process suspension → file deletion → verification.', input: false },
     'adwcleaner':      { title: 'Run AdwCleaner',          msg: 'Run portable AdwCleaner scan and clean. Agent may reboot after cleanup.', input: false },
     'emsisoft':        { title: 'Run Emsisoft EEK',        msg: 'Run full Emsisoft Emergency Kit scan. This will take several minutes.', input: false },
     'isolate':         { title: 'ISOLATE Machine',         msg: 'WARNING: This will cut ALL network connections except the agent heartbeat. The machine will be completely isolated.', input: false },
@@ -939,6 +982,11 @@ body::after {
     confirmOverlay.classList.add('active');
   };
 
+  window.toggleCmdOutput = function (id) {
+    var el = document.getElementById(id);
+    if (el) el.classList.toggle('open');
+  };
+
   window.closeConfirm = function () {
     confirmOverlay.classList.remove('active');
     pendingCommand = null;
@@ -951,8 +999,8 @@ body::after {
     var inputField = document.getElementById('confirmInputField');
     var type = pendingCommand;
 
-    if (type === 'message') {
-      payload.text = inputField.value || 'Hello from SentryLion Console';
+    if (type === 'send_message') {
+      payload.message = inputField.value || 'Hello from SentryLion Console';
     } else if (type === 'kill-connection') {
       payload.ip = inputField.value || '';
     } else if (type === 'push-file') {
