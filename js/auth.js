@@ -924,7 +924,22 @@
   }
 
   injectAuthGate();
-  loadScript('https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js', function () {
-    loadScript('https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js', initAuth);
-  });
+
+  // --- Bootstrap Firebase SDK ---
+  // If firebase-app-compat was already loaded via <script> tags (e.g. console page),
+  // skip dynamic loading to avoid resetting the namespace and losing
+  // firestore/database registrations from earlier script tags.
+  if (typeof firebase !== 'undefined' && firebase.apps !== undefined) {
+    // Firebase already loaded — just ensure auth compat is present
+    if (typeof firebase.auth === 'function') {
+      initAuth();
+    } else {
+      loadScript('https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js', initAuth);
+    }
+  } else {
+    // No Firebase yet — load app + auth dynamically (standard pages)
+    loadScript('https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js', function () {
+      loadScript('https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js', initAuth);
+    });
+  }
 })();
