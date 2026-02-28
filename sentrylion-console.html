@@ -630,6 +630,10 @@ body::after {
         <span class="cmd-icon">&#128737;</span>
         <div><div class="cmd-label">Run Hardening Audit</div><div class="cmd-desc">GPO + Registry + HardeningKitty</div></div>
       </button>
+      <button class="cmd-btn" onclick="confirmCommand('auto_harden')" style="border-color:var(--green)">
+        <span class="cmd-icon">&#128272;</span>
+        <div><div class="cmd-label">Auto-Harden System</div><div class="cmd-desc">Fix: SMBv1, WDigest, AutoRun, LLMNR, NetBIOS, PS logging</div></div>
+      </button>
       <button class="cmd-btn" onclick="confirmCommand('temp_cleanup')">
         <span class="cmd-icon">&#128465;</span>
         <div><div class="cmd-label">Strategic Temp Cleanup</div><div class="cmd-desc">4-phase cleanup: persist → suspend → delete → verify</div></div>
@@ -939,7 +943,12 @@ body::after {
     document.getElementById('dMemDetail').textContent = formatMemory(a.memUsedMb, a.memTotalMb);
 
     var hs = a.hardening ? a.hardening.score : '?';
-    document.getElementById('dHardenScore').textContent = hs;
+    var hsEl = document.getElementById('dHardenScore');
+    hsEl.textContent = hs !== '?' ? hs + '/100' : '?';
+    if (hs !== '?') {
+      hsEl.style.color = hs >= 70 ? 'var(--green)' : hs >= 40 ? 'var(--yellow)' : 'var(--red)';
+      hsEl.style.textShadow = hs >= 70 ? '0 0 8px var(--green-glow)' : hs >= 40 ? '0 0 8px rgba(234,179,8,0.4)' : '0 0 8px var(--red-glow)';
+    }
     document.getElementById('dHardenDate').textContent = a.hardening && a.hardening.lastAudit
       ? new Date(a.hardening.lastAudit).toLocaleString() : '?';
   }
@@ -1065,6 +1074,7 @@ body::after {
     'whoami':          { title: 'Who Am I',                msg: 'Show current user, group memberships, and privileges.', input: false },
     'full-scan':       { title: 'Force Full Scan',         msg: 'Run YARA + Sigma + ML anomaly detection. May take several minutes.', input: false },
     'hardening_audit':  { title: 'Hardening Audit',         msg: 'Run GPO analysis + registry checks + HardeningKitty audit.', input: false },
+    'auto_harden':      { title: 'Auto-Harden System',     msg: 'Apply security fixes: disable SMBv1, WDigest, AutoRun, LLMNR, NetBIOS; enable PS logging, LSA protection, firewall. Requires admin.', input: false },
     'temp_cleanup':     { title: 'Strategic Temp Cleanup',  msg: 'Execute 4-phase cleanup: persistence removal → process suspension → file deletion → verification.', input: false },
     'adwcleaner':      { title: 'Run AdwCleaner',          msg: 'Run portable AdwCleaner scan and clean. Agent may reboot after cleanup.', input: false },
     'emsisoft':        { title: 'Run Emsisoft EEK',        msg: 'Run full Emsisoft Emergency Kit scan. This will take several minutes.', input: false },
