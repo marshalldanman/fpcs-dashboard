@@ -110,7 +110,10 @@
 
   /* Summary bar */
   .live-summary{display:flex;gap:16px;margin-bottom:20px;flex-wrap:wrap}
-  .live-stat{flex:1;min-width:130px;padding:14px;background:var(--bg);border-radius:8px;text-align:center;border:1px solid var(--border)}
+  .live-stat{flex:1;min-width:130px;padding:14px;background:var(--bg);border-radius:8px;text-align:center;border:1px solid var(--border);cursor:pointer;transition:border-color .15s,transform .15s,box-shadow .15s}
+  .live-stat:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:0 4px 12px rgba(56,189,248,.15)}
+  .live-stat:active{transform:translateY(0)}
+  .dd-row:hover{background:rgba(56,189,248,.08)!important}
   .live-stat-val{font-size:20px;font-weight:700;font-family:'Courier New',monospace}
   .live-stat-label{font-size:10px;text-transform:uppercase;color:var(--muted);margin-top:4px}
 
@@ -650,12 +653,12 @@
 
     <!-- Live summary stats -->
     <div class="live-summary" id="liveSummary" style="display:none">
-      <div class="live-stat"><div class="live-stat-val" style="color:var(--green)" id="lsTotalDeductions">--</div><div class="live-stat-label">Total Deductions</div></div>
-      <div class="live-stat"><div class="live-stat-val" style="color:var(--accent)" id="lsCategories">--</div><div class="live-stat-label">Categories</div></div>
-      <div class="live-stat"><div class="live-stat-val" style="color:var(--purple)" id="lsTransactions">--</div><div class="live-stat-label">Transactions</div></div>
-      <div class="live-stat"><div class="live-stat-val" style="color:var(--yellow)" id="lsNeedsReview">--</div><div class="live-stat-label">Needs Review</div></div>
-      <div class="live-stat"><div class="live-stat-val" style="color:var(--yellow)" id="lsLargest">--</div><div class="live-stat-label">Largest Category</div></div>
-      <div class="live-stat"><div class="live-stat-val" style="color:var(--red)" id="lsNolEstimate">--</div><div class="live-stat-label">NOL Estimate</div></div>
+      <div class="live-stat" onclick="drillDown('total')" title="Click to see category breakdown"><div class="live-stat-val" style="color:var(--green)" id="lsTotalDeductions">--</div><div class="live-stat-label">Total Deductions</div></div>
+      <div class="live-stat" onclick="drillDown('categories')" title="Click to see all categories"><div class="live-stat-val" style="color:var(--accent)" id="lsCategories">--</div><div class="live-stat-label">Categories</div></div>
+      <div class="live-stat" onclick="drillDown('transactions')" title="Click to see all transactions"><div class="live-stat-val" style="color:var(--purple)" id="lsTransactions">--</div><div class="live-stat-label">Transactions</div></div>
+      <div class="live-stat" onclick="drillDown('review')" title="Click to see items needing review"><div class="live-stat-val" style="color:var(--yellow)" id="lsNeedsReview">--</div><div class="live-stat-label">Needs Review</div></div>
+      <div class="live-stat" onclick="drillDown('largest')" title="Click to see largest category"><div class="live-stat-val" style="color:var(--yellow)" id="lsLargest">--</div><div class="live-stat-label">Largest Category</div></div>
+      <div class="live-stat" onclick="drillDown('nol')" title="Click to see NOL calculation"><div class="live-stat-val" style="color:var(--red)" id="lsNolEstimate">--</div><div class="live-stat-label">NOL Estimate</div></div>
     </div>
     <!-- Data freshness indicator -->
     <div id="dataFreshness" style="display:none;font-size:11px;color:var(--muted);margin-bottom:12px;display:flex;align-items:center;gap:6px">
@@ -2176,6 +2179,149 @@ function closeCategoryDetail() {
   document.getElementById('catDetailOverlay').classList.remove('open');
   document.body.style.overflow = '';
   _catDetailCurrent = '';
+}
+
+// ============================================================
+//  DRILL-DOWN — Click any summary stat to see its breakdown
+// ============================================================
+function drillDown(type) {
+  if (!dedGroupKeys || dedGroupKeys.length === 0) return;
+
+  var title = '', rows = [], bodyHtml = '';
+
+  switch (type) {
+    case 'total':
+      // Show category breakdown sorted by amount descending
+      title = 'Total Deductions — Category Breakdown';
+      var catList = dedGroupKeys.slice().sort(function(a, b) { return (dedCatTotals[b] || 0) - (dedCatTotals[a] || 0); });
+      var grandTotal = 0;
+      catList.forEach(function(cat) { grandTotal += (dedCatTotals[cat] || 0); });
+      bodyHtml = '<tr><th style="text-align:left;padding:8px;color:var(--accent);border-bottom:2px solid var(--border)">Category</th>';
+      bodyHtml += '<th style="text-align:right;padding:8px;color:var(--accent);border-bottom:2px solid var(--border)">Transactions</th>';
+      bodyHtml += '<th style="text-align:right;padding:8px;color:var(--accent);border-bottom:2px solid var(--border)">Amount</th>';
+      bodyHtml += '<th style="text-align:right;padding:8px;color:var(--accent);border-bottom:2px solid var(--border)">% of Total</th></tr>';
+      catList.forEach(function(cat) {
+        var amt = dedCatTotals[cat] || 0;
+        var pct = grandTotal > 0 ? ((amt / grandTotal) * 100).toFixed(1) : '0.0';
+        var txns = (dedGrouped[cat] || []).length;
+        bodyHtml += '<tr onclick="closeCategoryDetail();openCategoryDetail(\'' + cat.replace(/'/g, "\\'") + '\')" style="cursor:pointer" class="dd-row">';
+        bodyHtml += '<td style="padding:8px">' + escDed(cat) + '</td>';
+        bodyHtml += '<td style="padding:8px;text-align:right;color:var(--muted)">' + txns + '</td>';
+        bodyHtml += '<td style="padding:8px;text-align:right;color:var(--red);font-family:Courier New,monospace">-$' + amt.toLocaleString('en-US', {minimumFractionDigits:2}) + '</td>';
+        bodyHtml += '<td style="padding:8px;text-align:right;color:var(--muted)">' + pct + '%</td>';
+        bodyHtml += '</tr>';
+      });
+      bodyHtml += '<tr style="background:rgba(15,23,42,.5);font-weight:700"><td style="padding:10px 8px;color:var(--muted)">' + catList.length + ' categories</td>';
+      bodyHtml += '<td style="padding:10px 8px;text-align:right;color:var(--muted)">' + dedRecords.length + '</td>';
+      bodyHtml += '<td style="padding:10px 8px;text-align:right;color:var(--green);font-family:Courier New,monospace">$' + grandTotal.toLocaleString('en-US', {minimumFractionDigits:2}) + '</td>';
+      bodyHtml += '<td style="padding:10px 8px;text-align:right;color:var(--muted)">100%</td></tr>';
+      break;
+
+    case 'categories':
+      // Same as total — list all categories
+      drillDown('total');
+      return;
+
+    case 'transactions':
+      // Show all transactions sorted by amount
+      title = 'All Transactions (' + dedRecords.length + ')';
+      var allSorted = dedRecords.slice().sort(function(a, b) {
+        var aA = Math.abs(parseFloat((a[dedColMap.amount] || '0').replace(/[$,]/g, '')));
+        var bA = Math.abs(parseFloat((b[dedColMap.amount] || '0').replace(/[$,]/g, '')));
+        return bA - aA;
+      });
+      bodyHtml = '<tr>';
+      if (dedColMap.date !== undefined) bodyHtml += '<th style="text-align:left;padding:8px;color:var(--accent);border-bottom:2px solid var(--border)">Date</th>';
+      if (dedColMap.name !== undefined) bodyHtml += '<th style="text-align:left;padding:8px;color:var(--accent);border-bottom:2px solid var(--border)">Vendor</th>';
+      bodyHtml += '<th style="text-align:left;padding:8px;color:var(--accent);border-bottom:2px solid var(--border)">Category</th>';
+      if (dedColMap.memo !== undefined) bodyHtml += '<th style="text-align:left;padding:8px;color:var(--accent);border-bottom:2px solid var(--border)">Description</th>';
+      bodyHtml += '<th style="text-align:right;padding:8px;color:var(--accent);border-bottom:2px solid var(--border)">Amount</th></tr>';
+      // Show top 200 to avoid performance issues
+      var shown = Math.min(allSorted.length, 200);
+      for (var i = 0; i < shown; i++) {
+        var row = allSorted[i];
+        var amt = Math.abs(parseFloat((row[dedColMap.amount] || '0').replace(/[$,]/g, '')));
+        var cat = row[dedColMap.account] || 'Uncategorized';
+        bodyHtml += '<tr class="dd-row">';
+        if (dedColMap.date !== undefined) bodyHtml += '<td style="padding:6px 8px;white-space:nowrap">' + escDed(row[dedColMap.date] || '') + '</td>';
+        if (dedColMap.name !== undefined) bodyHtml += '<td style="padding:6px 8px">' + escDed(row[dedColMap.name] || '') + '</td>';
+        bodyHtml += '<td style="padding:6px 8px;color:var(--accent);cursor:pointer" onclick="closeCategoryDetail();openCategoryDetail(\'' + cat.replace(/'/g, "\\'") + '\')">' + escDed(cat) + '</td>';
+        if (dedColMap.memo !== undefined) bodyHtml += '<td style="padding:6px 8px;color:var(--muted);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + escDed(row[dedColMap.memo] || '') + '</td>';
+        bodyHtml += '<td style="padding:6px 8px;text-align:right;color:var(--red);font-family:Courier New,monospace">-$' + amt.toLocaleString('en-US', {minimumFractionDigits:2}) + '</td>';
+        bodyHtml += '</tr>';
+      }
+      if (allSorted.length > 200) {
+        bodyHtml += '<tr><td colspan="5" style="padding:10px 8px;color:var(--yellow);text-align:center">Showing top 200 of ' + allSorted.length + ' transactions</td></tr>';
+      }
+      break;
+
+    case 'review':
+      // Show categories that need review
+      title = 'Categories Needing Review';
+      var reviewCats = dedGroupKeys.filter(function(c) { return dedGrouped[c].length > 20 || dedCatTotals[c] > 5000; });
+      if (reviewCats.length === 0) {
+        bodyHtml = '<tr><td style="padding:20px;color:var(--green);text-align:center">&#9989; All categories pass review thresholds</td></tr>';
+      } else {
+        reviewCats.sort(function(a, b) { return (dedCatTotals[b] || 0) - (dedCatTotals[a] || 0); });
+        bodyHtml = '<tr><th style="text-align:left;padding:8px;color:var(--accent);border-bottom:2px solid var(--border)">Category</th>';
+        bodyHtml += '<th style="text-align:right;padding:8px;color:var(--accent);border-bottom:2px solid var(--border)">Transactions</th>';
+        bodyHtml += '<th style="text-align:right;padding:8px;color:var(--accent);border-bottom:2px solid var(--border)">Amount</th>';
+        bodyHtml += '<th style="text-align:left;padding:8px;color:var(--accent);border-bottom:2px solid var(--border)">Reason</th></tr>';
+        reviewCats.forEach(function(cat) {
+          var amt = dedCatTotals[cat] || 0;
+          var txns = dedGrouped[cat].length;
+          var reasons = [];
+          if (txns > 20) reasons.push('>' + txns + ' transactions');
+          if (amt > 5000) reasons.push('>$5,000');
+          bodyHtml += '<tr onclick="closeCategoryDetail();openCategoryDetail(\'' + cat.replace(/'/g, "\\'") + '\')" style="cursor:pointer" class="dd-row">';
+          bodyHtml += '<td style="padding:8px">' + escDed(cat) + '</td>';
+          bodyHtml += '<td style="padding:8px;text-align:right">' + txns + '</td>';
+          bodyHtml += '<td style="padding:8px;text-align:right;color:var(--red);font-family:Courier New,monospace">-$' + amt.toLocaleString('en-US', {minimumFractionDigits:2}) + '</td>';
+          bodyHtml += '<td style="padding:8px;color:var(--yellow)">' + reasons.join(', ') + '</td>';
+          bodyHtml += '</tr>';
+        });
+      }
+      break;
+
+    case 'largest':
+      // Open the largest category directly
+      var largestCat = '', largestAmt = 0;
+      dedGroupKeys.forEach(function(cat) { if (dedCatTotals[cat] > largestAmt) { largestAmt = dedCatTotals[cat]; largestCat = cat; } });
+      if (largestCat) openCategoryDetail(largestCat);
+      return;
+
+    case 'nol':
+      // Show NOL calculation breakdown
+      title = 'Net Operating Loss (NOL) Calculation';
+      var totalDed = 0;
+      dedRecords.forEach(function(row) {
+        var amt = Math.abs(parseFloat((row[dedColMap.amount] || '0').replace(/[$,]/g, '')));
+        if (!isNaN(amt)) totalDed += amt;
+      });
+      var income = 3916.50;
+      var nolVal = totalDed - income;
+      bodyHtml = '<tr><th style="text-align:left;padding:8px;color:var(--accent);border-bottom:2px solid var(--border)" colspan="2">NOL Components</th></tr>';
+      bodyHtml += '<tr class="dd-row"><td style="padding:10px 8px;font-size:15px">Total Business Deductions</td>';
+      bodyHtml += '<td style="padding:10px 8px;text-align:right;color:var(--red);font-family:Courier New,monospace;font-size:15px">-$' + totalDed.toLocaleString('en-US', {minimumFractionDigits:2}) + '</td></tr>';
+      bodyHtml += '<tr class="dd-row"><td style="padding:10px 8px;font-size:15px">Estimated Business Income</td>';
+      bodyHtml += '<td style="padding:10px 8px;text-align:right;color:var(--green);font-family:Courier New,monospace;font-size:15px">+$' + income.toLocaleString('en-US', {minimumFractionDigits:2}) + '</td></tr>';
+      bodyHtml += '<tr style="background:rgba(15,23,42,.5)"><td style="padding:12px 8px;font-weight:700;font-size:16px">Net Operating Loss</td>';
+      bodyHtml += '<td style="padding:12px 8px;text-align:right;font-weight:700;font-size:16px;color:' + (nolVal > 0 ? 'var(--red)' : 'var(--green)') + ';font-family:Courier New,monospace">';
+      bodyHtml += (nolVal > 0 ? '-$' : '$') + Math.abs(nolVal).toLocaleString('en-US', {minimumFractionDigits:2}) + '</td></tr>';
+      bodyHtml += '<tr><td colspan="2" style="padding:12px 8px;color:var(--muted);font-size:12px;border-top:1px solid var(--border)">';
+      bodyHtml += 'NOL = Business Deductions exceed Business Income. A 2022 NOL can be carried forward to offset future income (IRC §172). ';
+      bodyHtml += 'Income breakdown: AGT Mortgage $2,000 + Clients $916.50 + Misc $130 + Missing $870 = $3,916.50</td></tr>';
+      break;
+  }
+
+  // Reuse the existing category detail modal for drill-downs
+  document.getElementById('catDetailTitle').textContent = title;
+  document.getElementById('catDetailTotal').textContent = '';
+  document.getElementById('catDetailHead').innerHTML = '';
+  document.getElementById('catDetailBody').innerHTML = bodyHtml;
+  document.getElementById('catDetailMeta').innerHTML = '<span style="color:var(--muted);font-size:11px">Click any row to drill deeper</span>';
+  document.getElementById('catDetailOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
 }
 
 function exportCategoryCSV(category) {
