@@ -140,6 +140,13 @@ body.theme-helpdesk { --page-accent: var(--orange); --page-gradient-start: #1e3a
 .coc-local { background: #166534; color: #bbf7d0; }
 .coc-special { background: #be185d; color: #fce7f3; }
 
+/* --- Agent Status Indicators --- */
+.agent-status { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+.agent-status.active { background: #4ade80; box-shadow: 0 0 6px rgba(74,222,128,.5); }
+.agent-status.sleeping { background: #fbbf24; box-shadow: 0 0 6px rgba(251,191,36,.4); }
+.agent-status.idle { background: #64748b; }
+.agent-status.offline { background: #ef4444; box-shadow: 0 0 6px rgba(239,68,68,.4); }
+
 /* --- Buttons --- */
 .btn {
   padding: 8px 20px;

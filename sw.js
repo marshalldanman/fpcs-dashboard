@@ -7,7 +7,7 @@
    use in Chrome browser.
    ============================================================ */
 
-var CACHE_NAME = 'fpcs-dash-v17';
+var CACHE_NAME = 'fpcs-dash-v18';
 var STATIC_ASSETS = [
   './',
   'index.html',
@@ -30,7 +30,6 @@ var STATIC_ASSETS = [
   'js/memory-blocks.js',
   'js/offline.js',
   'js/chiligbot.js',
-  'js/designmode.js',
   'js/firestore-db.js',
   'js/sentryfleet-db.js',
   'js/notify.js',
