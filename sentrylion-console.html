@@ -635,6 +635,10 @@ body::after {
         <span class="cmd-icon">&#128065;</span>
         <div><div class="cmd-label">Process Scan</div><div class="cmd-desc">Detect suspicious processes, temp-path EXEs, encoded PS</div></div>
       </button>
+      <button class="cmd-btn" onclick="confirmCommand('ai_scan')" style="border-color:var(--cyan)">
+        <span class="cmd-icon">&#129302;</span>
+        <div><div class="cmd-label">AI Threat Analysis</div><div class="cmd-desc">Local LLM analyzes full telemetry — powered by Ollama</div></div>
+      </button>
       <button class="cmd-btn" onclick="confirmCommand('hardening_audit')">
         <span class="cmd-icon">&#128737;</span>
         <div><div class="cmd-label">Run Hardening Audit</div><div class="cmd-desc">GPO + Registry + HardeningKitty</div></div>
@@ -1084,6 +1088,7 @@ body::after {
     'full_scan':       { title: 'Full Security Scan',       msg: 'Run Defender status check + process heuristics + connection analysis + trigger Defender quick scan. Results appear in command output.', input: false },
     'defender_scan':   { title: 'Defender Quick Scan',      msg: 'Trigger a Windows Defender quick scan. Scan runs in background — Defender handles remediation automatically. Requires admin on agent.', input: false },
     'process_scan':    { title: 'Process Scan',             msg: 'Scan for suspicious processes (known malware tools, crypto miners, encoded PowerShell, temp-path executables). Fast — results in seconds.', input: false },
+    'ai_scan':         { title: 'AI Threat Analysis',       msg: 'Run AI-powered threat analysis using local Ollama LLM. Collects full telemetry (processes, connections, Defender status, recent files) and sends to local AI model for deep analysis. Takes 15-30 seconds. Requires Ollama running on agent machine.', input: false },
     'hardening_audit':  { title: 'Hardening Audit',         msg: 'Run GPO analysis + registry checks + HardeningKitty audit.', input: false },
     'auto_harden':      { title: 'Auto-Harden System',     msg: 'Apply security fixes: disable SMBv1, WDigest, AutoRun, LLMNR, NetBIOS; enable PS logging, LSA protection, firewall. Requires admin.', input: false },
     'temp_cleanup':     { title: 'Strategic Temp Cleanup',  msg: 'Execute 4-phase cleanup: persistence removal → process suspension → file deletion → verification.', input: false },
