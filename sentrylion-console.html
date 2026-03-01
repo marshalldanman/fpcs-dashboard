@@ -1224,8 +1224,105 @@ body::after {
   document.getElementById('btnCommands').addEventListener('click', openCmdPanel);
   document.getElementById('cmdClose').addEventListener('click', closeCmdPanel);
 
+  // ── LOGS BUTTON — scroll/focus log stream ──
+  document.getElementById('btnDetailLogs').addEventListener('click', function () {
+    var logStream = document.getElementById('logStream');
+    if (logStream) {
+      logStream.scrollTop = 0;
+      logStream.style.outline = '2px solid var(--cyan)';
+      logStream.style.outlineOffset = '2px';
+      setTimeout(function () { logStream.style.outline = ''; logStream.style.outlineOffset = ''; }, 1500);
+      logStream.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+    // Refresh logs if agent is selected
+    if (currentAgentId) {
+      if (logUnsub) logUnsub();
+      var logEl = document.getElementById('logStream');
+      logEl.innerHTML = '<div style="padding:12px;color:var(--text-dim)">Refreshing logs...</div>';
+      logUnsub = SentryFleet.subscribeToLogs(currentAgentId, function (entries) {
+        renderLogs(entries);
+      }, 200);
+      setTimeout(function () {
+        if (logEl.querySelector('div[style]')) {
+          var a = SentryFleet.getAgent(currentAgentId);
+          if (a) renderPlaceholderLogs(a);
+        }
+      }, 3000);
+    }
+  });
+
+  // ── IP JAIL BUTTON — show IP jail data ──
+  document.getElementById('btnDetailJail').addEventListener('click', function () {
+    if (!currentAgentId) return;
+    var a = SentryFleet.getAgent(currentAgentId);
+    var hostname = a ? a.hostname : currentAgentId;
+
+    SentryFleet.getAgentIPJail(currentAgentId).then(function (ips) {
+      var ipKeys = Object.keys(ips || {});
+      var msg = '🔒 IP JAIL — ' + hostname + '\n\n';
+      if (ipKeys.length === 0) {
+        msg += 'No IPs currently jailed for this agent.\n\nJailed IPs appear here when the agent detects and blocks suspicious connections.';
+      } else {
+        msg += ipKeys.length + ' jailed IP(s):\n\n';
+        ipKeys.forEach(function (ip) {
+          var data = ips[ip];
+          msg += '• ' + ip + ' — ' + (data.reason || 'unknown') + '\n';
+          if (data.timestamp) msg += '  Jailed: ' + new Date(data.timestamp).toLocaleString() + '\n';
+        });
+      }
+      alert(msg);
+    }).catch(function (err) {
+      alert('Failed to load IP jail data: ' + err.message);
+    });
+  });
+
+  // ── DEPLOY BUTTON — system status + deployment info ──
   document.getElementById('btnDeploy').addEventListener('click', function () {
-    alert('USB Deploy coming in Phase 9.\n\nThis will generate a SentryLion-Portable.zip containing:\n- SentryLion.exe (Tauri agent)\n- AdwCleaner + Emsisoft EEK\n- YARA + Sigma rules\n- Pre-trained ML model\n- HardeningKitty baselines');
+    var agents = SentryFleet.getAgents();
+    var count = Object.keys(agents).length;
+    var online = 0;
+    Object.keys(agents).forEach(function (id) {
+      if (agents[id]._computed_online) online++;
+    });
+
+    pendingCommand = null;
+    document.getElementById('confirmTitle').textContent = '🔧 SentryLion Deploy';
+    document.getElementById('confirmMsg').innerHTML =
+      '<div style="text-align:left;font-size:13px;line-height:1.6">' +
+      '<div style="color:var(--cyan);font-weight:700;margin-bottom:8px">Fleet Status</div>' +
+      '<div>Agents registered: <strong>' + count + '</strong></div>' +
+      '<div>Currently online: <strong style="color:' + (online > 0 ? 'var(--green)' : 'var(--red)') + '">' + online + '</strong></div>' +
+      '<div style="margin-top:12px;color:var(--amber);font-weight:700">USB Deploy — Phase 9</div>' +
+      '<div style="margin-top:4px;color:var(--text-dim)">Will generate <strong>SentryLion-Portable.zip</strong>:</div>' +
+      '<div style="padding-left:12px;margin-top:4px;color:var(--text-dim)">' +
+      '• SentryLion.exe (Tauri agent)<br>' +
+      '• AdwCleaner + Emsisoft EEK<br>' +
+      '• YARA + Sigma rules<br>' +
+      '• Pre-trained ML model<br>' +
+      '• HardeningKitty baselines</div>' +
+      '<div style="margin-top:12px;padding:8px;border:1px solid var(--border);border-radius:6px;background:rgba(56,189,248,0.06)">' +
+      '<strong style="color:var(--cyan)">To add a real agent:</strong> Build the Tauri app from<br>' +
+      '<code style="color:var(--amber)">sentry-agent/</code> and run it on the target machine.</div>' +
+      '</div>';
+    document.getElementById('confirmInput').style.display = 'none';
+
+    // Override confirm button for this dialog
+    var yesBtn = document.getElementById('confirmYes');
+    yesBtn.textContent = 'Clear Demo Data';
+    yesBtn.style.background = 'var(--red)';
+    confirmOverlay.classList.add('active');
+
+    // One-time handler to clear demo data
+    var clearHandler = function () {
+      SentryFleet.clearDemoAgents().then(function () {
+        console.log('[Console] Demo agents cleared');
+      });
+      confirmOverlay.classList.remove('active');
+      yesBtn.textContent = 'Execute';
+      yesBtn.style.background = '';
+      yesBtn.removeEventListener('click', clearHandler);
+    };
+    yesBtn.addEventListener('click', clearHandler);
   });
 
   // ════════════════════════════════════════════════════════
