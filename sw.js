@@ -7,7 +7,7 @@
    use in Chrome browser.
    ============================================================ */
 
-var CACHE_NAME = 'fpcs-dash-v16';
+var CACHE_NAME = 'fpcs-dash-v17';
 var STATIC_ASSETS = [
   './',
   'index.html',

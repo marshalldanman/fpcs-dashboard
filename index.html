@@ -394,7 +394,7 @@
       <div class="value" style="color:var(--yellow)">$42,889.72 <span class="drill-arrow">&#8599;</span></div>
       <div class="sub">+$864.98 tech parts/contract (+ $4,699 discounts pending)</div>
     </div>
-    <div class="stat-card stat-link" onclick="document.getElementById('sec-income').scrollIntoView({behavior:'smooth'})" title="See income vs deductions breakdown">
+    <div class="stat-card stat-link" onclick="location.href='income.html'" title="See income vs deductions breakdown">
       <div class="label">Net Business Loss</div>
       <div class="value" style="color:var(--red)">-$24,922.57 <span class="drill-arrow">&#8599;</span></div>
       <div class="sub">Income $17,967 - Deductions $42,890</div>
@@ -450,131 +450,45 @@
     <div class="milestone drill-row" onclick="location.href='deductions.html#sec-findings'" title="View deduction findings"><input type="checkbox"><div class="info"><div class="title">Home Office (Form 8829) <span class="drill-arrow">&#8599;</span></div><div class="desc">Square footage, internet %, office deduction.</div></div><span class="badge badge-pending">PENDING</span></div>
     <div class="milestone drill-row" onclick="location.href='deductions.html#sec-findings'" title="View deduction findings"><input type="checkbox"><div class="info"><div class="title">Vehicle Deduction <span class="drill-arrow">&#8599;</span></div><div class="desc">100% biz use. GEICO + mileage or actual expenses.</div></div><span class="badge badge-pending">PENDING</span></div>
     <div class="milestone drill-row" onclick="location.href='deductions.html#sec-findings'" title="View deduction findings"><input type="checkbox"><div class="info"><div class="title">Cyberattack Deduction <span class="drill-arrow">&#8599;</span></div><div class="desc">AGT Mortgage incident &mdash; casualty/theft loss.</div></div><span class="badge badge-pending">PENDING</span></div>
-    <div class="milestone drill-row" onclick="document.getElementById('sec-taxforms').scrollIntoView({behavior:'smooth'})" title="View tax forms status"><input type="checkbox"><div class="info"><div class="title">TurboTax Data Entry <span class="drill-arrow">&#8599;</span></div><div class="desc">All Schedule C data into TurboTax 2022 Desktop.</div></div><span class="badge badge-pending">PENDING</span></div>
+    <div class="milestone drill-row" onclick="location.href='deductions.html'" title="View tax forms status"><input type="checkbox"><div class="info"><div class="title">TurboTax Data Entry <span class="drill-arrow">&#8599;</span></div><div class="desc">All Schedule C data into TurboTax 2022 Desktop.</div></div><span class="badge badge-pending">PENDING</span></div>
     <div class="milestone drill-row" onclick="document.getElementById('sec-overview').scrollIntoView({behavior:'smooth'})" title="View progress overview"><input type="checkbox"><div class="info"><div class="title">Final Review + Print + Mail <span class="drill-arrow">&#8599;</span></div><div class="desc">Triple-check, print, USPS Certified. We're DONE!</div></div><span class="badge badge-pending">PENDING</span></div>
   </div>
 
-  <!-- BOUNTY BOARD (Compact — full board on Page 2) -->
-  <div class="section" id="sec-bounty" style="border-color:var(--yellow)">
-    <div class="ddbot-header">
-      <h2 style="color:var(--yellow)">&#127942; Bounty Board</h2>
-      <div>
-        <span class="ddbot-stat warn">5 Active</span>
-        <span class="ddbot-stat" style="background:rgba(74,222,128,0.2);color:var(--green)">0 Claimed</span>
-      </div>
+  <!-- QUICK ACCESS — Links to detailed pages -->
+  <div class="section" id="sec-quicknav" style="border-color:var(--accent)">
+    <h2>&#128640; Quick Access</h2>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px">
+      <a href="deductions.html" class="stat-link" style="display:block;padding:16px;border-radius:10px;background:rgba(74,222,128,.06);border:1px solid rgba(74,222,128,.2);text-decoration:none;transition:all .15s" onmouseover="this.style.borderColor='var(--green)';this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='rgba(74,222,128,.2)';this.style.transform='none'">
+        <div style="font-size:20px;margin-bottom:6px">&#128221;</div>
+        <div style="font-weight:700;color:var(--green);margin-bottom:4px">Deductions HQ &#8599;</div>
+        <div style="font-size:12px;color:var(--muted)">$42,889.72 total &mdash; 15 categories, live records, drill-down</div>
+      </a>
+      <a href="income.html" class="stat-link" style="display:block;padding:16px;border-radius:10px;background:rgba(56,189,248,.06);border:1px solid rgba(56,189,248,.2);text-decoration:none;transition:all .15s" onmouseover="this.style.borderColor='var(--accent)';this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='rgba(56,189,248,.2)';this.style.transform='none'">
+        <div style="font-size:20px;margin-bottom:6px">&#128176;</div>
+        <div style="font-weight:700;color:var(--accent);margin-bottom:4px">Income HQ &#8599;</div>
+        <div style="font-size:12px;color:var(--muted)">$17,967.15 gross &mdash; 22 jobs, client timeline, cross-reference</div>
+      </a>
+      <a href="bots.html" class="stat-link" style="display:block;padding:16px;border-radius:10px;background:rgba(167,139,250,.06);border:1px solid rgba(167,139,250,.2);text-decoration:none;transition:all .15s" onmouseover="this.style.borderColor='var(--purple)';this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='rgba(167,139,250,.2)';this.style.transform='none'">
+        <div style="font-size:20px;margin-bottom:6px">&#129302;</div>
+        <div style="font-weight:700;color:var(--purple);margin-bottom:4px">Bot HQ &#8599;</div>
+        <div style="font-size:12px;color:var(--muted)">Fleet roster, bounty board, village, stats &amp; XP</div>
+      </a>
+      <a href="bots.html#sec-bounty-full" class="stat-link" style="display:block;padding:16px;border-radius:10px;background:rgba(251,191,36,.06);border:1px solid rgba(251,191,36,.2);text-decoration:none;transition:all .15s" onmouseover="this.style.borderColor='var(--yellow)';this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='rgba(251,191,36,.2)';this.style.transform='none'">
+        <div style="font-size:20px;margin-bottom:6px">&#127942;</div>
+        <div style="font-weight:700;color:var(--yellow);margin-bottom:4px">Bounty Board &#8599;</div>
+        <div style="font-size:12px;color:var(--muted)">5 active bounties &mdash; post &amp; claim on Bot HQ</div>
+      </a>
+      <a href="sentrylion.html" class="stat-link" style="display:block;padding:16px;border-radius:10px;background:rgba(249,115,22,.06);border:1px solid rgba(249,115,22,.2);text-decoration:none;transition:all .15s" onmouseover="this.style.borderColor='var(--orange)';this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='rgba(249,115,22,.2)';this.style.transform='none'">
+        <div style="font-size:20px;margin-bottom:6px">&#129409;</div>
+        <div style="font-weight:700;color:var(--orange);margin-bottom:4px">SentryLion &#8599;</div>
+        <div style="font-size:12px;color:var(--muted)">Endpoint security, IP jail, threat radar, network tools</div>
+      </a>
+      <a href="sentrylion-console.html" class="stat-link" style="display:block;padding:16px;border-radius:10px;background:rgba(248,113,113,.06);border:1px solid rgba(248,113,113,.2);text-decoration:none;transition:all .15s" onmouseover="this.style.borderColor='var(--red)';this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='rgba(248,113,113,.2)';this.style.transform='none'">
+        <div style="font-size:20px;margin-bottom:6px">&#128225;</div>
+        <div style="font-weight:700;color:var(--red);margin-bottom:4px">Fleet Console &#8599;</div>
+        <div style="font-size:12px;color:var(--muted)">Remote fleet management, agent monitoring, commands</div>
+      </a>
     </div>
-    <p style="color:var(--muted);font-size:13px;margin:8px 0 16px">Post bounties for tax discoveries, pain-point solutions, and automation ideas. Bots earn XP by completing bounties.</p>
-    <div id="bountyList"></div>
-    <div style="margin-top:12px;text-align:center">
-      <button class="btn" style="background:var(--yellow);color:#000;font-weight:700" onclick="openBountyCreator()">+ Post Bounty</button>
-    </div>
-  </div>
-
-  <!-- BOUNTY CREATOR MODAL -->
-  <div class="modal-overlay" id="bountyModal">
-    <div class="modal" style="max-width:600px;border-color:var(--yellow)">
-      <h2 style="color:var(--yellow)">&#127942; Post New Bounty</h2>
-      <div class="modal-section">
-        <div class="control-row" style="flex-direction:column;align-items:stretch">
-          <label style="margin-bottom:8px;font-weight:600">Bounty Title</label>
-          <input type="text" id="bountyTitle" placeholder="e.g., Find overlooked 2022 deductions" style="background:var(--bg);color:var(--text);border:1px solid var(--border);padding:10px;border-radius:8px;font-size:14px;width:100%">
-        </div>
-        <div class="control-row" style="flex-direction:column;align-items:stretch;margin-top:12px">
-          <label style="margin-bottom:8px;font-weight:600">Description</label>
-          <textarea id="bountyDesc" rows="3" placeholder="Details about what's needed..." style="background:var(--bg);color:var(--text);border:1px solid var(--border);padding:10px;border-radius:8px;font-size:14px;width:100%;resize:vertical;font-family:inherit"></textarea>
-        </div>
-        <div class="control-row" style="margin-top:12px">
-          <label>Category</label>
-          <select id="bountyCat" style="background:var(--bg);color:var(--text);border:1px solid var(--border);padding:6px 12px;border-radius:6px">
-            <option value="tax-writeoff">Tax Write-Off Discovery</option>
-            <option value="automation">Automated Income Ideas</option>
-            <option value="painpoint">Pain-Point Solution</option>
-            <option value="data-quality">Data Quality Fix</option>
-            <option value="security">Security Improvement</option>
-            <option value="efficiency">Efficiency Optimization</option>
-            <option value="creative">Creative Solution</option>
-            <option value="docs">Documentation</option>
-            <option value="village">Village Improvement</option>
-          </select>
-        </div>
-        <div class="control-row" style="margin-top:12px">
-          <label>XP Reward</label>
-          <input type="number" id="bountyXP" value="100" min="10" max="1000" style="background:var(--bg);color:var(--text);border:1px solid var(--border);padding:6px 12px;border-radius:6px;width:100px">
-          <span style="color:var(--muted);font-size:12px">XP</span>
-        </div>
-      </div>
-      <div style="display:flex;gap:12px;justify-content:flex-end;margin-top:20px">
-        <button class="btn btn-ghost" onclick="closeBountyCreator()">Cancel</button>
-        <button class="btn" style="background:var(--yellow);color:#000;font-weight:700" onclick="saveBounty()">Post Bounty</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- EXPENSE TABLE (CORRECTED after dedup fix) -->
-  <div class="section" id="sec-expenses">
-    <h2>&#128221; 2022 Schedule C Expenses (Corrected &mdash; 2,224 dupes removed)</h2>
-    <table class="income-table">
-      <thead><tr><th>Line</th><th>Category</th><th>Amount</th><th class="amount">Txns</th><th class="amount">Status</th></tr></thead>
-      <tbody>
-        <tr class="drill-row" onclick="drillExpense('Advertising')"><td>8</td><td>Advertising</td><td class="amount drill-amount" style="color:var(--green)">$23.18 &#8599;</td><td class="amount">1</td><td class="amount" style="color:var(--green)">OK</td></tr>
-        <tr class="drill-row" onclick="drillExpense('Car/Truck')"><td>9</td><td>Car/Truck (Gas + Reg + Repairs)</td><td class="amount drill-amount" style="color:var(--green)">$3,239.62 &#8599;</td><td class="amount">41</td><td class="amount" style="color:var(--green)">Fixed (was $4,840)</td></tr>
-        <tr class="drill-row" onclick="drillExpense('Contract Labor')"><td>11</td><td>Contract Labor</td><td class="amount drill-amount" style="color:var(--yellow)">$10.00 &#8599;</td><td class="amount">1</td><td class="amount" style="color:var(--yellow)">Check Venmo/bank</td></tr>
-        <tr class="drill-row" onclick="drillExpense('Insurance')"><td>15</td><td>Insurance (Vehicle)</td><td class="amount drill-amount" style="color:var(--green)">$422.54 &#8599;</td><td class="amount">1</td><td class="amount" style="color:var(--green)">Fixed (was $845)</td></tr>
-        <tr class="drill-row" onclick="drillExpense('Interest')"><td>16b</td><td>CC Interest</td><td class="amount drill-amount" style="color:var(--green)">$248.90 &#8599;</td><td class="amount">17</td><td class="amount" style="color:var(--green)">Fixed (was $1,618)</td></tr>
-        <tr class="drill-row" onclick="drillExpense('Office')"><td>18</td><td>Office Expense</td><td class="amount drill-amount" style="color:var(--green)">$1,024.14 &#8599;</td><td class="amount">13</td><td class="amount" style="color:var(--green)">OK</td></tr>
-        <tr class="drill-row" onclick="drillExpense('Repairs')"><td>21</td><td>Repairs</td><td class="amount drill-amount" style="color:var(--green)">$39.98 &#8599;</td><td class="amount">1</td><td class="amount" style="color:var(--green)">OK</td></tr>
-        <tr class="drill-row" onclick="drillExpense('Supplies')"><td>22</td><td>Supplies + Small Tools + Costco</td><td class="amount drill-amount" style="color:var(--green)">$12,731.70 &#8599;</td><td class="amount">125</td><td class="amount" style="color:var(--green)">Fixed (was $33,933)</td></tr>
-        <tr class="drill-row" onclick="drillExpense('Equipment')"><td>--</td><td>Equipment/Depreciation (Furniture)</td><td class="amount drill-amount" style="color:var(--green)">$12,654.39 &#8599;</td><td class="amount">26</td><td class="amount" style="color:var(--yellow)">Review: 100% biz?</td></tr>
-        <tr class="drill-row" onclick="drillExpense('Utilities')"><td>25</td><td>Utilities (Phone + Internet)</td><td class="amount drill-amount" style="color:var(--green)">$1,066.34 &#8599;</td><td class="amount">11</td><td class="amount" style="color:var(--green)">Fixed (was $1,811)</td></tr>
-        <tr class="drill-row" onclick="drillExpense('Other')"><td>27a</td><td>Other Expenses (Fees/Subs/Ship)</td><td class="amount drill-amount" style="color:var(--green)">$7,919.51 &#8599;</td><td class="amount">232</td><td class="amount" style="color:var(--green)">Fixed (was $7,134)</td></tr>
-        <tr class="drill-row" onclick="drillExpense('Meals')"><td>--</td><td>Meals (50% deductible)</td><td class="amount drill-amount">$97.39 &#8599;</td><td class="amount">15</td><td class="amount" style="color:var(--green)">Fixed (was $630)</td></tr>
-        <tr class="drill-row" onclick="drillExpense('COGS')"><td>--</td><td>COGS/Inventory (eBay + resale)</td><td class="amount drill-amount">$2,895.75 &#8599;</td><td class="amount">12</td><td class="amount" style="color:var(--accent)">+$300 Optiplex resale</td></tr>
-        <tr class="drill-row" onclick="location.href='income.html#sec-timeline'" style="background:rgba(74,222,128,.04)"><td>22</td><td>Tech Service Parts (NEW)</td><td class="amount drill-amount" style="color:var(--green)">$524.98 &#8599;</td><td class="amount">5</td><td class="amount" style="color:var(--green)">NEW &mdash; from ledger</td></tr>
-        <tr class="drill-row" onclick="location.href='income.html#sec-timeline'" style="background:rgba(74,222,128,.04)"><td>11</td><td>Contract Labor (updated)</td><td class="amount drill-amount" style="color:var(--green)">$50.00 &#8599;</td><td class="amount">2</td><td class="amount" style="color:var(--green)">+$40 from ledger</td></tr>
-        <tr class="drill-row" onclick="location.href='income.html#sec-timeline'" style="background:rgba(251,191,36,.06)"><td>--</td><td>Discounts Given (REVIEW NEEDED)</td><td class="amount drill-amount" style="color:var(--yellow)">$4,699.00 &#9888;</td><td class="amount">15</td><td class="amount" style="color:var(--yellow)">James must classify</td></tr>
-        <tr class="drill-row" style="border-top:2px solid var(--accent)" onclick="location.href='deductions.html'"><td colspan="2"><strong>Total Business Deductions</strong></td><td class="amount drill-amount" style="color:var(--accent);font-size:16px"><strong>$42,889.72 &#8599;</strong></td><td></td><td class="amount" style="color:var(--green)"><strong>+$864.98 from ledger</strong></td></tr>
-      </tbody>
-    </table>
-    <div style="margin-top:12px;padding:12px;background:rgba(74,222,128,0.08);border-radius:8px;border:1px solid rgba(74,222,128,0.2);">
-      <strong style="color:var(--green)">Dedup Fix Summary:</strong>
-      <span style="color:var(--muted);font-size:13px;">Phase 1: 925 CC dupes via fingerprint dedup. Phase 2: Full consolidation across 4 sources (4,095 &rarr; 1,871 rows) using SHA-256 hash dedup + fuzzy matching. Central database ready for Google Sheets push.</span>
-    </div>
-  </div>
-
-  <!-- INCOME TABLE (CORRECTED - net of AR adjustments) -->
-  <div class="section" id="sec-income">
-    <h2>&#128176; 2022 Income (Schedule C)</h2>
-    <table class="income-table">
-      <thead><tr><th>Source</th><th>Category</th><th>Details</th><th class="amount">Amount</th></tr></thead>
-      <tbody>
-        <tr class="drill-row" onclick="drillIncome('Tech Services')"><td>QBO</td><td>Tech Services</td><td>21 invoices</td><td class="amount drill-amount" style="color:var(--green)">$14,726.50 &#8599;</td></tr>
-        <tr class="drill-row" onclick="drillIncome('eBay')"><td>QBO</td><td>eBay Product Sales</td><td>42 txns</td><td class="amount drill-amount" style="color:var(--green)">$13,051.65 &#8599;</td></tr>
-        <tr class="drill-row" onclick="drillIncome('AR')"><td>QBO</td><td>Accounts Receivable (offset)</td><td>19 entries</td><td class="amount drill-amount" style="color:var(--red)">-$10,725.00 &#8599;</td></tr>
-        <tr class="drill-row" onclick="drillIncome('Deposits')"><td>QBO</td><td>Client Deposits (offset)</td><td>7 entries</td><td class="amount drill-amount" style="color:var(--red)">-$180.00 &#8599;</td></tr>
-        <tr class="drill-row" onclick="drillIncome('Tips')"><td>QBO</td><td>Tip Revenue</td><td>1 txn</td><td class="amount drill-amount" style="color:var(--green)">$174.00 &#8599;</td></tr>
-        <tr class="drill-row" onclick="drillIncome('Late Fee')"><td>QBO</td><td>Late Fee Income</td><td>1 txn</td><td class="amount drill-amount" style="color:var(--green)">$50.00 &#8599;</td></tr>
-        <tr class="drill-row" onclick="location.href='income.html#sec-timeline'" style="background:rgba(74,222,128,.04)"><td>Ledger</td><td>Missing QBO Income (Arlene Harris)</td><td>3 jobs</td><td class="amount drill-amount" style="color:var(--accent)">$870.00 &#8599;</td></tr>
-        <tr class="drill-row" style="border-top:2px solid var(--accent)" onclick="location.href='income.html'"><td colspan="3"><strong>Gross Income (Schedule C) &#8599;</strong></td><td class="amount" style="color:var(--green);font-size:16px"><strong>$17,967.15</strong></td></tr>
-        <tr class="drill-row" style="" onclick="location.href='deductions.html'"><td colspan="3"><em style="color:var(--muted)">Less: Business Deductions &#8599;</em></td><td class="amount drill-amount" style="color:var(--yellow)">-$42,889.72 &#8599;</td></tr>
-        <tr style="border-top:2px solid var(--red)"><td colspan="3"><strong>Estimated Net Business Income</strong></td><td class="amount" style="color:var(--red);font-size:16px"><strong>-$24,922.57</strong></td></tr>
-      </tbody>
-    </table>
-    <div style="margin-top:8px;font-size:12px;color:var(--muted)">Updated: +$870 missing Arlene income, +$864.98 tech parts/contract deductions. $4,699 in discounts pending James review.</div>
-  </div>
-
-  <!-- TAX FORMS -->
-  <div class="section" id="sec-taxforms">
-    <h2>&#128196; Tax Forms Found</h2>
-    <table class="income-table">
-      <thead><tr><th>Date</th><th>From</th><th>Document</th><th class="amount">Status</th></tr></thead>
-      <tbody>
-        <tr class="drill-row" onclick="location.href='helpdesk.html'" title="Open helpdesk to track retrieval"><td>Jan 10, 2023</td><td>Intuit</td><td>Form 1099-K <span class="drill-arrow">&#8599;</span></td><td class="amount" style="color:var(--red)">RETRIEVE</td></tr>
-        <tr class="drill-row" onclick="location.href='helpdesk.html'" title="Open helpdesk to track retrieval"><td>Jan 24, 2023</td><td>TD Ameritrade</td><td>Consolidated 1099 <span class="drill-arrow">&#8599;</span></td><td class="amount" style="color:var(--red)">RETRIEVE</td></tr>
-        <tr class="drill-row" onclick="location.href='helpdesk.html'" title="Open helpdesk to track retrieval"><td>Mar 7, 2023</td><td>AGT Mortgage</td><td>Property + 1099 <span class="drill-arrow">&#8599;</span></td><td class="amount" style="color:var(--red)">RETRIEVE</td></tr>
-        <tr class="drill-row" onclick="location.href='deductions.html#sec-auditor'" title="Open auditor review"><td>Jan 2023</td><td>Discover/BofA</td><td>CC Year-End <span class="drill-arrow">&#8599;</span></td><td class="amount" style="color:var(--yellow)">REVIEW</td></tr>
-        <tr class="drill-row" onclick="location.href='deductions.html#sec-findings'" title="View findings"><td>Jan 2023</td><td>Stronghold Rescue</td><td>Charitable Receipt <span class="drill-arrow">&#8599;</span></td><td class="amount" style="color:var(--green)">FOUND</td></tr>
-      </tbody>
-    </table>
   </div>
 
   <!-- ============================================================ -->
@@ -602,7 +516,7 @@
         <div style="font-weight:700;color:var(--green);margin-bottom:4px">Phase 2: Cross-Reference <span class="drill-arrow">&#8599;</span></div>
         <div style="font-size:12px;color:var(--muted)">QBO vs FPCS ledger, email payment matching, 1099 search, expense categorization. <strong style="color:var(--green)">100% DONE</strong></div>
       </div>
-      <div class="stat-link" style="padding:12px;border-radius:8px;background:rgba(74,222,128,0.08);border:1px solid rgba(74,222,128,0.2);cursor:pointer" onclick="document.getElementById('sec-expenses').scrollIntoView({behavior:'smooth'})" title="View corrected expenses">
+      <div class="stat-link" style="padding:12px;border-radius:8px;background:rgba(74,222,128,0.08);border:1px solid rgba(74,222,128,0.2);cursor:pointer" onclick="location.href='deductions.html'" title="View corrected expenses">
         <div style="font-weight:700;color:var(--green);margin-bottom:4px">Phase 3: Dedup &amp; Clean <span class="drill-arrow">&#8599;</span></div>
         <div style="font-size:12px;color:var(--muted)">925 CC dupes removed. $67K &rarr; $42K deductions. 5/5 DDBOT criticals fixed. <strong style="color:var(--green)">100% DONE</strong></div>
       </div>
@@ -614,185 +528,17 @@
         <div style="font-weight:700;color:var(--yellow);margin-bottom:4px">Phase 5: Special Deductions <span class="drill-arrow">&#8599;</span></div>
         <div style="font-size:12px;color:var(--muted)">Home office (8829), vehicle deduction, cyberattack loss, depreciation schedule. <strong style="color:var(--yellow)">10% STARTED</strong></div>
       </div>
-      <div class="stat-link" style="padding:12px;border-radius:8px;background:rgba(51,65,85,0.3);border:1px solid var(--border);cursor:pointer" onclick="document.getElementById('sec-taxforms').scrollIntoView({behavior:'smooth'})" title="View tax forms needed">
+      <div class="stat-link" style="padding:12px;border-radius:8px;background:rgba(51,65,85,0.3);border:1px solid var(--border);cursor:pointer" onclick="location.href='deductions.html'" title="View tax forms needed">
         <div style="font-weight:700;color:var(--muted);margin-bottom:4px">Phase 6: TurboTax Entry <span class="drill-arrow">&#8599;</span></div>
         <div style="font-size:12px;color:var(--muted)">Install TurboTax 2022 from thumb drive, enter all Schedule C data. <strong>NOT STARTED</strong></div>
       </div>
-      <div class="stat-link" style="padding:12px;border-radius:8px;background:rgba(51,65,85,0.3);border:1px solid var(--border);cursor:pointer" onclick="document.getElementById('sec-expenses').scrollIntoView({behavior:'smooth'})" title="Review expense table">
+      <div class="stat-link" style="padding:12px;border-radius:8px;background:rgba(51,65,85,0.3);border:1px solid var(--border);cursor:pointer" onclick="location.href='deductions.html'" title="Review expense table">
         <div style="font-weight:700;color:var(--muted);margin-bottom:4px">Phase 7: Review <span class="drill-arrow">&#8599;</span></div>
         <div style="font-size:12px;color:var(--muted)">Triple-check all numbers, compare with bank statements, verify totals. <strong>NOT STARTED</strong></div>
       </div>
       <div class="stat-link" style="padding:12px;border-radius:8px;background:rgba(51,65,85,0.3);border:1px solid var(--border);cursor:pointer" onclick="document.getElementById('sec-milestones').scrollIntoView({behavior:'smooth'})" title="View final milestones">
         <div style="font-weight:700;color:var(--muted);margin-bottom:4px">Phase 8: Print &amp; Mail <span class="drill-arrow">&#8599;</span></div>
         <div style="font-size:12px;color:var(--muted)">Print return, USPS Certified Mail, tracking confirmation. <strong>NOT STARTED</strong></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ============================================================ -->
-  <!-- SECTION 3: BOT PROFILES WITH VERSIONS, PERFORMANCE, COSTS   -->
-  <!-- ============================================================ -->
-  <div class="section" id="sec-bots" style="border-color:var(--purple)">
-    <div class="ddbot-header"><h2 style="color:var(--purple)">&#129302; Bot Fleet &mdash; Chain of Command</h2><a href="stats-board.html" class="btn btn-purple" style="text-decoration:none;font-size:12px">&#127942; Stats Board &#8599;</a></div>
-    <div style="background:var(--bg);border-radius:8px;padding:12px;margin-bottom:16px;border:1px solid var(--border);font-size:12px;color:var(--muted)">
-      <strong style="color:var(--purple)">Chain of Command:</strong> OPUS (Commander) &rarr; THE SARGE (Supervisor, Opus 4.6) &rarr; 5 Sonnet Staff + Support Bots<br>
-      <strong style="color:var(--red)">Firewall Rule:</strong> Staff bots accept commands ONLY from The Sarge. Direct Opus-to-staff commands are rejected. This prevents prompt injection from propagating through the fleet.
-    </div>
-
-    <!-- OPUS - Commander -->
-    <div class="bot-card stat-link" style="border-color:var(--accent);cursor:pointer" onclick="location.href='stats-board.html'" title="View bot stats board">
-      <div class="bot-header">
-        <div><span class="agent-status active"></span><span class="bot-name" style="color:var(--accent)">OPUS (Commander)</span><span class="coc-badge coc-commander">COMMANDER</span><span class="drill-arrow">&#8599;</span></div>
-        <span class="bot-ver">v4.6 | claude-opus-4-6</span>
-      </div>
-      <div class="bot-grid">
-        <div class="bot-metric"><div class="bm-label">Status</div><div class="bm-val" style="color:var(--green)">Active</div></div>
-        <div class="bot-metric"><div class="bm-label">Role</div><div class="bm-val" style="font-size:11px">Primary agent. Talks to James. Issues orders to The Sarge only.</div></div>
-        <div class="bot-metric"><div class="bm-label">Cost</div><div class="bm-val" style="color:var(--yellow)">$0 (Max Plan)</div></div>
-        <div class="bot-metric"><div class="bm-label">Sessions</div><div class="bm-val">7</div></div>
-      </div>
-    </div>
-
-    <!-- THE SARGE - Supervisor -->
-    <div class="bot-card stat-link" style="border-color:var(--orange);border-width:2px;cursor:pointer" onclick="location.href='stats-board.html'" title="View bot stats board">
-      <div class="bot-header">
-        <div><span class="agent-status active"></span><span class="bot-name" style="color:var(--orange)">THE SARGE (Fleet Supervisor)</span><span class="coc-badge coc-supervisor">SUPERVISOR</span><span class="drill-arrow">&#8599;</span></div>
-        <span class="bot-ver">v1.0 | claude-opus-4-6</span>
-      </div>
-      <p style="font-size:12px;color:var(--muted);margin-bottom:10px">Grizzled veteran who runs the floor. All staff bots report to The Sarge. Trained in prompt injection detection. Validates every staff output before it reaches Opus. Low token budget enforced.</p>
-      <div class="bot-grid">
-        <div class="bot-metric"><div class="bm-label">Status</div><div class="bm-val" style="color:var(--green)">Active</div></div>
-        <div class="bot-metric"><div class="bm-label">Commands</div><div class="bm-val" style="font-size:11px">Receives from Opus. Dispatches to staff.</div></div>
-        <div class="bot-metric"><div class="bm-label">Security</div><div class="bm-val" style="color:var(--red);font-size:11px">Injection firewall active</div></div>
-        <div class="bot-metric"><div class="bm-label">Token Budget</div><div class="bm-val" style="color:var(--yellow)">Low (constrained)</div></div>
-      </div>
-    </div>
-
-    <!-- SONNET STAFF (indented under Sarge) -->
-    <div style="border-left:3px solid var(--orange);margin-left:16px;padding-left:12px">
-      <div style="font-size:11px;color:var(--orange);font-weight:700;margin-bottom:8px;text-transform:uppercase;letter-spacing:1px">&#9660; Sarge's Staff (Sonnet 4.6 x5)</div>
-
-      <!-- Penny Pincher -->
-      <div class="bot-card" style="border-color:var(--pink)">
-        <div class="bot-header">
-          <div><span class="agent-status active"></span><span class="bot-name" style="color:var(--pink)">Penny Pincher (UX &amp; Aesthetics)</span><span class="coc-badge coc-staff">STAFF</span></div>
-          <span class="bot-ver">v1.0 | claude-sonnet-4-6</span>
-        </div>
-        <p style="font-size:11px;color:var(--muted);margin-bottom:8px">The woman's touch. Roams the dashboard checking layouts, colors, spacing, readability. Makes things pretty and human-acceptable. Low token usage &mdash; visual audit only, suggests CSS tweaks.</p>
-        <div class="bot-grid">
-          <div class="bot-metric"><div class="bm-label">Status</div><div class="bm-val" style="color:var(--green)">Active</div></div>
-          <div class="bot-metric"><div class="bm-label">Specialty</div><div class="bm-val" style="font-size:11px">Visual polish, UX, accessibility</div></div>
-          <div class="bot-metric"><div class="bm-label">Reports To</div><div class="bm-val">The Sarge</div></div>
-        </div>
-      </div>
-
-      <!-- SHIELD -->
-      <div class="bot-card" style="border-color:var(--red)">
-        <div class="bot-header">
-          <div><span class="agent-status active"></span><span class="bot-name" style="color:var(--red)">SHIELD (Security Sentinel)</span><span class="coc-badge coc-staff">STAFF</span></div>
-          <span class="bot-ver">v1.0 | claude-sonnet-4-6</span>
-        </div>
-        <p style="font-size:11px;color:var(--muted);margin-bottom:8px">Dedicated injection hunter. Patrols for prompt injection, data exfiltration attempts, and suspicious patterns in web content, tool outputs, and bot responses. Reports threats to The Sarge immediately. Also monitors local machine security posture.</p>
-        <div class="bot-grid">
-          <div class="bot-metric"><div class="bm-label">Status</div><div class="bm-val" style="color:var(--green)">Active</div></div>
-          <div class="bot-metric"><div class="bm-label">Specialty</div><div class="bm-val" style="font-size:11px">Injection detection, security audit</div></div>
-          <div class="bot-metric"><div class="bm-label">Token Budget</div><div class="bm-val" style="color:var(--yellow)">Low (research allotment)</div></div>
-        </div>
-      </div>
-
-      <!-- DeductBot (upgraded) -->
-      <div class="bot-card" style="border-color:var(--orange)">
-        <div class="bot-header">
-          <div><span class="agent-status sleeping"></span><span class="bot-name" style="color:var(--orange)">DeductBot (Tax Deduction Guru)</span><span class="coc-badge coc-staff">STAFF</span></div>
-          <span class="bot-ver">v2.0 | claude-sonnet-4-6</span>
-        </div>
-        <p style="font-size:11px;color:var(--muted);margin-bottom:8px">Upgraded to Sonnet 4.6. Maximizes legal deductions. Manages Ollama sub-agents for research. Evaluates home office, depreciation, mileage, casualty losses (AGT cyberattack).</p>
-        <div class="bot-grid">
-          <div class="bot-metric"><div class="bm-label">Status</div><div class="bm-val" style="color:var(--yellow)">Awaiting Deploy</div></div>
-          <div class="bot-metric"><div class="bm-label">Sub-Agents</div><div class="bm-val">2 (Ollama local)</div></div>
-          <div class="bot-metric"><div class="bm-label">Reports To</div><div class="bm-val">The Sarge</div></div>
-        </div>
-      </div>
-
-      <!-- Cruncher -->
-      <div class="bot-card" style="border-color:var(--accent)">
-        <div class="bot-header">
-          <div><span class="agent-status active"></span><span class="bot-name" style="color:var(--accent)">Cruncher (Data Analyst)</span><span class="coc-badge coc-staff">STAFF</span></div>
-          <span class="bot-ver">v1.0 | claude-sonnet-4-6</span>
-        </div>
-        <p style="font-size:11px;color:var(--muted);margin-bottom:8px">Number cruncher. Cross-references bank statements vs QBO, verifies income totals, reconciles expense categories. Batch-processes CSV data efficiently.</p>
-        <div class="bot-grid">
-          <div class="bot-metric"><div class="bm-label">Status</div><div class="bm-val" style="color:var(--green)">Active</div></div>
-          <div class="bot-metric"><div class="bm-label">Specialty</div><div class="bm-val" style="font-size:11px">Data verification, CSV analysis</div></div>
-          <div class="bot-metric"><div class="bm-label">Reports To</div><div class="bm-val">The Sarge</div></div>
-        </div>
-      </div>
-
-      <!-- Scribbles -->
-      <div class="bot-card" style="border-color:var(--green)">
-        <div class="bot-header">
-          <div><span class="agent-status active"></span><span class="bot-name" style="color:var(--green)">Scribbles (Documentation)</span><span class="coc-badge coc-staff">STAFF</span></div>
-          <span class="bot-ver">v1.0 | claude-sonnet-4-6</span>
-        </div>
-        <p style="font-size:11px;color:var(--muted);margin-bottom:8px">Keeps the paperwork tight. Writes TurboTax input sheets, updates SESSION_LOG, drafts reports. Compresses verbose outputs into clean summaries. The one who remembers everything.</p>
-        <div class="bot-grid">
-          <div class="bot-metric"><div class="bm-label">Status</div><div class="bm-val" style="color:var(--green)">Active</div></div>
-          <div class="bot-metric"><div class="bm-label">Specialty</div><div class="bm-val" style="font-size:11px">Reports, summaries, logs</div></div>
-          <div class="bot-metric"><div class="bm-label">Reports To</div><div class="bm-val">The Sarge</div></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- SUPPORT BOTS (outside Sarge's staff indent) -->
-    <div style="margin-top:12px;font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">&#9660; Support &amp; Local Bots</div>
-
-    <div class="bot-card" style="border-color:var(--red)">
-      <div class="bot-header">
-        <div><span class="agent-status active"></span><span class="bot-name" style="color:var(--red)">DDBOT (Discrepancy Detector)</span><span class="coc-badge coc-local">LOCAL</span></div>
-        <span class="bot-ver">v1.0 | Python local</span>
-      </div>
-      <div class="bot-grid">
-        <div class="bot-metric"><div class="bm-label">Status</div><div class="bm-val" style="color:var(--green)">5/5 Critical Fixed</div></div>
-        <div class="bot-metric"><div class="bm-label">Cost</div><div class="bm-val" style="color:var(--green)">$0.00</div></div>
-        <div class="bot-metric"><div class="bm-label">Findings</div><div class="bm-val">11 (5 resolved)</div></div>
-      </div>
-    </div>
-
-    <div class="bot-card" style="border-color:var(--yellow)">
-      <div class="bot-header">
-        <div><span class="agent-status sleeping"></span><span class="bot-name" style="color:var(--yellow)">TokenWatchBot (Efficiency Auditor)</span><span class="coc-badge coc-special">WATCHDOG</span></div>
-        <span class="bot-ver">v1.0 | claude-haiku-4-5</span>
-      </div>
-      <p style="font-size:11px;color:var(--muted);margin-bottom:8px">Independent auditor. Reports directly to The Sarge. Hourly token burn analysis across all bots. Flags waste, recommends compression. Feeds the Heartbeat Monitor.</p>
-      <div class="bot-grid">
-        <div class="bot-metric"><div class="bm-label">Status</div><div class="bm-val" style="color:var(--yellow)">Initialized</div></div>
-        <div class="bot-metric"><div class="bm-label">Frequency</div><div class="bm-val">Every 1hr</div></div>
-        <div class="bot-metric"><div class="bm-label">Cost</div><div class="bm-val" style="color:var(--green)">~$0.01/hr</div></div>
-      </div>
-    </div>
-
-    <div style="display:flex;gap:12px;flex-wrap:wrap">
-      <div class="bot-card" style="border-color:var(--orange);flex:1;min-width:240px">
-        <div class="bot-header">
-          <div><span class="agent-status idle"></span><span class="bot-name" style="color:var(--orange);font-size:13px">miniDuctBot1</span><span class="coc-badge coc-local">LOCAL</span></div>
-          <span class="bot-ver">Ollama: mistral:7b</span>
-        </div>
-        <div class="bot-grid">
-          <div class="bot-metric"><div class="bm-label">Status</div><div class="bm-val" style="color:var(--muted)">Not Deployed</div></div>
-          <div class="bot-metric"><div class="bm-label">Specialty</div><div class="bm-val" style="font-size:11px">Financial RAG</div></div>
-          <div class="bot-metric"><div class="bm-label">Cost</div><div class="bm-val" style="color:var(--green)">$0.00</div></div>
-        </div>
-      </div>
-      <div class="bot-card" style="border-color:var(--orange);flex:1;min-width:240px">
-        <div class="bot-header">
-          <div><span class="agent-status idle"></span><span class="bot-name" style="color:var(--orange);font-size:13px">miniDuctBot2</span><span class="coc-badge coc-local">LOCAL</span></div>
-          <span class="bot-ver">Ollama: llama3.1:8b</span>
-        </div>
-        <div class="bot-grid">
-          <div class="bot-metric"><div class="bm-label">Status</div><div class="bm-val" style="color:var(--muted)">Not Deployed</div></div>
-          <div class="bot-metric"><div class="bm-label">Specialty</div><div class="bm-val" style="font-size:11px">Deduction research</div></div>
-          <div class="bot-metric"><div class="bm-label">Cost</div><div class="bm-val" style="color:var(--green)">$0.00</div></div>
-        </div>
       </div>
     </div>
   </div>
@@ -1522,33 +1268,6 @@
 
   // === DRILL-DOWN FUNCTIONS ===
   // Maps index.html expense categories → deductions.html search terms
-  var EXPENSE_CAT_MAP = {
-    'Advertising': 'Advertising',
-    'Car/Truck': 'Car',
-    'Contract Labor': 'Contract',
-    'Insurance': 'Insurance',
-    'Interest': 'Interest',
-    'Office': 'Office',
-    'Repairs': 'Repairs',
-    'Supplies': 'Supplies',
-    'Equipment': 'Equipment',
-    'Utilities': 'Utilities',
-    'Other': 'Other',
-    'Meals': 'Meals',
-    'COGS': 'COGS'
-  };
-
-  function drillExpense(category) {
-    // Navigate to deductions.html with pre-selected category for drill-down
-    var search = EXPENSE_CAT_MAP[category] || category;
-    location.href = 'deductions.html?search=' + encodeURIComponent(search);
-  }
-
-  function drillIncome(category) {
-    // Navigate to income.html with a hash for the relevant section
-    location.href = 'income.html#' + encodeURIComponent(category.toLowerCase().replace(/\s+/g, '-'));
-  }
-
   // Tax knowledge base for Sarge's local intelligence
   // Hardcoded fallback — will be overridden by live Google Sheets data when available
   const FPCS_DATA = {
@@ -1821,96 +1540,6 @@
   // Load chat history on page load
   loadChatHistory();
 
-  // ===== BOUNTY BOARD =====
-  const DEFAULT_BOUNTIES = [
-    { id: 'b-001', title: 'Discover new 2022 tax write-offs', desc: 'Find legitimate deductions we haven\'t claimed yet. Research IRS Schedule C categories for PC repair/tech support businesses.', cat: 'tax-writeoff', xp: 500, status: 'open', created: '2026-02-19', claimedBy: null },
-    { id: 'b-002', title: 'Classify 842 Amazon orders (biz vs personal)', desc: 'Export Amazon 2022 order history and classify each order as business or personal. Business orders become additional deductions.', cat: 'data-quality', xp: 300, status: 'open', created: '2026-02-19', claimedBy: null },
-    { id: 'b-003', title: 'Retrieve 3 missing 1099 forms', desc: 'Download 1099-K from Intuit, Consolidated 1099 from TD Ameritrade, and Property/1099 from AGT Mortgage.', cat: 'tax-writeoff', xp: 200, status: 'open', created: '2026-02-19', claimedBy: null },
-    { id: 'b-004', title: 'Calculate home office deduction (Form 8829)', desc: 'Need square footage of home office vs total home. Calculate simplified vs regular method. Determine utility split.', cat: 'painpoint', xp: 150, status: 'open', created: '2026-02-19', claimedBy: null },
-    { id: 'b-005', title: 'Vehicle deduction analysis: mileage vs actual', desc: 'Compare standard mileage ($0.585/mi) vs actual expenses ($3,662+). Need mileage log data from James to finalize.', cat: 'efficiency', xp: 100, status: 'open', created: '2026-02-19', claimedBy: null }
-  ];
-
-  function loadBounties() {
-    try {
-      var saved = JSON.parse(localStorage.getItem('fpcs_bounties'));
-      return saved && saved.length > 0 ? saved : DEFAULT_BOUNTIES;
-    } catch(e) { return DEFAULT_BOUNTIES; }
-  }
-  function persistBounties(b) { localStorage.setItem('fpcs_bounties', JSON.stringify(b)); }
-
-  function renderBounties() {
-    var bounties = loadBounties();
-    var el = document.getElementById('bountyList');
-    if (!el) return;
-    var catColors = { 'tax-writeoff': 'var(--green)', 'automation': 'var(--accent)', 'painpoint': 'var(--orange)', 'data-quality': 'var(--yellow)', 'security': 'var(--red)', 'efficiency': 'var(--accent)', 'creative': 'var(--purple)', 'docs': 'var(--muted)', 'village': 'var(--pink)' };
-    el.innerHTML = bounties.map(function(b) {
-      var color = catColors[b.cat] || 'var(--accent)';
-      var statusBadge = b.status === 'open' ? '<span style="background:rgba(251,191,36,0.2);color:var(--yellow);font-size:10px;padding:2px 8px;border-radius:999px;font-weight:700">OPEN</span>' :
-        b.status === 'claimed' ? '<span style="background:rgba(56,189,248,0.2);color:var(--accent);font-size:10px;padding:2px 8px;border-radius:999px;font-weight:700">CLAIMED: ' + (b.claimedBy||'?') + '</span>' :
-        '<span style="background:rgba(74,222,128,0.2);color:var(--green);font-size:10px;padding:2px 8px;border-radius:999px;font-weight:700">COMPLETE</span>';
-      return '<div style="padding:12px;margin-bottom:8px;border-radius:8px;border-left:4px solid ' + color + ';background:rgba(251,191,36,0.04);cursor:pointer" onclick="claimBounty(\'' + b.id + '\')">' +
-        '<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:4px">' +
-          '<div style="font-weight:700;font-size:14px;color:' + color + '">' + b.title + '</div>' +
-          '<div style="display:flex;align-items:center;gap:8px">' +
-            '<span style="font-weight:800;color:var(--yellow);font-size:14px">' + b.xp + ' XP</span>' +
-            statusBadge +
-          '</div>' +
-        '</div>' +
-        '<div style="font-size:12px;color:var(--muted);margin-top:4px">' + b.desc + '</div>' +
-        '<div style="font-size:10px;color:var(--muted);margin-top:6px">Category: ' + b.cat + ' | Posted: ' + b.created + '</div>' +
-      '</div>';
-    }).join('');
-  }
-
-  function claimBounty(id) {
-    var bounties = loadBounties();
-    var b = bounties.find(function(x) { return x.id === id; });
-    if (!b) return;
-    if (b.status === 'open') {
-      var bot = prompt('Which bot claims this bounty? (e.g., DeductBot, Cruncher, SHIELD)');
-      if (bot) {
-        b.status = 'claimed';
-        b.claimedBy = bot;
-        persistBounties(bounties);
-        renderBounties();
-      }
-    } else if (b.status === 'claimed') {
-      if (confirm('Mark bounty "' + b.title + '" as COMPLETE? (' + b.xp + ' XP to ' + b.claimedBy + ')')) {
-        b.status = 'complete';
-        persistBounties(bounties);
-        renderBounties();
-      }
-    }
-  }
-
-  function openBountyCreator() { document.getElementById('bountyModal').classList.add('open'); }
-  function closeBountyCreator() { document.getElementById('bountyModal').classList.remove('open'); }
-  function saveBounty() {
-    var title = document.getElementById('bountyTitle').value.trim();
-    if (!title) { alert('Bounty title required.'); return; }
-    var bounties = loadBounties();
-    bounties.push({
-      id: 'b-' + Date.now(),
-      title: title,
-      desc: document.getElementById('bountyDesc').value.trim(),
-      cat: document.getElementById('bountyCat').value,
-      xp: parseInt(document.getElementById('bountyXP').value) || 100,
-      status: 'open',
-      created: new Date().toISOString().slice(0,10),
-      claimedBy: null
-    });
-    persistBounties(bounties);
-    renderBounties();
-    closeBountyCreator();
-    document.getElementById('bountyTitle').value = '';
-    document.getElementById('bountyDesc').value = '';
-  }
-  document.getElementById('bountyModal').addEventListener('click', function(e) { if(e.target===this) closeBountyCreator(); });
-
-  // Init bounties
-  renderBounties();
-  if (!localStorage.getItem('fpcs_bounties')) { persistBounties(DEFAULT_BOUNTIES); }
-
   // === INTERACTIVE ITEMS (Notes, Comments, Priority) ===
   (function initInteractiveItems() {
     var NOTES_KEY = 'fpcs_item_notes';
@@ -2182,12 +1811,8 @@
       { icon: '&#128200;', label: 'Stats',         href: '#sec-stats' },
       { icon: '&#9889;',   label: 'Progress',      href: '#sec-progress' },
       { icon: '&#127942;', label: 'Milestones',    href: '#sec-milestones' },
-      { icon: '&#128176;', label: 'Bounty Board',  href: '#sec-bounty' },
-      { icon: '&#128221;', label: 'Expenses',      href: '#sec-expenses' },
-      { icon: '&#128176;', label: 'Income',        href: '#sec-income' },
-      { icon: '&#128196;', label: 'Tax Forms',     href: '#sec-taxforms' },
+      { icon: '&#128640;', label: 'Quick Access',  href: '#sec-quicknav' },
       { icon: '&#127912;', label: 'Overview',      href: '#sec-overview' },
-      { icon: '&#129302;', label: 'Bot Fleet',     href: '#sec-bots' },
       { icon: '&#128451;', label: 'Data Inventory', href: '#sec-data' },
       { icon: '&#128279;', label: 'Integrations',  href: '#sec-integrations' },
       { icon: '&#9745;',   label: 'Checklist',     href: '#sec-checklist' },
