@@ -166,6 +166,8 @@
   .lib-book-tag.active { background: rgba(74,222,128,0.15); color: var(--green); }
   .lib-book-tag.reference { background: rgba(56,189,248,0.15); color: var(--accent); }
   .lib-book-tag.research { background: rgba(167,139,250,0.15); color: var(--purple); }
+  .lib-book-tag.spec { background: rgba(251,191,36,0.15); color: #fbbf24; }
+  .lib-book-tag.security { background: rgba(239,68,68,0.15); color: #ef4444; }
   .lib-book-tag.later { background: rgba(100,116,139,0.15); color: var(--muted); }
 
   /* Do Later section */
@@ -215,6 +217,11 @@
   .lib-viewer-content h1 { color: var(--accent); font-size: 24px; margin: 0 0 8px; }
   .lib-viewer-content h2 { color: var(--accent); font-size: 18px; margin: 24px 0 8px; border-bottom: 1px solid var(--border); padding-bottom: 6px; }
   .lib-viewer-content h3 { color: var(--green); font-size: 15px; margin: 16px 0 6px; }
+  .lib-viewer-content h4 { color: var(--purple); font-size: 14px; margin: 14px 0 4px; }
+  .lib-viewer-content hr { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+  .lib-viewer-content a { color: var(--accent); text-decoration: underline; }
+  .lib-viewer-content a:hover { color: var(--green); }
+  .lib-viewer-content img { max-width: 100%; border-radius: 6px; }
   .lib-viewer-content code {
     background: rgba(56,189,248,0.08);
     padding: 2px 6px;
@@ -364,6 +371,17 @@
       type: 'inline',
       content: null // Loaded dynamically
     },
+    {
+      id: 'backend-review',
+      shelf: 'guides',
+      title: 'Dashboard Backend Review',
+      author: 'Claude & Commander',
+      desc: 'Infrastructure audit of auth.js, firestore-db.js, sheets-api.js, memory-blocks.js, offline.js, service worker, and all inline scripts.',
+      spineColor: '#34d399',
+      tags: ['reference'],
+      type: 'file',
+      url: 'BACKEND_REVIEW.md'
+    },
 
     // --- VOLUMES ---
     {
@@ -375,7 +393,7 @@
       spineColor: '#38bdf8',
       tags: ['reference'],
       type: 'file',
-      url: 'docs/REALBOTVILLE_LIBRARY_VOL1.html'
+      url: '../BotHQ/library/REALBOTVILLE_LIBRARY_VOL1.md'
     },
     {
       id: 'vol2-tricks-tactics',
@@ -386,7 +404,7 @@
       spineColor: '#a78bfa',
       tags: ['reference'],
       type: 'file',
-      url: 'docs/REALBOTVILLE_LIBRARY_VOL2.html'
+      url: '../BotHQ/library/REALBOTVILLE_LIBRARY_VOL2.md'
     },
     {
       id: 'vol3-forensicbot',
@@ -397,7 +415,53 @@
       spineColor: '#fbbf24',
       tags: ['research'],
       type: 'file',
-      url: 'docs/REALBOTVILLE_LIBRARY_FORENSICBOT.html'
+      url: '../BotHQ/library/REALBOTVILLE_LIBRARY_FORENSICBOT.md'
+    },
+    {
+      id: 'vol4-shapeshifter',
+      shelf: 'volumes',
+      title: 'Vol. 4 — The Shape-Shifter\'s Handbook',
+      author: 'Commander',
+      desc: 'Guide to trigger-word persona switching and multi-identity AI systems. Covers identity creation, memory isolation, and the trait grid system.',
+      spineColor: '#f472b6',
+      tags: ['reference'],
+      type: 'file',
+      url: '../BotHQ/library/REALBOTVILLE_LIBRARY_VOL4_SHAPESHIFTER.md'
+    },
+
+    // --- SPECS ---
+    {
+      id: 'spec-realbotville',
+      shelf: 'volumes',
+      title: 'Realbotville — Complete Design Spec',
+      author: 'Commander (Opus)',
+      desc: 'Master blueprint for the entire FPCS Dashboard overhaul. Bot hierarchy, delegation model, and the TRAILS framework architecture.',
+      spineColor: '#60a5fa',
+      tags: ['spec'],
+      type: 'file',
+      url: '../BotHQ/specs/REALBOTVILLE_SPEC.md'
+    },
+    {
+      id: 'spec-forensicbot',
+      shelf: 'volumes',
+      title: 'ForensicBot — Agent Specification',
+      author: 'Commander',
+      desc: 'Bot specification for automated fund flow tracing across FPCS expense categorization. Defines capabilities, triggers, and reporting.',
+      spineColor: '#fcd34d',
+      tags: ['spec'],
+      type: 'file',
+      url: '../BotHQ/specs/REALBOTVILLE_FORENSICBOT_SPEC.md'
+    },
+    {
+      id: 'spec-justout-hub',
+      shelf: 'volumes',
+      title: 'JustOut Hub — Master Vision Spec',
+      author: 'Commander',
+      desc: 'Foundational vision specification for the Personal Everything Portal. Modular channel system, auth model, and constellation UI design.',
+      spineColor: '#818cf8',
+      tags: ['spec'],
+      type: 'file',
+      url: '../BotHQ/specs/JUSTOUT_HUB_SPEC.md'
     },
 
     // --- RESEARCH ---
@@ -411,6 +475,50 @@
       tags: ['research'],
       type: 'link',
       url: 'memory.html#sec-letta'
+    },
+    {
+      id: 'research-edr',
+      shelf: 'research',
+      title: 'Modern EDR Architecture Research',
+      author: 'SentryLion Team',
+      desc: 'Deep research on CrowdStrike, SentinelOne, Carbon Black, and Defender for Endpoint. Foundation knowledge for the SentryLion agent.',
+      spineColor: '#f97316',
+      tags: ['research', 'security'],
+      type: 'file',
+      url: '../research/edr-architecture.md'
+    },
+    {
+      id: 'research-botnet-c2',
+      shelf: 'research',
+      title: 'Botnet & C2 Detection Research',
+      author: 'SentryLion Team',
+      desc: 'Technical reference for detecting botnet command-and-control patterns in a Windows user-space Rust agent. Protocol analysis and IOC matching.',
+      spineColor: '#ef4444',
+      tags: ['research', 'security'],
+      type: 'file',
+      url: '../research/botnet-c2-detection.md'
+    },
+    {
+      id: 'research-stego',
+      shelf: 'research',
+      title: 'Steganography & Covert Channel Detection',
+      author: 'SentryLion Team',
+      desc: 'Technical reference for detecting steganographic and covert channel attack patterns. Image analysis, DNS tunneling, and timing channels.',
+      spineColor: '#8b5cf6',
+      tags: ['research', 'security'],
+      type: 'file',
+      url: '../research/steganography-detection.md'
+    },
+    {
+      id: 'research-offensive',
+      shelf: 'research',
+      title: 'Offensive Defense & Active Response',
+      author: 'SentryLion Team',
+      desc: 'Active response capabilities and offensive defense strategies. Honeypots, tarpitting, DNS sinkholing, and legal active defense techniques.',
+      spineColor: '#dc2626',
+      tags: ['research', 'security'],
+      type: 'file',
+      url: '../research/offensive-defense.md'
     },
 
     // --- DO LATER (deactivated) ---
@@ -624,6 +732,56 @@
   //  OPEN BOOK — inline viewer or new tab
   // ============================================================
 
+  // Simple markdown-to-HTML converter for .md files
+  function renderMarkdown(md) {
+    var html = md
+      // Code blocks (fenced)
+      .replace(/```(\w*)\n([\s\S]*?)```/g, '<pre><code>$2</code></pre>')
+      // Headers
+      .replace(/^#### (.+)$/gm, '<h4>$1</h4>')
+      .replace(/^### (.+)$/gm, '<h3>$1</h3>')
+      .replace(/^## (.+)$/gm, '<h2>$1</h2>')
+      .replace(/^# (.+)$/gm, '<h1>$1</h1>')
+      // Bold and italic
+      .replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>')
+      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*(.+?)\*/g, '<em>$1</em>')
+      // Inline code
+      .replace(/`([^`]+)`/g, '<code>$1</code>')
+      // Unordered lists
+      .replace(/^[\-\*] (.+)$/gm, '<li>$1</li>')
+      // Ordered lists
+      .replace(/^\d+\. (.+)$/gm, '<li>$1</li>')
+      // Links
+      .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>')
+      // Horizontal rules
+      .replace(/^---+$/gm, '<hr>')
+      // Tables (basic)
+      .replace(/^\|(.+)\|$/gm, function(match, content) {
+        var cells = content.split('|').map(function(c) { return c.trim(); });
+        return '<tr>' + cells.map(function(c) {
+          return c.match(/^[\-:]+$/) ? '' : '<td>' + c + '</td>';
+        }).join('') + '</tr>';
+      })
+      // Paragraphs (double newline)
+      .replace(/\n\n/g, '</p><p>')
+      // Single newlines to <br>
+      .replace(/\n/g, '<br>');
+
+    // Wrap list items in <ul>
+    html = html.replace(/(<li>[\s\S]*?<\/li>)/g, '<ul>$1</ul>');
+    html = html.replace(/<\/ul>\s*<ul>/g, '');
+
+    // Wrap table rows
+    html = html.replace(/(<tr>[\s\S]*?<\/tr>)/g, '<table>$1</table>');
+    html = html.replace(/<\/table>\s*<table>/g, '');
+
+    // Remove empty <tr> from separator rows
+    html = html.replace(/<tr><\/tr>/g, '');
+
+    return '<p>' + html + '</p>';
+  }
+
   window._libOpenBook = function(bookId) {
     var book = LIBRARY_CATALOG.find(function(b) { return b.id === bookId; });
     if (!book || book.active === false) return;
@@ -638,8 +796,30 @@
       // Open in new tab
       window.open(book.url, '_blank');
     } else if (book.type === 'file' && book.url) {
-      // Open file in new tab
-      window.open(book.url, '_blank');
+      // Markdown files: fetch and render in inline viewer
+      if (book.url.match(/\.md$/i)) {
+        document.getElementById('viewerTitle').textContent = book.title;
+        document.getElementById('viewerContent').innerHTML = '<p style="color:var(--muted)">Loading...</p>';
+        document.getElementById('libViewer').classList.add('open');
+        document.body.style.overflow = 'hidden';
+
+        fetch(book.url)
+          .then(function(r) {
+            if (!r.ok) throw new Error('File not found (' + r.status + ')');
+            return r.text();
+          })
+          .then(function(md) {
+            document.getElementById('viewerContent').innerHTML = renderMarkdown(md);
+          })
+          .catch(function(err) {
+            document.getElementById('viewerContent').innerHTML =
+              '<p style="color:#ef4444">Failed to load document: ' + err.message + '</p>' +
+              '<p><a href="' + book.url + '" target="_blank">Open raw file instead &rarr;</a></p>';
+          });
+      } else {
+        // Non-markdown files: open in new tab
+        window.open(book.url, '_blank');
+      }
     }
   };
 

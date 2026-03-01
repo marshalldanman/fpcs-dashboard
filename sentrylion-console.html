@@ -464,7 +464,6 @@ body::after {
     <div class="fleet-stat"><span>JAILED</span> <span class="val" id="statJailed">0</span></div>
   </div>
   <button class="top-btn" id="btnDeploy" title="Deploy SentryLion to USB">&#128190; DEPLOY</button>
-  <button class="top-btn" id="btnSeedDemo" title="Seed demo agents for testing">&#127922; DEMO</button>
 </div>
 
 <!-- ── FLEET OVERVIEW ── -->
@@ -495,8 +494,7 @@ body::after {
       <div class="empty-title">No Agents Detected</div>
       <div class="empty-text">
         Deploy SentryLion agents to your network to begin monitoring.
-        Click <strong>DEMO</strong> above to seed test agents, or
-        <strong>DEPLOY</strong> to create a portable agent package.
+        Click <strong>DEPLOY</strong> to create a portable agent package.
       </div>
     </div>
   </div>
@@ -1225,16 +1223,6 @@ body::after {
   document.getElementById('btnBack').addEventListener('click', hideDetail);
   document.getElementById('btnCommands').addEventListener('click', openCmdPanel);
   document.getElementById('cmdClose').addEventListener('click', closeCmdPanel);
-
-  document.getElementById('btnSeedDemo').addEventListener('click', function () {
-    if (!window.SentryFleet) { alert('SentryFleet not initialized'); return; }
-    SentryFleet.seedDemoAgents().then(function () {
-      console.log('[Console] Demo agents seeded');
-    }).catch(function (err) {
-      console.error('[Console] Demo seed failed:', err);
-      alert('Demo seed failed — check Firebase RTDB is enabled. Error: ' + err.message);
-    });
-  });
 
   document.getElementById('btnDeploy').addEventListener('click', function () {
     alert('USB Deploy coming in Phase 9.\n\nThis will generate a SentryLion-Portable.zip containing:\n- SentryLion.exe (Tauri agent)\n- AdwCleaner + Emsisoft EEK\n- YARA + Sigma rules\n- Pre-trained ML model\n- HardeningKitty baselines');
