@@ -1281,34 +1281,94 @@
     dataSource: 'hardcoded' // Will change to 'sheets' when live
   };
 
-  // Dynamic data loader — tries Google Sheets Summary tab first, falls back to hardcoded
+  // Dynamic data loader — tries Firestore first, then Sheets, then hardcoded fallback
   function loadLiveData() {
+    // === PRIORITY 1: Firestore (primary database) ===
+    if (window.FPCSFirestore && FPCSFirestore.isReady()) {
+      console.log('[Dashboard] Loading live data from Firestore...');
+      FPCSFirestore.getStats().then(function(stats) {
+        if (!stats || stats.transactionCount === 0) {
+          console.log('[Dashboard] Firestore returned empty stats, trying Sheets...');
+          loadLiveDataFromSheets();
+          return;
+        }
+        // Compute detailed category breakdowns from transactions
+        FPCSFirestore.getTransactions({}).then(function(transactions) {
+          var catTotals = {};
+          var incomeTotal = 0;
+          transactions.forEach(function(t) {
+            var amt = parseFloat(String(t.amount || '0').replace(/[$,]/g, '')) || 0;
+            var cat = (t.tax_category || t.category || 'Uncategorized').toLowerCase();
+            if (t.direction === 'Expense' || t.direction === 'expense') {
+              amt = Math.abs(amt);
+              catTotals[cat] = (catTotals[cat] || 0) + amt;
+            } else if (t.direction === 'Income' || t.direction === 'income') {
+              incomeTotal += Math.abs(amt);
+            }
+          });
+          // Override FPCS_DATA with live Firestore numbers
+          FPCS_DATA.income.gross = incomeTotal || stats.incomeTotal || FPCS_DATA.income.gross;
+          FPCS_DATA.deductions.total = stats.deductionTotal || FPCS_DATA.deductions.total;
+          FPCS_DATA.netLoss = FPCS_DATA.income.gross - FPCS_DATA.deductions.total;
+          FPCS_DATA.stats.consolidatedRows = stats.transactionCount || FPCS_DATA.stats.consolidatedRows;
+          // Map category breakdowns where available
+          if (catTotals['supplies']) FPCS_DATA.deductions.supplies = catTotals['supplies'];
+          if (catTotals['equipment']) FPCS_DATA.deductions.equipment = catTotals['equipment'];
+          if (catTotals['other expenses'] || catTotals['other']) FPCS_DATA.deductions.otherExp = catTotals['other expenses'] || catTotals['other'];
+          if (catTotals['car & truck'] || catTotals['car/truck']) FPCS_DATA.deductions.carTruck = catTotals['car & truck'] || catTotals['car/truck'];
+          if (catTotals['cogs'] || catTotals['cost of goods sold']) FPCS_DATA.deductions.cogs = catTotals['cogs'] || catTotals['cost of goods sold'];
+          if (catTotals['utilities']) FPCS_DATA.deductions.utilities = catTotals['utilities'];
+          if (catTotals['office expenses'] || catTotals['office']) FPCS_DATA.deductions.office = catTotals['office expenses'] || catTotals['office'];
+          if (catTotals['insurance']) FPCS_DATA.deductions.insurance = catTotals['insurance'];
+          if (catTotals['meals']) FPCS_DATA.deductions.meals = catTotals['meals'];
+          FPCS_DATA.dataSource = 'firestore';
+          console.log('[Dashboard] Live data loaded from Firestore (' + stats.transactionCount + ' transactions)');
+          if (typeof refreshStatCards === 'function') refreshStatCards();
+        });
+      }).catch(function(err) {
+        console.warn('[Dashboard] Firestore stats failed, trying Sheets:', err.message || err);
+        loadLiveDataFromSheets();
+      });
+      return;
+    }
+
+    // === PRIORITY 2: Google Sheets (legacy fallback) ===
+    loadLiveDataFromSheets();
+  }
+
+  function loadLiveDataFromSheets() {
     if (typeof FPCSSheets === 'undefined' || !FPCSSheets.SHEETS.CONSOLIDATED) return;
     var sheetId = FPCSSheets.SHEETS.CONSOLIDATED;
-    if (!sheetId) return; // Sheet ID not set yet
+    if (!sheetId) return;
 
     FPCSSheets.readAsObjects(sheetId, 'Summary!A1:B50').then(function(rows) {
       if (!rows || rows.length === 0) return;
-      // Parse key-value pairs from Summary tab
       var summary = {};
       rows.forEach(function(r) {
         var key = (r.Key || r.key || r.Metric || '').trim();
         var val = parseFloat((r.Value || r.value || r.Amount || '0').toString().replace(/[$,]/g, ''));
         if (key && !isNaN(val)) summary[key] = val;
       });
-      // Override FPCS_DATA if we got real data
       if (summary['Gross Income']) FPCS_DATA.income.gross = summary['Gross Income'];
       if (summary['Total Deductions']) FPCS_DATA.deductions.total = summary['Total Deductions'];
       if (summary['Net Loss']) FPCS_DATA.netLoss = summary['Net Loss'];
       if (summary['Consolidated Rows']) FPCS_DATA.stats.consolidatedRows = summary['Consolidated Rows'];
       FPCS_DATA.dataSource = 'sheets';
       console.log('[Dashboard] Live data loaded from Google Sheets');
-      // Refresh stat cards with live data
       if (typeof refreshStatCards === 'function') refreshStatCards();
     }).catch(function(err) {
       console.log('[Dashboard] Sheets unavailable, using hardcoded data:', err.message || err);
     });
   }
+
+  // Auto-load data when auth completes (fires Firestore init)
+  document.addEventListener('fpcs-authed', function() {
+    setTimeout(loadLiveData, 500);
+  });
+  // Fallback: try loading after 4s even if auth event was missed
+  setTimeout(function() {
+    if (FPCS_DATA.dataSource === 'hardcoded') loadLiveData();
+  }, 4000);
 
   // Sarge's local response engine — smart tax assistant with personality
   function sargeRespond(msg) {
@@ -1824,6 +1884,7 @@
 </script>
 <script src="js/sheets-api.js"></script>
 <script src="js/auth.js"></script>
+<script src="js/firestore-db.js"></script>
 <script src="js/nav.js"></script>
 <script src="js/sheets-notes.js"></script>
 <script src="js/memory-blocks.js"></script>

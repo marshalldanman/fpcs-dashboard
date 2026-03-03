@@ -875,7 +875,73 @@ function loadAllRecords() {
   container.style.display = 'none';
   errorDiv.style.display = 'none';
 
-  // Wait for FPCSSheets to be ready — exponential backoff, max 3 retries
+  // === PRIORITY 1: Firestore (primary database) ===
+  if (window.FPCSFirestore && FPCSFirestore.isReady()) {
+    console.log('[Income] Loading from Firestore...');
+    FPCSFirestore.getTransactions({}).then(function(docs) {
+      if (!docs || docs.length === 0) {
+        console.log('[Income] Firestore returned empty, trying Sheets...');
+        loadAllRecordsFromSheets();
+        return;
+      }
+
+      loading.style.display = 'none';
+
+      // Build synthetic headers and column map matching existing rendering
+      var headers = ['Date', 'Type', 'Num', 'Description', 'Notes', 'Category', 'Amount'];
+      var colMap = { date: 0, type: 1, num: 2, name: 3, memo: 4, account: 5, amount: 6 };
+
+      // Map Firestore objects → row arrays
+      var dataRows = docs.map(function(d) {
+        var row = [];
+        row[0] = d.date || '';
+        row[1] = d.data_type || d.type || '';
+        row[2] = d.invoice || d.id || '';
+        row[3] = d.description || d.customer || '';
+        row[4] = d.notes || '';
+        row[5] = d.tax_category || d.category || '';
+        var amt = parseFloat(String(d.amount || '0').replace(/[$,]/g, '')) || 0;
+        // Income = positive, Expense = negative (for display consistency)
+        if ((d.direction === 'Expense' || d.direction === 'expense') && amt > 0) amt = -amt;
+        row[6] = String(amt);
+        return row;
+      });
+
+      // Build display columns
+      displayCols = [];
+      var colOrder = ['date', 'type', 'num', 'name', 'memo', 'account', 'amount'];
+      colOrder.forEach(function(key) {
+        if (colMap[key] !== undefined) {
+          var isWrap = key === 'name' || key === 'memo';
+          var isNum = key === 'amount';
+          displayCols.push({ key: colMap[key], label: headers[colMap[key]], wrap: isWrap, numeric: isNum });
+        }
+      });
+
+      console.log('[Income] Loaded ' + dataRows.length + ' records from Firestore');
+
+      allRecords = dataRows;
+      applyFilters();
+      renderRecordsHeader();
+      container.style.display = 'block';
+      updateLiveStats(dataRows, colMap);
+
+    }).catch(function(err) {
+      console.warn('[Income] Firestore load error, falling back to Sheets:', err.message || err);
+      loadAllRecordsFromSheets();
+    });
+    return;
+  }
+
+  // === PRIORITY 2: Google Sheets (legacy fallback) ===
+  loadAllRecordsFromSheets();
+}
+
+function loadAllRecordsFromSheets() {
+  var loading = document.getElementById('recordsLoading');
+  var container = document.getElementById('recordsContainer');
+  var errorDiv = document.getElementById('recordsError');
+
   if (!window._sheetsRetryCount) window._sheetsRetryCount = 0;
   if (!window.FPCSSheets || !window.FPCSSheets.isReady()) {
     window._sheetsRetryCount++;
@@ -886,19 +952,16 @@ function loadAllRecords() {
       return;
     }
     var delay = Math.min(500 * Math.pow(2, window._sheetsRetryCount - 1), 4000);
-    setTimeout(loadAllRecords, delay);
+    setTimeout(loadAllRecordsFromSheets, delay);
     return;
   }
   window._sheetsRetryCount = 0;
 
-  // Read from TAX_MASTER sheet — auto-detect tab name
-  // Known tab names from various export methods:
   var TAB_NAMES = ['FINAL_MASTER', 'FPCS 2022 Master', 'Sheet1'];
   var tabIdx = 0;
 
   function tryNextTab() {
     if (tabIdx >= TAB_NAMES.length) {
-      // Last resort: use getSheetNames to discover available tabs
       if (window.FPCSSheets.getSheetNames) {
         return window.FPCSSheets.getSheetNames('TAX_MASTER').then(function(names) {
           if (names && names.length > 0) {
@@ -931,7 +994,6 @@ function loadAllRecords() {
     var headers = rows[0];
     var dataRows = rows.slice(1);
 
-    // Auto-detect column mapping based on headers
     var colMap = {};
     headers.forEach(function(h, i) {
       var hl = (h || '').toLowerCase().trim();
@@ -946,7 +1008,6 @@ function loadAllRecords() {
       if (hl.match(/deductible|deduct/)) colMap.deductible = i;
     });
 
-    // Build display columns dynamically from actual headers
     displayCols = [];
     var colOrder = ['date', 'type', 'num', 'name', 'memo', 'account', 'amount'];
     colOrder.forEach(function(key) {
@@ -957,7 +1018,6 @@ function loadAllRecords() {
       }
     });
 
-    // Add remaining columns not already mapped
     headers.forEach(function(h, i) {
       var alreadyMapped = false;
       displayCols.forEach(function(dc) { if (dc.key === i) alreadyMapped = true; });
@@ -966,13 +1026,10 @@ function loadAllRecords() {
       }
     });
 
-    // Store all records
     allRecords = dataRows;
     applyFilters();
     renderRecordsHeader();
     container.style.display = 'block';
-
-    // Update summary stats from live data
     updateLiveStats(dataRows, colMap);
 
   }).catch(function(err) {
@@ -1007,9 +1064,10 @@ function updateLiveStats(rows, colMap) {
       liveCard.onclick = function() { scrollToSection('sec-allrecords'); };
       summaryStats.appendChild(liveCard);
     }
+    var dataSourceLabel = (window.FPCSFirestore && FPCSFirestore.isReady()) ? 'Firestore' : 'Google Sheets';
     liveCard.innerHTML = '<div class="label">Live Data (All Records)</div>' +
       '<div class="value" style="font-size:18px">' + count + ' rows</div>' +
-      '<div class="sub">From Google Sheets &bull; Click to view all</div>';
+      '<div class="sub">From ' + dataSourceLabel + ' &bull; Click to view all</div>';
   }
 
   // Populate live summary cards
@@ -1332,6 +1390,7 @@ document.addEventListener('keydown', function(e) {
 
 <script src="js/sheets-api.js"></script>
 <script src="js/auth.js"></script>
+<script src="js/firestore-db.js"></script>
 <script src="js/nav.js"></script>
 <script src="js/sheets-notes.js"></script>
 <script src="js/memory-blocks.js"></script>

@@ -381,7 +381,8 @@
 
       filters = filters || {};
       var whereFilters = {};
-      if (filters.taxYear) whereFilters.taxYear = filters.taxYear;
+      // Map camelCase filter keys to snake_case Firestore field names
+      if (filters.taxYear) whereFilters.tax_year = filters.taxYear;
       if (filters.category) whereFilters.category = filters.category;
       if (filters.direction) whereFilters.direction = filters.direction;
 
@@ -988,10 +989,11 @@
         for (var i = 0; i < transactions.length; i++) {
           var t = transactions[i];
           var amount = parseCurrency(t.amount);
-          if (t.direction === 'Expense') {
-            deductionTotal += amount;
-          } else if (t.direction === 'Income') {
-            incomeTotal += amount;
+          var dir = (t.direction || '').toLowerCase();
+          if (dir === 'expense' || dir === 'debit') {
+            deductionTotal += Math.abs(amount);
+          } else if (dir === 'income' || dir === 'credit') {
+            incomeTotal += Math.abs(amount);
           }
         }
 

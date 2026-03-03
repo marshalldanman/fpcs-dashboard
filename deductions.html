@@ -721,7 +721,7 @@
     <!-- Error state -->
     <div id="dedError" style="display:none;padding:24px;color:var(--yellow);font-size:14px;text-align:center">
       <p>&#9888; Sheets data unavailable &mdash; using Firestore / local data.</p>
-      <p style="font-size:12px;color:var(--muted);margin-top:8px">Deductions from the master dataset will load once Firestore is connected. <button onclick="dedRetryCount=0;loadDeductionRecords()" style="color:var(--accent);background:none;border:none;cursor:pointer;text-decoration:underline">Retry Sheets</button></p>
+      <p style="font-size:12px;color:var(--muted);margin-top:8px">Deductions from the master dataset will load once Firestore is connected. <button onclick="dedRetryCount=0;loadDeductionRecords()" style="color:var(--accent);background:none;border:none;cursor:pointer;text-decoration:underline">Retry</button></p>
     </div>
   </div>
 
@@ -810,7 +810,7 @@ function switchYear(year) {
 }
 
 // ============================================================
-//  LIVE DEDUCTION RECORDS FROM GOOGLE SHEETS
+//  LIVE DEDUCTION RECORDS — Firestore primary, Sheets fallback
 //  Groups expenses by Account/Category with expandable accordion
 // ============================================================
 var dedRecords = [];        // All expense records from sheet
@@ -837,21 +837,103 @@ function loadDeductionRecords() {
   errorDiv.style.display = 'none';
   summary.style.display = 'none';
 
+  // === PRIORITY 1: Firestore (primary database) ===
+  if (window.FPCSFirestore && FPCSFirestore.isReady()) {
+    console.log('[Deductions] Loading from Firestore...');
+    // Fetch all transactions and filter client-side to include Expense + Debit
+    FPCSFirestore.getTransactions({}).then(function(allDocs) {
+      // Filter to expenses only (Expense, Debit, or negative amounts)
+      var docs = allDocs.filter(function(d) {
+        var dir = (d.direction || '').toLowerCase();
+        return dir === 'expense' || dir === 'debit';
+      });
+
+      if (!docs || docs.length === 0) {
+        console.log('[Deductions] Firestore returned no expenses, trying Sheets...');
+        loadDeductionRecordsFromSheets();
+        return;
+      }
+
+      // Map Firestore objects → row arrays matching existing rendering pipeline
+      dedHeaders = ['Date', 'Type', 'Num', 'Description', 'Notes', 'Category', 'Amount', 'Split', 'Deductible'];
+      dedColMap = { date: 0, type: 1, num: 2, name: 3, memo: 4, account: 5, amount: 6, split: 7, deductible: 8 };
+
+      var dataRows = docs.map(function(d) {
+        var row = [];
+        row[0] = d.date || '';
+        row[1] = d.data_type || d.type || '';
+        row[2] = d.invoice || d.id || '';
+        row[3] = d.description || d.customer || '';
+        row[4] = d.notes || '';
+        row[5] = d.tax_category || d.category || '';
+        // Expenses: ensure negative for existing filter logic
+        var amt = parseFloat(String(d.amount || '0').replace(/[$,]/g, '')) || 0;
+        row[6] = String(amt < 0 ? amt : -Math.abs(amt));
+        row[7] = d.account || '';
+        row[8] = d.processed ? 'Yes' : '';
+        return row;
+      });
+
+      loading.style.display = 'none';
+
+      // Filter for expenses (negative amounts)
+      dedRecords = dataRows.filter(function(row) {
+        var amt = parseFloat((row[dedColMap.amount] || '0').replace(/[$,]/g, ''));
+        return !isNaN(amt) && amt < 0;
+      });
+
+      console.log('[Deductions] Loaded ' + dedRecords.length + ' expense records from Firestore');
+
+      buildCategoryGroups();
+      container.style.display = 'block';
+      summary.style.display = 'flex';
+      handleDedUrlSearch();
+
+    }).catch(function(err) {
+      console.warn('[Deductions] Firestore load error, falling back to Sheets:', err.message || err);
+      loadDeductionRecordsFromSheets();
+    });
+    return;
+  }
+
+  // === PRIORITY 2: Google Sheets (legacy fallback) ===
+  loadDeductionRecordsFromSheets();
+}
+
+function handleDedUrlSearch() {
+  var urlSearch = new URLSearchParams(window.location.search).get('search');
+  if (urlSearch) {
+    var searchInput = document.getElementById('dedSearchInput');
+    if (searchInput) { searchInput.value = urlSearch; }
+    searchDeductions(urlSearch);
+    setTimeout(function() {
+      var groups = document.querySelectorAll('.cat-group');
+      if (groups.length > 0 && groups.length <= 5) {
+        groups.forEach(function(g) { g.classList.add('open'); });
+      }
+    }, 100);
+  }
+}
+
+function loadDeductionRecordsFromSheets() {
+  var loading = document.getElementById('dedLoading');
+  var container = document.getElementById('dedCategoriesContainer');
+  var errorDiv = document.getElementById('dedError');
+  var summary = document.getElementById('liveSummary');
+
   if (!window.FPCSSheets || !window.FPCSSheets.isReady()) {
     dedRetryCount++;
     if (dedRetryCount > DED_MAX_RETRIES) {
-      // Max retries hit — show soft warning, hide loading spinner
       loading.style.display = 'none';
       errorDiv.style.display = 'block';
       console.warn('[Deductions] Sheets not available after ' + DED_MAX_RETRIES + ' retries — use Unmatched Resolver below');
       return;
     }
     var delay = Math.min(500 * Math.pow(2, dedRetryCount - 1), 4000);
-    setTimeout(loadDeductionRecords, delay);
+    setTimeout(loadDeductionRecordsFromSheets, delay);
     return;
   }
 
-  // Read from TAX_MASTER sheet
   var sheetId = window.FPCSSheets.SHEETS.TAX_MASTER;
   window.FPCSSheets.read(sheetId, 'FINAL_MASTER!A1:Z').catch(function() {
     return window.FPCSSheets.read(sheetId, 'Sheet1!A1:Z');
@@ -866,7 +948,6 @@ function loadDeductionRecords() {
     dedHeaders = rows[0];
     var dataRows = rows.slice(1);
 
-    // Auto-detect column mapping
     dedColMap = {};
     dedHeaders.forEach(function(h, i) {
       var hl = (h || '').toLowerCase().trim();
@@ -887,31 +968,15 @@ function loadDeductionRecords() {
       return;
     }
 
-    // Filter for expenses only (negative amounts = expenses/deductions)
     dedRecords = dataRows.filter(function(row) {
       var amt = parseFloat((row[dedColMap.amount] || '0').replace(/[$,]/g, ''));
       return !isNaN(amt) && amt < 0;
     });
 
-    // Group by account/category
     buildCategoryGroups();
     container.style.display = 'block';
     summary.style.display = 'flex';
-
-    // Support drill-down from index.html: ?search=Category pre-fills search
-    var urlSearch = new URLSearchParams(window.location.search).get('search');
-    if (urlSearch) {
-      var searchInput = document.getElementById('dedSearchInput');
-      if (searchInput) { searchInput.value = urlSearch; }
-      searchDeductions(urlSearch);
-      // Auto-expand matching categories
-      setTimeout(function() {
-        var groups = document.querySelectorAll('.cat-group');
-        if (groups.length > 0 && groups.length <= 5) {
-          groups.forEach(function(g) { g.classList.add('open'); });
-        }
-      }, 100);
-    }
+    handleDedUrlSearch();
 
   }).catch(function(err) {
     loading.style.display = 'none';

@@ -954,17 +954,31 @@
   // If firebase-app-compat was already loaded via <script> tags (e.g. console page),
   // skip dynamic loading to avoid resetting the namespace and losing
   // firestore/database registrations from earlier script tags.
-  if (typeof firebase !== 'undefined' && firebase.apps !== undefined) {
-    // Firebase already loaded — just ensure auth compat is present
-    if (typeof firebase.auth === 'function') {
-      initAuth();
+
+  // Helper: ensure Firestore compat SDK is loaded (needed by firestore-db.js)
+  function ensureFirestoreSDK(callback) {
+    if (typeof firebase !== 'undefined' && typeof firebase.firestore === 'function') {
+      callback();
     } else {
-      loadScript('https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js', initAuth);
+      loadScript('https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js', callback);
+    }
+  }
+
+  if (typeof firebase !== 'undefined' && firebase.apps !== undefined) {
+    // Firebase already loaded — just ensure auth + firestore compat are present
+    if (typeof firebase.auth === 'function') {
+      ensureFirestoreSDK(initAuth);
+    } else {
+      loadScript('https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js', function () {
+        ensureFirestoreSDK(initAuth);
+      });
     }
   } else {
-    // No Firebase yet — load app + auth dynamically (standard pages)
+    // No Firebase yet — load app + auth + firestore dynamically (standard pages)
     loadScript('https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js', function () {
-      loadScript('https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js', initAuth);
+      loadScript('https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js', function () {
+        ensureFirestoreSDK(initAuth);
+      });
     });
   }
 })();
