@@ -386,18 +386,18 @@
   <div class="grid" id="sec-stats">
     <div class="stat-card stat-link" onclick="location.href='income.html'" title="View detailed income breakdown">
       <div class="label">Gross Income (2022)</div>
-      <div class="value" style="color:var(--green)">$17,967.15 <span class="drill-arrow">&#8599;</span></div>
-      <div class="sub">QBO $17,097 + Missing Arlene $870</div>
+      <div class="value" style="color:var(--green)" id="statGrossIncome">Loading... <span class="drill-arrow">&#8599;</span></div>
+      <div class="sub" id="statGrossIncomeSub">Fetching from Firestore...</div>
     </div>
     <div class="stat-card stat-link" onclick="location.href='deductions.html'" title="View detailed deduction categories">
       <div class="label">Total Business Deductions</div>
-      <div class="value" style="color:var(--yellow)">$42,889.72 <span class="drill-arrow">&#8599;</span></div>
-      <div class="sub">+$864.98 tech parts/contract (+ $4,699 discounts pending)</div>
+      <div class="value" style="color:var(--yellow)" id="statDeductions">Loading... <span class="drill-arrow">&#8599;</span></div>
+      <div class="sub" id="statDeductionsSub">Fetching from Firestore...</div>
     </div>
     <div class="stat-card stat-link" onclick="location.href='income.html'" title="See income vs deductions breakdown">
       <div class="label">Net Business Loss</div>
-      <div class="value" style="color:var(--red)">-$24,922.57 <span class="drill-arrow">&#8599;</span></div>
-      <div class="sub">Income $17,967 - Deductions $42,890</div>
+      <div class="value" style="color:var(--red)" id="statNetLoss">Loading... <span class="drill-arrow">&#8599;</span></div>
+      <div class="sub" id="statNetLossSub">Fetching from Firestore...</div>
     </div>
     <div class="stat-card stat-link" onclick="document.getElementById('ddbotFindings').scrollIntoView({behavior:'smooth'})" title="View DDBOT findings detail">
       <div class="label">DDBOT Findings</div>
@@ -406,8 +406,8 @@
     </div>
     <div class="stat-card stat-link" onclick="document.getElementById('sec-data-sources').scrollIntoView({behavior:'smooth'})" title="View data source inventory">
       <div class="label">Consolidated Database</div>
-      <div class="value" style="color:var(--accent)">1,871 rows <span class="drill-arrow">&#8599;</span></div>
-      <div class="sub">4 sources merged, 2,224 dupes removed, 25 accounts</div>
+      <div class="value" style="color:var(--accent)" id="statConsolidated">Loading... <span class="drill-arrow">&#8599;</span></div>
+      <div class="sub" id="statConsolidatedSub">Fetching from Firestore...</div>
     </div>
   </div>
 
@@ -756,7 +756,7 @@
     </div>
 
     <h3 style="color:var(--accent);font-size:14px;margin-bottom:12px">TurboTax Data Entry Steps</h3>
-    <div class="tt-step"><div class="tt-num tt-done">1</div><div><strong>Income: Schedule C gross receipts</strong><div style="font-size:12px;color:var(--muted)">$17,967.15 total (includes $870 missing Arlene Harris income). <span style="color:var(--accent)">UPDATED</span></div></div></div>
+    <div class="tt-step"><div class="tt-num tt-done">1</div><div><strong>Income: Schedule C gross receipts</strong><div style="font-size:12px;color:var(--muted)">Gross receipts — live from Firestore. <span style="color:var(--accent)">LIVE</span></div></div></div>
     <div class="tt-step"><div class="tt-num tt-done">2</div><div><strong>COGS: Cost of goods sold</strong><div style="font-size:12px;color:var(--muted)">$2,895.75 (eBay $2,595.75 + Optiplex resale $300). <span style="color:var(--accent)">UPDATED</span></div></div></div>
     <div class="tt-step"><div class="tt-num tt-done">3</div><div><strong>Expenses: Lines 8-27a</strong><div style="font-size:12px;color:var(--muted)">Supplies $13,256.68 (+$524.98 tech parts), Contract $50 (+$40). <span style="color:var(--accent)">UPDATED</span></div></div></div>
     <div class="tt-step"><div class="tt-num tt-current">4</div><div><strong>Vehicle: Line 9 detail</strong><div style="font-size:12px;color:var(--muted)">Choose mileage ($0.585/mi) or actual expenses ($3,240). Need mileage log. <span style="color:var(--yellow)">NEEDS INFO</span></div></div></div>
@@ -813,7 +813,7 @@
 
     <div class="scout-rec">
       <div class="s-title">Dashboard: Add quarterly tax obligation estimates</div>
-      <div class="s-detail">Pro tax dashboards (Drake, CCH) emphasize tax-owing projections. Since we show a -$24,928 net loss, estimate the actual tax impact: SE tax savings, potential refund from loss carryback.</div>
+      <div class="s-detail">Pro tax dashboards (Drake, CCH) emphasize tax-owing projections. With a net loss, estimate the actual tax impact: SE tax savings, potential refund from loss carryback.</div>
     </div>
     <div class="scout-rec">
       <div class="s-title">Bot Comms: Use shared SQLite + JSON-RPC for agent messaging</div>
@@ -1269,17 +1269,107 @@
   // === DRILL-DOWN FUNCTIONS ===
   // Maps index.html expense categories → deductions.html search terms
   // Tax knowledge base for Sarge's local intelligence
-  // Hardcoded fallback — will be overridden by live Google Sheets data when available
+  // Initial zeros — ALL values load live from Firestore on auth
   const FPCS_DATA = {
-    income: { gross: 17967.15, services: 14726.50, ebay: 13051.65, arOffset: -10725, deposits: -180, tips: 174, lateFees: 50, missingQBO: 870 },
-    deductions: { total: 42889.72, supplies: 13256.68, equipment: 12654.39, otherExp: 7919.51, carTruck: 3239.62, cogs: 2895.75, utilities: 1066.34, office: 1024.14, insurance: 422.54, ccInterest: 248.90, meals: 97.39, repairs: 39.98, advertising: 23.18, contractLabor: 50, techParts: 524.98, techPartsCOGS: 300.00, techDiscount: 4699.00 },
-    netLoss: -24922.57,
-    stats: { qboTxns: 2155, consolidatedRows: 1871, accounts: 25, emailsIndexed: 63587, taxEmails: 6315, amazonOrders: 842, dupesRemoved: 2224 },
+    income: { gross: 0, services: 0, ebay: 0, arOffset: 0, deposits: 0, tips: 0, lateFees: 0, missingQBO: 0 },
+    deductions: { total: 0, supplies: 0, equipment: 0, otherExp: 0, carTruck: 0, cogs: 0, utilities: 0, office: 0, insurance: 0, ccInterest: 0, meals: 0, repairs: 0, advertising: 0, contractLabor: 0, techParts: 0, techPartsCOGS: 0, techDiscount: 0 },
+    netLoss: 0,
+    stats: { qboTxns: 0, consolidatedRows: 0, accounts: 0, emailsIndexed: 0, taxEmails: 0, amazonOrders: 0, dupesRemoved: 0 },
     progress: { dataCollection: 97, taxPrep: 60, filing: 0, overall: 82 },
     deadline: '2026-04-10',
     needed: ['Google Cloud service account setup', 'Classify $4,699 discounts', 'Bank statements (7 banks)', 'Home office sqft', 'Mileage log', 'TurboTax install', 'Amazon biz/personal split'],
-    dataSource: 'hardcoded' // Will change to 'sheets' when live
+    dataSource: 'loading'
   };
+
+  // refreshStatCards — updates ALL stat card elements from live FPCS_DATA
+  function refreshStatCards() {
+    var fmt = function(n) { return '$' + Math.abs(n).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}); };
+    var fmtInt = function(n) { return n.toLocaleString('en-US'); };
+    var srcLabel = FPCS_DATA.dataSource === 'loading' ? '' : ' [' + FPCS_DATA.dataSource + ']';
+
+    // Gross Income
+    var gi = document.getElementById('statGrossIncome');
+    if (gi) {
+      gi.textContent = '';
+      gi.appendChild(document.createTextNode(fmt(FPCS_DATA.income.gross) + ' '));
+      var arrow1 = document.createElement('span');
+      arrow1.className = 'drill-arrow';
+      arrow1.textContent = '\u2197';
+      gi.appendChild(arrow1);
+      if (srcLabel) {
+        var tag1 = document.createElement('span');
+        tag1.style.cssText = 'font-size:10px;color:var(--muted);margin-left:4px';
+        tag1.textContent = srcLabel;
+        gi.appendChild(tag1);
+      }
+    }
+    var giSub = document.getElementById('statGrossIncomeSub');
+    if (giSub) giSub.textContent = 'Services ' + fmt(FPCS_DATA.income.services) + ' + eBay ' + fmt(FPCS_DATA.income.ebay);
+
+    // Total Deductions
+    var ded = document.getElementById('statDeductions');
+    if (ded) {
+      ded.textContent = '';
+      ded.appendChild(document.createTextNode(fmt(FPCS_DATA.deductions.total) + ' '));
+      var arrow2 = document.createElement('span');
+      arrow2.className = 'drill-arrow';
+      arrow2.textContent = '\u2197';
+      ded.appendChild(arrow2);
+      if (srcLabel) {
+        var tag2 = document.createElement('span');
+        tag2.style.cssText = 'font-size:10px;color:var(--muted);margin-left:4px';
+        tag2.textContent = srcLabel;
+        ded.appendChild(tag2);
+      }
+    }
+    var dedSub = document.getElementById('statDeductionsSub');
+    if (dedSub) {
+      var topCats = [];
+      if (FPCS_DATA.deductions.supplies > 0) topCats.push('Supplies ' + fmt(FPCS_DATA.deductions.supplies));
+      if (FPCS_DATA.deductions.equipment > 0) topCats.push('Equip ' + fmt(FPCS_DATA.deductions.equipment));
+      dedSub.textContent = topCats.length > 0 ? topCats.join(' | ') : 'Category breakdown from Firestore';
+    }
+
+    // Net Loss
+    var nl = document.getElementById('statNetLoss');
+    if (nl) {
+      nl.textContent = '';
+      nl.appendChild(document.createTextNode((FPCS_DATA.netLoss < 0 ? '-' : '') + fmt(FPCS_DATA.netLoss) + ' '));
+      var arrow3 = document.createElement('span');
+      arrow3.className = 'drill-arrow';
+      arrow3.textContent = '\u2197';
+      nl.appendChild(arrow3);
+      if (srcLabel) {
+        var tag3 = document.createElement('span');
+        tag3.style.cssText = 'font-size:10px;color:var(--muted);margin-left:4px';
+        tag3.textContent = srcLabel;
+        nl.appendChild(tag3);
+      }
+    }
+    var nlSub = document.getElementById('statNetLossSub');
+    if (nlSub) nlSub.textContent = 'Income ' + fmt(FPCS_DATA.income.gross) + ' - Deductions ' + fmt(FPCS_DATA.deductions.total);
+
+    // Consolidated rows
+    var cr = document.getElementById('statConsolidated');
+    if (cr) {
+      cr.textContent = '';
+      cr.appendChild(document.createTextNode(fmtInt(FPCS_DATA.stats.consolidatedRows) + ' rows '));
+      var arrow4 = document.createElement('span');
+      arrow4.className = 'drill-arrow';
+      arrow4.textContent = '\u2197';
+      cr.appendChild(arrow4);
+      if (srcLabel) {
+        var tag4 = document.createElement('span');
+        tag4.style.cssText = 'font-size:10px;color:var(--muted);margin-left:4px';
+        tag4.textContent = srcLabel;
+        cr.appendChild(tag4);
+      }
+    }
+    var crSub = document.getElementById('statConsolidatedSub');
+    if (crSub) crSub.textContent = 'Live count from Firestore transactions collection';
+
+    console.log('[Dashboard] Stat cards refreshed — source: ' + FPCS_DATA.dataSource);
+  }
 
   // Dynamic data loader — tries Firestore first, then Sheets, then hardcoded fallback
   function loadLiveData() {
@@ -1296,18 +1386,30 @@
         FPCSFirestore.getTransactions({}).then(function(transactions) {
           var catTotals = {};
           var incomeTotal = 0;
+          var servicesTotal = 0;
+          var ebayTotal = 0;
           transactions.forEach(function(t) {
             var amt = parseFloat(String(t.amount || '0').replace(/[$,]/g, '')) || 0;
             var cat = (t.tax_category || t.category || 'Uncategorized').toLowerCase();
+            var vendor = (t.vendor || t.description || '').toLowerCase();
             if (t.direction === 'Expense' || t.direction === 'expense') {
               amt = Math.abs(amt);
               catTotals[cat] = (catTotals[cat] || 0) + amt;
             } else if (t.direction === 'Income' || t.direction === 'income') {
-              incomeTotal += Math.abs(amt);
+              var absAmt = Math.abs(amt);
+              incomeTotal += absAmt;
+              // Classify income source
+              if (vendor.indexOf('ebay') !== -1 || cat.indexOf('ebay') !== -1) {
+                ebayTotal += absAmt;
+              } else if (cat.indexOf('service') !== -1 || cat.indexOf('invoice') !== -1) {
+                servicesTotal += absAmt;
+              }
             }
           });
           // Override FPCS_DATA with live Firestore numbers
           FPCS_DATA.income.gross = incomeTotal || stats.incomeTotal || FPCS_DATA.income.gross;
+          FPCS_DATA.income.services = servicesTotal;
+          FPCS_DATA.income.ebay = ebayTotal;
           FPCS_DATA.deductions.total = stats.deductionTotal || FPCS_DATA.deductions.total;
           FPCS_DATA.netLoss = FPCS_DATA.income.gross - FPCS_DATA.deductions.total;
           FPCS_DATA.stats.consolidatedRows = stats.transactionCount || FPCS_DATA.stats.consolidatedRows;
@@ -1321,9 +1423,13 @@
           if (catTotals['office expenses'] || catTotals['office']) FPCS_DATA.deductions.office = catTotals['office expenses'] || catTotals['office'];
           if (catTotals['insurance']) FPCS_DATA.deductions.insurance = catTotals['insurance'];
           if (catTotals['meals']) FPCS_DATA.deductions.meals = catTotals['meals'];
+          if (catTotals['repairs'] || catTotals['repairs & maintenance']) FPCS_DATA.deductions.repairs = catTotals['repairs'] || catTotals['repairs & maintenance'];
+          if (catTotals['advertising']) FPCS_DATA.deductions.advertising = catTotals['advertising'];
+          if (catTotals['contract labor']) FPCS_DATA.deductions.contractLabor = catTotals['contract labor'];
+          if (catTotals['interest'] || catTotals['cc interest']) FPCS_DATA.deductions.ccInterest = catTotals['interest'] || catTotals['cc interest'];
           FPCS_DATA.dataSource = 'firestore';
           console.log('[Dashboard] Live data loaded from Firestore (' + stats.transactionCount + ' transactions)');
-          if (typeof refreshStatCards === 'function') refreshStatCards();
+          refreshStatCards();
         });
       }).catch(function(err) {
         console.warn('[Dashboard] Firestore stats failed, trying Sheets:', err.message || err);
@@ -1891,5 +1997,9 @@
 <script src="js/offline.js"></script>
 <script src="bot-assistant.js"></script>
 <script src="js/suno-radio.js"></script>
+<script src="js/birdbot-widget.js"></script>
+<script src="js/mining-camp.js"></script>
+<script src="js/academy.js"></script>
+<script src="js/exertion.js"></script>
 </body>
 </html>

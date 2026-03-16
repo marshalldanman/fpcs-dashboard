@@ -732,7 +732,7 @@
 
     <!-- Alert Banner -->
     <div class="unmatched-alert" id="unmatchedAlert">
-      <h3 id="unmatchedAlertCount">516 Unmatched Entries</h3>
+      <h3 id="unmatchedAlertCount">Loading Unmatched Entries...</h3>
       <div class="alert-value" id="unmatchedAlertValue">~$16,000+ in potential deductions</div>
       <div class="alert-source">From Ledger_2022 &mdash; Not yet in master dataset</div>
       <button class="alert-cta" onclick="document.getElementById('unmatchedGroupsContainer').scrollIntoView({behavior:'smooth'})">Start Resolving</button>
@@ -740,7 +740,7 @@
 
     <!-- Stats Row -->
     <div class="unmatched-stats" id="unmatchedStats">
-      <div class="stat-card"><div class="stat-val" style="color:var(--yellow)" id="umTotalCount">516</div><div class="stat-label">Total Unmatched</div></div>
+      <div class="stat-card"><div class="stat-val" style="color:var(--yellow)" id="umTotalCount">--</div><div class="stat-label">Total Unmatched</div></div>
       <div class="stat-card"><div class="stat-val" style="color:var(--green)" id="umFpcsCount">--</div><div class="stat-label">FPCS Business</div></div>
       <div class="stat-card"><div class="stat-val" style="color:var(--muted)" id="umPersonalCount">--</div><div class="stat-label">Personal</div></div>
       <div class="stat-card"><div class="stat-val" style="color:var(--accent)" id="umTotalValue">--</div><div class="stat-label">Total Value</div></div>
@@ -749,7 +749,7 @@
     <!-- Resolution Progress Bar -->
     <div class="resolution-bar" id="resolutionBar">
       <div class="resolution-bar-fill" id="resolutionBarFill" style="width:0%"></div>
-      <div class="resolution-bar-label" id="resolutionBarLabel">0 / 516 resolved (0%)</div>
+      <div class="resolution-bar-label" id="resolutionBarLabel">Loading...</div>
     </div>
 
     <!-- Controls -->
@@ -1517,14 +1517,14 @@ function grantSheetsFromPanel() {
 <script>
 // ============================================================
 //  UNMATCHED DEDUCTIONS RESOLVER
-//  Handles 516 entries from Ledger_2022 not in master dataset
+//  Handles entries from Ledger_2022 not in master dataset (count loaded live from Firestore)
 // ============================================================
 var unmatchedGroups = [];        // Array of { vendor, category, entries:[], total, count }
 var unmatchedAllEntries = [];    // Flat array of all unmatched entries
 var unmatchedResolved = {};      // { entryId: 'deductible'|'personal' }
 var unmatchedSearchQuery = '';
 var unmatchedActiveFilter = 'all';
-var unmatchedTotalCount = 516;
+var unmatchedTotalCount = 0; // Set live from Firestore
 
 // --- Hardcoded seed data (fallback when Firestore unavailable) ---
 var UNMATCHED_SEED = [
@@ -1628,27 +1628,51 @@ var UNMATCHED_SEED = [
 })();
 
 function loadUnmatchedData() {
-  // Try Firestore first
-  if (window.FPCSFirestore && typeof window.FPCSFirestore.getUnmatchedGroups === 'function') {
-    try {
-      var firestoreGroups = window.FPCSFirestore.getUnmatchedGroups();
+  // Try Firestore first (getUnmatchedGroups returns a Promise)
+  if (window.FPCSFirestore && window.FPCSFirestore.isReady() && typeof window.FPCSFirestore.getUnmatchedGroups === 'function') {
+    window.FPCSFirestore.getUnmatchedGroups().then(function(firestoreGroups) {
       if (firestoreGroups && firestoreGroups.length > 0) {
-        unmatchedGroups = firestoreGroups;
-        unmatchedAllEntries = [];
-        unmatchedGroups.forEach(function(g) {
-          g.entries.forEach(function(e) { unmatchedAllEntries.push(e); });
+        unmatchedGroups = firestoreGroups.map(function(g) {
+          return {
+            vendor: g.vendor,
+            category: g.category,
+            entries: g.entries,
+            total: g.totalAmount || 0,
+            count: g.count || g.entries.length
+          };
         });
+        unmatchedAllEntries = [];
+        var liveTotal = 0;
+        unmatchedGroups.forEach(function(g) {
+          g.entries.forEach(function(e) {
+            unmatchedAllEntries.push(e);
+            liveTotal++;
+          });
+        });
+        unmatchedTotalCount = liveTotal;
+        console.log('[Unmatched] Loaded ' + liveTotal + ' entries from Firestore');
         renderUnmatchedGroups(unmatchedGroups);
         updateUnmatchedStats();
         updateResolutionProgress();
+        // Update the alert banner with live count
+        var alertCount = document.getElementById('unmatchedAlertCount');
+        if (alertCount) alertCount.textContent = liveTotal + ' Unmatched Entries';
         return;
       }
-    } catch(e) {
+      // Empty Firestore result — fall through to seed
+      loadUnmatchedSeedData();
+    }).catch(function(e) {
       console.warn('[Unmatched] Firestore load error, using seed data:', e);
-    }
+      loadUnmatchedSeedData();
+    });
+    return;
   }
 
   // Fallback: use seed data
+  loadUnmatchedSeedData();
+}
+
+function loadUnmatchedSeedData() {
   unmatchedGroups = UNMATCHED_SEED.map(function(g) {
     var total = 0;
     g.entries.forEach(function(e) { total += e.amount; });
@@ -1668,6 +1692,8 @@ function loadUnmatchedData() {
   unmatchedGroups.forEach(function(g) {
     g.entries.forEach(function(e) { unmatchedAllEntries.push(e); });
   });
+  unmatchedTotalCount = unmatchedAllEntries.length;
+  console.log('[Unmatched] Using seed data (' + unmatchedTotalCount + ' entries)');
 
   renderUnmatchedGroups(unmatchedGroups);
   updateUnmatchedStats();
@@ -2443,5 +2469,9 @@ document.addEventListener('keydown', function(e) {
 <script src="js/firestore-db.js"></script>
 <script src="bot-assistant.js"></script>
 <script src="js/suno-radio.js"></script>
+<script src="js/birdbot-widget.js"></script>
+<script src="js/mining-camp.js"></script>
+<script src="js/academy.js"></script>
+<script src="js/exertion.js"></script>
 </body>
 </html>
