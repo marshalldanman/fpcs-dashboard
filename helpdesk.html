@@ -696,7 +696,22 @@ function startFirestoreListener() {
       // Build tickets array from Firestore docs
       var firestoreTickets = [];
       snapshot.forEach(function(doc) {
-        firestoreTickets.push(doc.data());
+        var d = doc.data();
+        // Map Firestore field names to UI field names
+        firestoreTickets.push({
+          id: d.id || doc.id,
+          title: d.title || '',
+          type: d.type || 'Task',
+          priority: d.priority || 'Medium',
+          status: d.status || 'New',
+          assignee: d.assignee || d.assignedTo || 'Unassigned',
+          category: d.category || 'Other',
+          tags: d.tags || [],
+          desc: d.desc || d.description || '',
+          created: d.created || '',
+          updated: d.updated || '',
+          comments: d.comments || []
+        });
       });
 
       // Replace in-memory tickets with Firestore data
