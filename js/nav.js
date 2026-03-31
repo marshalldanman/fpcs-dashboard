@@ -14,15 +14,15 @@
 (function () {
   'use strict';
 
-  // --- Page Registry (village only — no tax pages) ---
+  // --- Page Registry — helpdesk now lives on its own subdomain ---
   var PAGES = [
-    { key: 'home',     icon: '\u{1F3E0}', label: 'Home',      href: 'index.html' },
-    { key: 'bots',     icon: '\u{1F916}', label: 'Bots',      href: 'bots.html' },
-    { key: 'library',  icon: '\u{1F4DA}', label: 'Library',   href: 'library.html' },
-    { key: 'helpdesk', icon: '\u{1F39B}', label: 'Helpdesk',  href: 'helpdesk.html' },
-    { key: 'stats',    icon: '\u{1F3C6}', label: 'Stats',     href: 'stats-board.html' },
+    { key: 'home',     icon: '\u{1F3E0}', label: 'Home',       href: 'index.html' },
+    { key: 'bots',     icon: '\u{1F916}', label: 'Bots',       href: 'bots.html' },
+    { key: 'library',  icon: '\u{1F4DA}', label: 'Library',    href: 'library.html' },
+    { key: 'helpdesk', icon: '\u{1F39B}', label: 'Helpdesk',   href: 'https://helpdesk.justout.today/' },
+    { key: 'stats',    icon: '\u{1F3C6}', label: 'Stats',      href: 'stats-board.html' },
     { key: 'sentry',   icon: '\u{1F981}', label: 'SentryLion', href: 'sentrylion.html' },
-    { key: 'japster',  icon: '\u{1F4BC}', label: 'Japster',   href: 'japster.html' }
+    { key: 'japster',  icon: '\u{1F4BC}', label: 'Japster',    href: 'japster.html' }
   ];
 
   // --- Read page config ---
