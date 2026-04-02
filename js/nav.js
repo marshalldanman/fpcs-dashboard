@@ -14,15 +14,23 @@
 (function () {
   'use strict';
 
-  // --- Page Registry — helpdesk now lives on its own subdomain ---
+  // --- Page Registry — all pages have subdomains ---
+  // On justout.today subdomains, use subdomain URLs.
+  // On localhost/dev, fall back to relative paths.
+  var IS_PROD = window.location.hostname.indexOf('justout.today') !== -1;
+  function href(sub, file) {
+    return IS_PROD ? 'https://' + sub + '.justout.today/' : file;
+  }
+
   var PAGES = [
-    { key: 'home',     icon: '\u{1F3E0}', label: 'Home',       href: 'index.html' },
-    { key: 'bots',     icon: '\u{1F916}', label: 'Bots',       href: 'bots.html' },
-    { key: 'library',  icon: '\u{1F4DA}', label: 'Library',    href: 'library.html' },
-    { key: 'helpdesk', icon: '\u{1F39B}', label: 'Helpdesk',   href: 'https://helpdesk.justout.today/' },
-    { key: 'stats',    icon: '\u{1F3C6}', label: 'Stats',      href: 'stats-board.html' },
-    { key: 'sentry',   icon: '\u{1F981}', label: 'SentryLion', href: 'sentrylion.html' },
-    { key: 'japster',  icon: '\u{1F4BC}', label: 'Japster',    href: 'japster.html' }
+    { key: 'home',     icon: '\u{1F3E0}', label: 'Home',       href: href('dashboard', 'index.html') },
+    { key: 'bots',     icon: '\u{1F916}', label: 'Bots',       href: href('bots', 'bots.html') },
+    { key: 'library',  icon: '\u{1F4DA}', label: 'Library',    href: href('library', 'library.html') },
+    { key: 'helpdesk', icon: '\u{1F39B}', label: 'Helpdesk',   href: href('helpdesk', 'helpdesk.html') },
+    { key: 'stats',    icon: '\u{1F3C6}', label: 'Stats',      href: href('stats', 'stats-board.html') },
+    { key: 'sentry',   icon: '\u{1F981}', label: 'SentryLion', href: href('sentry', 'sentrylion.html') },
+    { key: 'japster',  icon: '\u{1F4BC}', label: 'Japster',    href: href('japster', 'japster.html') },
+    { key: 'tokens',   icon: '\u23F1\uFE0F',  label: 'Tokens',     href: href('tokenmaster', 'token-master.html') }
   ];
 
   // --- Read page config ---
