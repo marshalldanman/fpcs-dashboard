@@ -14,12 +14,13 @@
 (function () {
   'use strict';
 
-  // --- Page Registry — all pages have subdomains ---
-  // On justout.today subdomains, use subdomain URLs.
-  // On localhost/dev, fall back to relative paths.
-  var IS_PROD = window.location.hostname.indexOf('justout.today') !== -1;
+  // --- Page Registry ---
+  // Always use relative paths so all navigation stays on dashboard.justout.today.
+  // This keeps Firebase Auth working (only dashboard.justout.today is authorized).
+  // Subdomain URLs (bots.justout.today etc.) still work as entry points via
+  // subdomain-router.js which redirects them here.
   function href(sub, file) {
-    return IS_PROD ? 'https://' + sub + '.justout.today/' : file;
+    return file;
   }
 
   var PAGES = [
