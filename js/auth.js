@@ -67,7 +67,9 @@
   var ROLE_LEVELS = { guest: 0, member: 1, admin: 2 };
 
   // --- Session Security ---
-  var SESSION_TIMEOUT_MS = 30 * 60 * 1000; // 30 minutes of inactivity
+  // 2026-05-01: bumped 30min -> 4hr. Personal dashboard, low risk, was kicking
+  //             Commander mid-task. Pair with softer visibilitychange handler below.
+  var SESSION_TIMEOUT_MS = 4 * 60 * 60 * 1000; // 4 hours of inactivity
   var _lastActivity = Date.now();
 
   // --- Onboarding options for MEMBERS (Tier 2) ---
@@ -313,12 +315,24 @@
     } catch (e) { /* silent */ }
   }
 
-  // --- Load external script ---
-  function loadScript(src, callback) {
+  // --- Load external script with retry + user-visible error ---
+  function loadScript(src, callback, attempt) {
+    attempt = attempt || 1;
     var s = document.createElement('script');
     s.src = src;
     s.onload = callback;
-    s.onerror = function () { console.error('[FPCS Auth] Failed to load:', src); };
+    s.onerror = function () {
+      console.error('[FPCS Auth] Failed to load (attempt ' + attempt + '):', src);
+      if (attempt < 3) {
+        setTimeout(function () { loadScript(src, callback, attempt + 1); }, 500 * attempt);
+      } else {
+        var err = document.getElementById('authErr');
+        if (err) {
+          err.style.display = 'block';
+          err.textContent = 'Sign-in service could not load. Check your connection or content blocker, then reload the page.';
+        }
+      }
+    };
     document.head.appendChild(s);
   }
 
@@ -880,24 +894,40 @@
     //  SESSION SECURITY: Tab Visibility Re-validation
     //  Catches: expired sessions, disabled accounts, deleted accounts
     // ============================================================
+    // 2026-05-01: SOFTENED. The previous version called signOut() on ANY
+    // currentUser.reload() failure. Under Chrome 3PCD, the auth iframe at
+    // *.firebaseapp.com gets its storage partitioned, so reload() routinely
+    // fails with transient errors that have nothing to do with the account
+    // being invalidated. The aggressive auto-signout was kicking the user out
+    // every minute. Now we only sign out on EXPLICIT account-invalidation
+    // error codes; everything else just logs a warning.
     document.addEventListener('visibilitychange', function () {
-      if (document.visibilityState === 'visible') {
-        var currentUser = auth.currentUser;
-        if (!currentUser && window.FPCS_USER) {
-          console.warn('[FPCS Auth] Session expired while tab was hidden');
+      if (document.visibilityState !== 'visible') return;
+      var currentUser = auth.currentUser;
+      if (!currentUser) {
+        // Don't auto-reload here either — the 3PCD storage partition can briefly
+        // make currentUser appear null. onAuthStateChanged will fire with the real
+        // state shortly. If the user is genuinely signed out, the gate will appear
+        // organically.
+        return;
+      }
+      currentUser.reload().catch(function (err) {
+        var code = err && err.code;
+        var hardInvalidation =
+          code === 'auth/user-disabled' ||
+          code === 'auth/user-not-found' ||
+          code === 'auth/user-token-expired' ||
+          code === 'auth/invalid-user-token';
+        if (hardInvalidation) {
+          console.warn('[FPCS Auth] Account invalidated, signing out:', code);
+          auth.signOut();
           window.FPCS_USER = null;
           window.location.reload();
-          return;
+        } else {
+          // Transient (network, 3PCD storage partition, etc.) — keep session.
+          console.warn('[FPCS Auth] Soft reload failure, keeping session:', code || (err && err.message));
         }
-        if (currentUser) {
-          currentUser.reload().catch(function (err) {
-            console.warn('[FPCS Auth] Account invalidated:', err.code || err.message);
-            auth.signOut();
-            window.FPCS_USER = null;
-            window.location.reload();
-          });
-        }
-      }
+      });
     });
 
     // ============================================================
