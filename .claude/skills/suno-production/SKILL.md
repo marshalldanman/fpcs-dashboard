@@ -1,6 +1,6 @@
 ---
 name: suno-production
-description: Use when the user asks for a Suno song, Suno prompt, song lyrics for Suno AI, or invokes /suno. Produces a single triple-tap copyable deliverable containing an optimized Suno style description and fully tagged lyrics. Distinct from any standard SONGMODE.
+description: Use when the user asks for a Suno song, Suno prompt, song lyrics for Suno AI, a track designed for Suno, or anything involving generating music for Suno. Also engages on requests for therapeutic / frequency-targeted / binaural / Solfeggio / brainwave-entrainment audio (Neuro-Acoustic Mode). Produces a single triple-tap copyable deliverable: an optimized Suno style description and fully tagged lyrics. Distinct from any standard SONGMODE.
 ---
 
 # Suno Production
@@ -88,20 +88,21 @@ Pick the structural template that matches the genre stack: Pop/Anthem, Ballad, I
 - **Funny / parody** — override the standard arc with comedic timing, subversion, and punchlines. Resolution beat becomes the punchline, not catharsis.
 - **Short-mode** — compress the arc (e.g. Verse → Chorus → Bridge → Final Chorus) without losing structural integrity or emotional payoff.
 - **Sensitive themes** — lean on metaphor and nuance; avoid filter-tripping vocabulary while preserving emotional truth.
+- **Neuro-acoustic / therapeutic mode** — when the user requests healing, meditation, frequency-targeted, binaural, isochronic, vagal, frisson-engineered, brainwave-entrainment, Solfeggio, 432Hz, 528Hz, or any track intended to physiologically modulate the listener — engage `references/neuro-acoustic-matrix.md`. This **overrides** the default style budget with the four-layer Carrier → Entrainment → Trajectory → Environment stack and may use unconventional structures (drone, sustained pad, 60–80 BPM, modal scales, sub-bass bed). Do NOT engage this mode for ordinary song requests; over-applying produces unlistenable output.
 
 ## 8. Execution Protocol
 
 When invoked with a song concept:
 
 1. Silently run the council pass: theme → arc → rhyme footprint per section → style budget → tag plan.
-2. Output exactly two fenced blocks, in this order:
+2. Output exactly two fenced blocks, in this order. Use `~~~` fences (not backticks) so user concepts containing backticks don't break the rendering:
 
-````
-```
+~~~
+~~~
 <Style line, comma-separated, single line>
-```
+~~~
 
-```
+~~~
 [Verse 1]
 ...
 
@@ -109,7 +110,7 @@ When invoked with a song concept:
 ...
 
 (remaining sections)
-```
-````
+~~~
+~~~
 
 3. Stop. No outro text, no questions, no offers to revise.
