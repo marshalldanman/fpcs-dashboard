@@ -31,7 +31,7 @@
     { key: 'stats',    icon: '\u{1F3C6}', label: 'Stats',      href: href('stats', 'stats-board.html') },
     { key: 'sentry',   icon: '\u{1F981}', label: 'SentryLion', href: href('sentry', 'sentrylion.html') },
     { key: 'japster',  icon: '\u{1F4BC}', label: 'Japster',    href: href('japster', 'japster.html') },
-    { key: 'suno',     icon: '\u{1F3B6}', label: 'Suno',       href: href('suno', 'suno.html') },
+    { key: 'suno',     icon: '\u{1F3B6}', label: 'Suno Music#2', href: href('suno', 'suno.html') },
     { key: 'tokens',   icon: '\u23F1\uFE0F',  label: 'Tokens',     href: href('tokenmaster', 'token-master.html') }
   ];
 
