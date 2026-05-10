@@ -1,6 +1,9 @@
 /* ============================================================
    SunoRadio — Floating music player widget for FPCS Dashboard
    Plays/simulates songs from Suno.com channels
+
+   Part of the Suno channel. Canonical registry: docs/suno/README.md
+   Long-term home: justout-aimusic/ @ aimusic.justout.today (per JUSTOUT_HUB_SPEC.md §2.2)
    ============================================================ */
 
 class SunoRadio {

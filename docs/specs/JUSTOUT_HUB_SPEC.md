@@ -80,6 +80,8 @@ Every channel page has:
 | Ideas / Notes | notes.justout.today | Notepad with modifications. Quick capture, organize, tag. | Blue star |
 | Music | music.justout.today | Your music library, playlists, favorites. Player built in. | Purple gem |
 | AI Music | aimusic.justout.today | AI music creation tools, generated tracks, experiments. | Pink crystal |
+
+> **Interim note (Suno channel):** Until `justout-aimusic/` exists, all Suno-related work — production skill, research, prompts, the radio widget — is consolidated inside `fpcs-dashboard` under [`docs/suno/`](../suno/README.md) and `.claude/skills/suno-production/`. See `docs/suno/ROADMAP.md` for the migration path to the dedicated repo.
 | Books | books.justout.today | Reading list, notes, quotes, recommendations. | Amber gem |
 | Art | art.justout.today | Gallery of art — your creations, favorites, AI art. | Teal prism |
 
