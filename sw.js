@@ -30,7 +30,6 @@ var STATIC_ASSETS = [
   'js/chiligbot.js',
   'js/firestore-db.js',
   'js/sentryfleet-db.js',
-  'js/notify.js',
   'js/suno-radio.js',
   'css/suno-radio.css',
   'bot-assistant.js'
