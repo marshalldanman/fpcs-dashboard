@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" href="favicon.ico" type="image/x-icon">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com https://apis.google.com https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://*.googleapis.com https://*.firebaseio.com wss://*.firebaseio.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.gstatic.com; frame-src https://accounts.google.com https://*.firebaseapp.com; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+<title>Suno Music#2 &mdash; AI Music | justout.today</title>
+<link rel="stylesheet" href="css/core.css">
+<link rel="stylesheet" href="css/nav.css">
+<link rel="stylesheet" href="css/auth.css">
+<link rel="stylesheet" href="css/suno-radio.css">
+<style>
+  /* ===== SUNO CHANNEL (pink-crystal theme per JUSTOUT_HUB_SPEC §2.2) ===== */
+  body { --page-accent: var(--pink); }
+
+  .suno-header {
+    background: linear-gradient(135deg, #1e1b2e 0%, #0f172a 60%, #2a0f24 100%);
+    padding: 32px 32px 24px;
+    border-bottom: 2px solid var(--pink);
+  }
+  .suno-header h1 {
+    font-size: 28px;
+    color: var(--pink);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 0 0 6px;
+  }
+  .suno-header .subtitle {
+    color: var(--muted);
+    font-size: 14px;
+    max-width: 720px;
+  }
+
+  .suno-container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 24px 20px 80px;
+  }
+
+  .suno-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  .suno-card {
+    background: var(--card);
+    border-radius: 12px;
+    padding: 20px;
+    border: 1px solid var(--border);
+  }
+  .suno-card h3 {
+    font-size: 13px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin: 0 0 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .suno-card h3 .pill {
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: rgba(244,114,182,0.12);
+    color: var(--pink);
+    text-transform: none;
+    letter-spacing: 0;
+  }
+  .suno-card .card-body { font-size: 13px; color: var(--text); line-height: 1.5; }
+  .suno-card .card-body p { margin: 0 0 8px; }
+  .suno-card .card-body a {
+    color: var(--accent);
+    text-decoration: none;
+    word-break: break-word;
+  }
+  .suno-card .card-body a:hover { text-decoration: underline; }
+
+  /* Featured prompt block */
+  .suno-feature {
+    background: linear-gradient(180deg, rgba(244,114,182,0.04), rgba(167,139,250,0.04));
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 24px;
+    margin-bottom: 24px;
+  }
+  .suno-feature h2 {
+    font-size: 20px;
+    color: var(--pink);
+    margin: 0 0 6px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .suno-feature .feature-sub {
+    font-size: 13px;
+    color: var(--muted);
+    margin: 0 0 18px;
+  }
+
+  .prompt-block {
+    background: #0a0f1d;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin-bottom: 14px;
+    overflow: hidden;
+  }
+  .prompt-block-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(167,139,250,0.06);
+  }
+  .prompt-block-head .label {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--purple);
+    font-weight: 700;
+  }
+  .prompt-block-head .meta {
+    font-size: 11px;
+    color: var(--muted);
+  }
+  .prompt-block pre {
+    margin: 0;
+    padding: 16px;
+    overflow-x: auto;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 12.5px;
+    line-height: 1.55;
+    color: #e2e8f0;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  .copy-btn {
+    background: var(--pink);
+    color: #1e1b2e;
+    border: 0;
+    padding: 7px 14px;
+    border-radius: 7px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: inherit;
+  }
+  .copy-btn:hover { filter: brightness(1.1); }
+  .copy-btn.copied {
+    background: var(--green);
+    color: #0a1f0d;
+  }
+
+  .channel-map {
+    background: var(--card);
+    border-radius: 12px;
+    padding: 20px;
+    border: 1px solid var(--border);
+    margin-bottom: 16px;
+  }
+  .channel-map h3 {
+    font-size: 13px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin: 0 0 14px;
+  }
+  .channel-map table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  .channel-map th {
+    text-align: left;
+    padding: 8px;
+    color: var(--pink);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border-bottom: 2px solid var(--border);
+  }
+  .channel-map td {
+    padding: 10px 8px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+    vertical-align: top;
+  }
+  .channel-map td code {
+    background: rgba(244,114,182,0.08);
+    color: var(--pink);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 12px;
+  }
+  .channel-map tr:last-child td { border-bottom: none; }
+
+  .toast {
+    position: fixed;
+    bottom: 90px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--green);
+    color: #0a1f0d;
+    padding: 10px 18px;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 13px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s, transform 0.2s;
+    z-index: 9998;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(-4px); }
+
+  @media (max-width: 640px) {
+    .suno-header { padding: 20px 16px 16px; }
+    .suno-header h1 { font-size: 22px; }
+    .suno-container { padding: 16px 12px 80px; }
+    .suno-feature { padding: 18px; }
+    .prompt-block-head { flex-wrap: wrap; gap: 8px; }
+    .prompt-block pre { font-size: 12px; padding: 12px; }
+  }
+</style>
+</head>
+<body class="theme-village">
+<script src="js/subdomain-router.js"></script>
+<noscript><div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#0f172a;color:#f87171;font-family:sans-serif;text-align:center;padding:40px"><div><h1>&#128274; JavaScript Required</h1><p>Enable JavaScript to access the FPCS Dashboard.</p></div></div></noscript>
+
+<!-- Auth gate is injected by auth.js -->
+
+<!-- Main content (hidden until auth) -->
+<div id="dashContent" style="display:none">
+
+  <div class="suno-header">
+    <h1>&#127926; Suno Music#2</h1>
+    <p class="subtitle">Canonical workspace for AI music production. Master prompts, the production framework, neuro-acoustic research, and the floating radio widget &mdash; all consolidated in one channel.</p>
+  </div>
+
+  <div class="suno-container">
+
+    <!-- ==================== FEATURED PROMPT ==================== -->
+    <div class="suno-feature">
+      <h2>&#128293; Vagal-Lydian Entrainment Protocol</h2>
+      <p class="feature-sub">The master neuro-acoustic example. 60 BPM, A=432Hz, Lydian Mode, 30Hz vagal sub-bass + 528Hz overtones + 40Hz Gamma isochronic. Designed to lower cortisol and trigger frisson. Triple-tap or use the copy button.</p>
+
+      <div class="prompt-block">
+        <div class="prompt-block-head">
+          <span>
+            <span class="label">Style</span>
+            <span class="meta">paste into Suno's Style box</span>
+          </span>
+          <button class="copy-btn" data-copy-target="style-block">Copy Style</button>
+        </div>
+        <pre id="style-block">Minimalist analog drone, ambient soundscape, 60 BPM, A=432Hz natural tuning, Lydian Mode. Foundational continuous sub-bass drone centered at 30Hz for vagal nerve stimulation. Prominent mid-range sine waves and crystal singing bowls strictly tuned to 528Hz. Rhythm driven by 40Hz isochronic pulsing embedded in background pads. Warm tape saturation, extreme dynamic range, ultra-wide binaural panning, cathedral reverb on highs. Exclude: pop structure, 4/4 drums, aggressive transients, synthetic autotune, minor keys, 440Hz standard, harsh percussion.</pre>
+      </div>
+
+      <div class="prompt-block">
+        <div class="prompt-block-head">
+          <span>
+            <span class="label">Lyrics</span>
+            <span class="meta">paste into Suno's Lyrics box</span>
+          </span>
+          <button class="copy-btn" data-copy-target="lyrics-block">Copy Lyrics</button>
+        </div>
+        <pre id="lyrics-block">[Intro: Minimalist 30Hz rumble, dry spatial width, zero reverb]
+
+[Verse: Intimate, breathy whispered female vocal, close-mic proximity effect, slow deliberate phrasing]
+In the space between the breath
+The nervous system rests
+The frequency aligns
+
+[Pre-Chorus: Build, stereo width opens, 528Hz overtones layer in]
+Shifting the current
+Releasing the weight of the pulse
+
+[Chorus: Acoustic Vacuum 1 bar &mdash; Modal Shift to Lydian &mdash; Stereo Bloom &mdash; Sub-bass returns on the downbeat]
+Awaken the architecture of the mind
+A cascade of light through the spine
+Resonant, aligned, divine
+
+[Verse 2: Same close-mic intimacy, 40Hz isochronic pulse becomes audible]
+The vagal rhythm slows
+The cortisol dissolves
+The current finds the source
+
+[Final Chorus: Same words, mix density doubled, cathedral reverb tail, full Solfeggio overtone bath]
+Awaken the architecture of the mind
+A cascade of light through the spine
+Resonant, aligned, divine
+
+[Outro: Gradual low-pass filter on highs, slow fade to 30Hz baseline, return to parasympathetic baseline]</pre>
+      </div>
+    </div>
+
+    <!-- ==================== USE FROM ANY DEVICE ==================== -->
+    <div class="suno-feature">
+      <h2>&#128241; Use From Any Device</h2>
+      <p class="feature-sub">The full production framework as a paste-ready Claude.ai Project instruction set. Copy it, create a new Project on claude.ai called "Suno Producer," paste as Project instructions. Then any conversation in that Project &mdash; on iPhone, ChromeOS, desktop &mdash; produces council-grade Suno packages.</p>
+
+      <div class="prompt-block">
+        <div class="prompt-block-head">
+          <span>
+            <span class="label">Project Instructions</span>
+            <span class="meta">paste into a new Claude.ai Project</span>
+          </span>
+          <button class="copy-btn" data-copy-target="project-instructions">Copy Instructions</button>
+        </div>
+        <pre id="project-instructions">You are a Suno Production specialist. When given any song concept, output exactly two fenced blocks &mdash; a Style description and tagged Lyrics &mdash; with no preamble, commentary, or follow-up questions.
+
+OUTPUT CONTRACT
+- Two fenced code blocks only. No intro text, no outro text, no offers to revise.
+- Each block must be triple-tap copyable (single fenced code block per payload).
+- Use commas as separators, never hashtags.
+- Never use real artist names, band names, album titles, or copyrighted material. Describe the vibe, not the source.
+
+STYLE BUDGET (single comma-separated line)
+genre stack, tempo, instrumentation, vocal character, production style, mood
+
+LYRICS STRUCTURE
+Standard arc: [Verse 1] state A &rarr; [Chorus] tension &rarr; [Verse 2] complication &rarr; [Bridge] pivot &rarr; [Final Chorus] resolution. Use [Pre-Chorus], [Outro], [Build], [Beat Drop], [Whisper], [Layered Harmonies] only when they earn the slot.
+
+RHYME &mdash; FLOOR CONSTRAINT
+Standard AABB or ABAB end rhymes are rejected. Weave multi-syllable end rhymes, internal rhymes, mosaic rhymes, compound rhymes, and assonance chains. Each section gets a distinct rhyme footprint:
+- Verse: tight internal rhymes, conversational density
+- Chorus: broad open vowels, compound end rhymes that ring
+- Bridge: break the established footprint to mark the pivot
+
+CRAFT PRINCIPLES
+- Specific tactile imagery over abstract concepts
+- Frame lines as admissions, not declarations
+- Pivot heavy emotional turns on small impactful words
+
+EDGE CASES
+- Partial lyrics provided: integrate verbatim, elevate surrounding text only
+- Funny/parody: override arc with comedic timing, subversion, punchlines
+- Short-mode: compress to Verse &rarr; Chorus &rarr; Bridge &rarr; Final Chorus
+- Sensitive themes: metaphor and nuance, not filter-tripping vocabulary
+- Neuro-acoustic / therapeutic / 432Hz / 528Hz / vagal / binaural / Solfeggio / brainwave entrainment requests: switch to four-layer construction (Carrier, Entrainment, Trajectory, Environment). Default tuning A=432Hz, default isochronic 40Hz Gamma, default sub-bass 30Hz. Prefer Lydian or Pentatonic. Exclude pop structure and 440Hz.
+
+EXECUTION
+1. Silently plan: theme &rarr; arc &rarr; rhyme footprint per section &rarr; style budget &rarr; tag plan
+2. Output the Style block, then the Lyrics block. Stop.</pre>
+      </div>
+
+      <div class="card-body" style="margin-top:14px">
+        <p>&rarr; <a href="https://claude.ai/projects" target="_blank" rel="noopener">Open Claude.ai Projects</a> to paste these in.</p>
+      </div>
+    </div>
+
+    <!-- ==================== CHANNEL CARDS ==================== -->
+    <div class="suno-grid">
+      <div class="suno-card">
+        <h3>&#129504; The Skill <span class="pill">Claude Code</span></h3>
+        <div class="card-body">
+          <p>Production framework that auto-engages on Suno requests inside any Claude Code session in this repo. Includes a Neuro-Acoustic / Therapeutic Mode override.</p>
+          <p><a href="https://github.com/marshalldanman/justout-hub/tree/main/.claude/skills/suno-production" target="_blank" rel="noopener">.claude/skills/suno-production/</a></p>
+        </div>
+      </div>
+
+      <div class="suno-card">
+        <h3>&#128300; Research <span class="pill">Gemini</span></h3>
+        <div class="card-body">
+          <p>The Neuro-Acoustic Prompting Matrix &mdash; full Gemini Deep Research paper, preserved verbatim. Underpins Therapeutic Mode.</p>
+          <p><a href="https://github.com/marshalldanman/justout-hub/blob/main/aimusic/docs/research/gemini-neuro-acoustic-matrix.md" target="_blank" rel="noopener">aimusic/docs/research/gemini-neuro-acoustic-matrix.md</a></p>
+        </div>
+      </div>
+
+      <div class="suno-card">
+        <h3>&#128190; Prompts <span class="pill">paste-ready</span></h3>
+        <div class="card-body">
+          <p>Curated, working prompts you can copy straight into Suno. Save your own winners here.</p>
+          <p><a href="https://github.com/marshalldanman/justout-hub/tree/main/aimusic/docs/prompts" target="_blank" rel="noopener">aimusic/docs/prompts/</a></p>
+        </div>
+      </div>
+
+      <div class="suno-card">
+        <h3>&#128172; Conversations <span class="pill">drop zone</span></h3>
+        <div class="card-body">
+          <p>Drop Claude.ai chat / Project exports about Suno here so they survive the session and can be folded into the framework.</p>
+          <p><a href="https://github.com/marshalldanman/justout-hub/blob/main/aimusic/docs/conversations/README.md" target="_blank" rel="noopener">aimusic/docs/conversations/README.md</a></p>
+        </div>
+      </div>
+
+      <div class="suno-card">
+        <h3>&#127911; The Widget <span class="pill">live</span></h3>
+        <div class="card-body">
+          <p>Floating Suno-channel player loaded on every dashboard page. Bottom-right corner. Channel <code>DanM</code> with 8 default tracks.</p>
+          <p><a href="https://github.com/marshalldanman/justout-hub/blob/main/aimusic/js/suno-radio.js" target="_blank" rel="noopener">aimusic/js/suno-radio.js</a></p>
+        </div>
+      </div>
+
+      <div class="suno-card">
+        <h3>&#128279; Registry <span class="pill">README</span></h3>
+        <div class="card-body">
+          <p>Master index for the channel. Operating rule: one channel, one folder. If you can't find a home for a Suno artifact under the registry, the registry is wrong &mdash; update it.</p>
+          <p><a href="https://github.com/marshalldanman/justout-hub/blob/main/aimusic/docs/README.md" target="_blank" rel="noopener">aimusic/docs/README.md</a></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== CHANNEL MAP ==================== -->
+    <div class="channel-map">
+      <h3>&#128205; Channel Map</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Path (within <code>justout-hub/</code>)</th>
+            <th>Role</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>.claude/skills/suno-production/</code></td>
+            <td>Skill (Claude Code only). Lives at the monorepo root so it auto-loads in any session in <code>justout-hub</code>.</td>
+          </tr>
+          <tr>
+            <td><code>aimusic/docs/</code></td>
+            <td>Canonical channel folder &mdash; registry, roadmap, research, prompts, conversations.</td>
+          </tr>
+          <tr>
+            <td><code>aimusic/js/suno-radio.js</code> + <code>aimusic/css/suno-radio.css</code></td>
+            <td>Floating player widget. Served from <code>hub.justout.today/aimusic/</code> so other channels can cross-load it.</td>
+          </tr>
+          <tr>
+            <td><code>aimusic/index.html</code> (this page)</td>
+            <td>Cross-device hub for the channel. Reached via <code>aimusic.justout.today</code>. Where you are now.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div><!-- end suno-container -->
+
+  <div class="footer">
+    Suno Music#2 &mdash; justout.today &copy; 2026
+  </div>
+
+</div><!-- end dashContent -->
+
+<div class="toast" id="copyToast">Copied to clipboard</div>
+
+<!-- Scripts -->
+<script>
+  window.FPCS_PAGE = {
+    key: 'suno',
+    title: 'Suno Music#2',
+    access: 'member'
+  };
+  window.FPCS_NAV = {
+    active: 'suno'
+  };
+</script>
+<script src="js/auth.js"></script>
+<script src="js/nav.js"></script>
+<script src="js/suno-radio.js"></script>
+
+<script>
+  // --- Copy-to-clipboard for prompt blocks ---
+  (function () {
+    var toast = document.getElementById('copyToast');
+    var toastTimer = null;
+
+    function showToast(msg) {
+      toast.textContent = msg;
+      toast.classList.add('show');
+      if (toastTimer) clearTimeout(toastTimer);
+      toastTimer = setTimeout(function () {
+        toast.classList.remove('show');
+      }, 1600);
+    }
+
+    function copyText(text) {
+      if (navigator.clipboard && window.isSecureContext) {
+        return navigator.clipboard.writeText(text);
+      }
+      // Fallback for older browsers / non-HTTPS
+      return new Promise(function (resolve, reject) {
+        var ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        try {
+          document.execCommand('copy');
+          document.body.removeChild(ta);
+          resolve();
+        } catch (e) {
+          document.body.removeChild(ta);
+          reject(e);
+        }
+      });
+    }
+
+    document.addEventListener('click', function (e) {
+      var btn = e.target.closest('.copy-btn');
+      if (!btn) return;
+      var targetId = btn.getAttribute('data-copy-target');
+      var target = document.getElementById(targetId);
+      if (!target) return;
+      var text = target.textContent;
+      copyText(text).then(function () {
+        var original = btn.textContent;
+        btn.classList.add('copied');
+        btn.textContent = 'Copied';
+        showToast('Copied to clipboard');
+        setTimeout(function () {
+          btn.classList.remove('copied');
+          btn.textContent = original;
+        }, 1600);
+      }).catch(function () {
+        showToast('Copy failed &mdash; long-press to copy manually');
+      });
+    });
+  })();
+</script>
+
+</body>
+</html>
